@@ -1,17 +1,55 @@
-# AI Teaching App: Detailed Action Plan
+# Progressive AI Academy: Action Plan
 
 **Date**: 2025-04-26
 
 ## 1. Overview
-This document outlines a step-by-step plan to build a progressive AI teaching app targeting learners from elementary to graduate level.
+Progressive AI Academy is a next-generation learning platform that leverages AI to deliver adaptive, personalized education from elementary through graduate levels. The platform uses modern web technologies and Cloudflare's edge infrastructure for a scalable, fast, and secure experience.
 
 ## 2. Architecture & Tech Stack
-- **Frontend**: Vite + React + shadcn/ui (Tailwind CSS)
-- **Backend**: Next.js API routes (Node.js/Express compatible)
+- **Frontend**: Vite + React + shadcn/ui (Tailwind CSS), built to `dist/`
+- **Backend/API**: Hono server running on Cloudflare Workers (TypeScript)
 - **AI SDK**: Anthropic Claude (JavaScript/TypeScript SDK)
-- **Auth**: NextAuth.js or Clerk
-- **Database**: PostgreSQL (Prisma ORM)
-- **Hosting**: Vercel (Frontend + Serverless), PlanetScale or Neon (DB)
+- **Database**: Cloudflare D1 (SQL), KV (caching/session)
+- **Hosting/Infra**: Cloudflare Workers (serving API and static assets from `dist/`), Wrangler for CI/CD
+- **Auth**: (Pluggable; future: Cloudflare Access or third-party)
+
+## 3. Cloudflare Usage
+- **Static Assets**: Built frontend (`dist/`) is served directly by the Hono Worker using Cloudflare's edge network for low-latency global access.
+- **API**: All backend endpoints (lesson data, user progress, chat, etc.) are handled by Hono routes on the Worker.
+- **Data**: Cloudflare D1 is used for structured data (users, lessons, progress), and KV for fast key-value caching and session storage.
+- **AI**: Anthropic Claude SDK is called from the Worker for adaptive recommendations and tutoring.
+- **CI/CD**: Wrangler scripts automate build, local dev, and deployment to Cloudflare.
+
+## 4. Sprint Items (Next 2 Weeks)
+### Week 1
+- [ ] Finalize project structure and naming
+- [ ] Set up Vite + React + shadcn/ui frontend
+- [ ] Scaffold Hono Worker backend and static asset serving
+- [ ] Configure Wrangler and wrangler.toml for local/dev/deploy
+- [ ] Deploy "Hello World" Worker serving static frontend
+- [ ] Set up Cloudflare D1 and KV (schema, bindings)
+
+### Week 2
+- [ ] Implement basic user and lesson models in D1
+- [ ] Build onboarding flow and sample lesson page
+- [ ] Integrate Anthropic SDK for AI-powered chat tutor (simple Q&A)
+- [ ] Add progress tracking endpoints to Worker
+- [ ] Write initial unit/integration tests for API
+- [ ] Prepare demo content and internal review
+
+## 5. Milestones
+| Milestone | Description                      | Deliverables                        | ETA (Weeks) |
+|-----------|----------------------------------|-------------------------------------|-------------|
+| M1        | Scaffold & deploy MVP infra      | Worker + static site + D1/KV setup  | 1           |
+| M2        | Core learning & AI integration   | Lessons, chat tutor, progress model | 2           |
+| M3        | Content authoring/admin tools    | Admin UI, content workflow          | 2           |
+| M4        | Polish, test, and launch         | QA, docs, public launch             | 1           |
+
+## 6. Development Workflow
+- **Monorepo**: Single repo for frontend and Worker code
+- **Cloudflare Infra**: All-in-one deployment via Wrangler
+- **Testing**: Local dev via `wrangler dev`, deploy with `wrangler deploy`
+- **Docs**: Update this plan as architecture evolves
 
 ## 3. Learning Path & Content Model
 - **Progression Levels**:
@@ -48,19 +86,12 @@ This document outlines a step-by-step plan to build a progressive AI teaching ap
 | M7        | Admin CMS & final polish                       | Admin UI, permissions, deployment ready    | 2           |
 
 ## 6. Development Workflow
-- **Repository**: Single repo (or Turborepo for multi-package)
-- **Codegen**: Prisma schema → client, Zod schemas
-- **CI/CD**: GitHub Actions → Vercel previews
+- **Repository**: Single repo (monorepo optional)
+- **Infrastructure**: Cloudflare (Pages for frontend hosting, Workers for serverless/API, D1 for database, Access for auth, KV for caching)
+- **CI/CD**: GitHub Actions → Cloudflare Pages/Workers deployments
 - **Testing**: Jest + React Testing Library
 - **Linting/Formatting**: ESLint, Prettier
 
-## 7. Next Steps (Sprint 1)
-1. Initialize Git repo & install dependencies
-2. Configure Tailwind CSS & shadcn/ui theme tokens
-3. Create global layout (header, nav, footer)
-4. Setup routing for placeholder pages (Home, Lessons)
-5. Push initial commit & open PR for review
+## 7. Next Sprint
+<!-- Add new sprint items here -->
 
----
-
-*Ready to start Sprint 1!*

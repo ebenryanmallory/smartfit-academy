@@ -1,5 +1,5 @@
 {
-  "name": "learnai_progress",
+  "name": "progressive-ai-academy",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -7,23 +7,36 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "wrangler:dev": "wrangler dev --config wrangler.toml --persist --local",
+    "wrangler:deploy": "wrangler deploy --config wrangler.toml"
   },
   "dependencies": {
+    "@cloudflare/kv-asset-handler": "^0.4.0",
+    "@types/react-router-dom": "^5.3.3",
+    "hono": "^4.7.7",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "react-router-dom": "^7.5.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.22.0",
+    "@shadcn/ui": "^0.0.4",
+    "@tailwindcss/postcss": "^4.1.4",
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",
     "@vitejs/plugin-react": "^4.3.4",
+    "autoprefixer": "^10.4.21",
+    "esbuild": "^0.25.3",
     "eslint": "^9.22.0",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.19",
     "globals": "^16.0.0",
+    "postcss": "^8.5.3",
+    "tailwindcss": "^4.1.4",
     "typescript": "~5.7.2",
     "typescript-eslint": "^8.26.1",
-    "vite": "^6.3.1"
+    "vite": "^6.3.1",
+    "wrangler": "^4.13.2"
   }
 }
