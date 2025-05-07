@@ -4,8 +4,10 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc worker/index.ts --outDir worker --esModuleInterop --module nodenext --target es2020 --moduleResolution nodenext",
+    "dev": "vite build && npm run build && npx wrangler dev --config wrangler.toml --local",
+    "vite": "vite",
+
     "lint": "eslint .",
     "preview": "vite preview",
     "wrangler:dev": "wrangler dev --config wrangler.toml --persist --local",
@@ -13,7 +15,6 @@
   },
   "dependencies": {
     "@cloudflare/kv-asset-handler": "^0.4.0",
-    "@types/react-router-dom": "^5.3.3",
     "hono": "^4.7.7",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

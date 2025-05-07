@@ -1,13 +1,10 @@
 name = "progressive-ai-academy"
 compatibility_date = "2025-04-26"
 
-[build]
-command = "vite build"
+main = "worker/index.js"
 
-main = "worker/index.ts"
+[vars]
 
 [site]
 bucket = "./dist"
-
-[vars]
 # Add environment variables here if needed
