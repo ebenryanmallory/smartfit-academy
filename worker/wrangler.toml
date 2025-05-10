@@ -1,0 +1,19 @@
+name = "progressive-ai-academy"
+main = "index.ts"
+compatibility_date = "2024-04-26"
+
+[site]
+bucket = "../dist"
+
+[build]
+command = "npm run build"
+watch_dir = "src"
+
+[dev]
+port = 8787
+local_protocol = "http"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "progressive-ai-academy-db"
+database_id = "41e55b1a-a336-4a6d-b833-b3508791c9f3" 
