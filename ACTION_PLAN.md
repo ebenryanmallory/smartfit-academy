@@ -11,7 +11,7 @@ Progressive AI Academy is a next-generation learning platform that leverages AI 
 - **AI SDK**: Anthropic Claude (JavaScript/TypeScript SDK)
 - **Database**: Cloudflare D1 (SQL), KV (caching/session)
 - **Hosting/Infra**: Cloudflare Workers (serving API and static assets from `dist/`), Wrangler for CI/CD
-- **Auth**: (Pluggable; future: Cloudflare Access or third-party)
+- **Auth**: Clerk.js with GitHub provider
 
 ## 3. Cloudflare Usage
 - **Static Assets**: Built frontend (`dist/`) is served directly by the Hono Worker using Cloudflare's edge network for low-latency global access.
@@ -21,13 +21,58 @@ Progressive AI Academy is a next-generation learning platform that leverages AI 
 - **CI/CD**: Wrangler scripts automate build, local dev, and deployment to Cloudflare.
 
 ## 4. Sprint Items (Next 2 Weeks)
-### Week 1
-- [ ] Finalize project structure and naming
-- [ ] Set up Vite + React + shadcn/ui frontend
-- [ ] Scaffold Hono Worker backend and static asset serving
-- [ ] Configure Wrangler and wrangler.toml for local/dev/deploy
-- [ ] Deploy "Hello World" Worker serving static frontend
-- [ ] Set up Cloudflare D1 and KV (schema, bindings)
+### Week 1: Public Experience & Auth Foundation
+#### Public-Facing Features
+- [x] Build landing page with:
+  - [x] Hero section explaining the platform
+  - [x] Sample lesson preview
+  - [x] Learning path overview
+  - [x] Call-to-action for sign up
+- [ ] Create public lesson viewer component:
+  - [x] Lesson content display
+    - [x] Create basic lesson content layout with title, description, and markdown content rendering
+  - [x] Code snippet viewer
+    - [x] Add syntax highlighting for code blocks
+  - [ ] Basic interactive elements
+    - [x] Add copy button for code snippets
+    - [x] Add interactive code playground
+      - [x] Add Python code display
+      - [x] Add JavaScript code display
+      - [x] Add local JavaScript execution
+      - [ ] Add Python backend service
+  - [x] "Sign in to save progress" prompts
+    - [x] Create reusable SaveProgressPrompt component
+    - [x] Add prompts at key interaction points
+    - [x] Add prompts for code playground
+    - [x] Add prompts for lesson completion
+- [x] Implement sample public lessons:
+  - [x] "Introduction to AI" lesson
+  - [x] "Getting Started with Programming" lesson
+- [ ] Add progress persistence in localStorage for non-authenticated users
+- [x] Create conversion points for sign-up:
+  - [x] "Save your progress" prompts
+  - [x] "Access more lessons" CTAs
+  - [x] "Track your learning" features
+  - [x] "Join community" CTAs
+  - [x] "Get recommendations" CTAs
+
+#### Authentication Setup
+- [ ] Set up Clerk.js in the project:
+  - [ ] Install and configure Clerk
+  - [ ] Set up GitHub OAuth provider
+  - [ ] Configure environment variables
+- [ ] Implement auth components:
+  - [ ] Sign-in button
+  - [ ] Sign-up flow
+  - [ ] User profile menu
+- [ ] Add auth state management:
+  - [ ] Auth context provider
+  - [ ] Protected route wrapper
+  - [ ] Auth status hooks
+- [ ] Create auth middleware in Hono:
+  - [ ] Session validation
+  - [ ] Protected API routes
+  - [ ] User context injection
 
 ### Week 2
 - [ ] Implement basic user and lesson models in D1
@@ -50,6 +95,16 @@ Progressive AI Academy is a next-generation learning platform that leverages AI 
 - **Cloudflare Infra**: All-in-one deployment via Wrangler
 - **Testing**: Local dev via `wrangler dev`, deploy with `wrangler deploy`
 - **Docs**: Update this plan as architecture evolves
+
+## 7. Recent Updates
+- **React & Dependencies**: Updated to React 19.1.0, react-dom, react-router-dom, @types/react, @types/react-dom, tailwindcss, typescript, vite, wrangler, @tailwindcss/postcss, hono, eslint, and typescript-eslint to their latest versions for compatibility with shadcn/ui and Tailwind v4.
+- **Landing Page**: Implemented the landing page with hero section, sample lesson preview, learning path overview, and sign-up CTA using shadcn/ui components.
+
+## 8. Next Steps
+1. Create the public lesson viewer component
+2. Implement sample public lessons
+3. Set up Clerk.js authentication
+4. Add progress persistence for non-authenticated users
 
 ## 3. Learning Path & Content Model
 - **Progression Levels**:
