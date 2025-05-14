@@ -5,6 +5,9 @@ import path from 'path'
 // https://vite.dev/config/
 export default defineConfig({
   base: '/',
+  server: {
+    port: 5175, // Non-standard port; change if needed
+  },
   build: {
     outDir: 'dist',
     emptyOutDir: true,

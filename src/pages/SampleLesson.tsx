@@ -3,6 +3,8 @@ import { LessonViewer } from "../components/LessonViewer";
 const lessonTitle = "Lesson 2: Python Basics";
 const lessonDescription = "Learn the basics of programming with Python: variables, data types, operators, control flow, loops, and functions.";
 
+import Footer from "../components/Footer";
+
 const lessonContent = [
   "## Variables and Data Types",
   "Variables are used to store data. Python supports several data types, such as `int`, `float`, `str`, and `bool`.",
@@ -62,6 +64,13 @@ const lessonContent = [
   "```"
 ].join("\n");
 
-export default function SampleLesson() {
-  return <LessonViewer title={lessonTitle} description={lessonDescription} content={lessonContent} />;
-}
+const SampleLesson = () => {
+  return (
+    <>
+      <LessonViewer title={lessonTitle} description={lessonDescription} content={lessonContent} />
+      <Footer />
+    </>
+  );
+};
+
+export default SampleLesson;

@@ -24,7 +24,6 @@ Progressive AI Academy is a next-generation learning platform that leverages AI 
 - [ ] Integrate Anthropic SDK for AI-powered chat tutor (simple Q&A)
 - [ ] Add progress tracking endpoints to Worker
 - [ ] Write initial unit/integration tests for API
-- [ ] Prepare demo content and internal review
 - [ ] Implement hybrid lesson system: hard-coded lesson content in `/src/data`, but track user progress, recommendations, and access control in D1 using lesson IDs. All APIs and personalization reference lesson IDs, so lesson content can later move to DB seamlessly.
 
 #### Hybrid Lesson Implementation Plan

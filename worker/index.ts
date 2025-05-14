@@ -1,7 +1,6 @@
 declare const __STATIC_CONTENT_MANIFEST: string | undefined;
 
 import { Hono } from 'hono'
-import { serveStatic } from 'hono/cloudflare-workers'
 import { clerkMiddleware, getAuth } from '@hono/clerk-auth'
 
 // Define the user type
@@ -19,20 +18,7 @@ type Variables = {
 
 import type { D1Database } from '@cloudflare/workers-types';
 
-const app = new Hono<{ Variables: Variables; Bindings: { DB: D1Database } }>()
-
-// Serve static assets using Wrangler's [site] integration
-app.use('*', serveStatic({
-  root: '/',
-  rewriteRequestPath: (path) => {
-    // Handle root path
-    if (path === '/') return '/index.html'
-    // Handle paths without extension (SPA routes)
-    if (!path.includes('.')) return '/index.html'
-    return path
-  },
-  manifest: {}
-}))
+const app = new Hono<{ Variables: Variables; Bindings: { DB: D1Database; WORKERS_AI_TOKEN: string; WORKERS_AI_ACCOUNT_ID: string } }>()
 
 // Apply Clerk middleware to all API routes
 app.use('/api/*', clerkMiddleware())
@@ -110,6 +96,48 @@ app.get('/api/d1/user', async (c) => {
     return c.json({ error: 'User not found' }, 404);
   }
   return c.json({ user });
+});
+
+// Llama3 LLM endpoint
+app.post('/llm/llama3', async (c) => {
+
+  const WORKERS_AI_TOKEN = c.env.WORKERS_AI_TOKEN;
+  const ACCOUNT_ID = c.env.WORKERS_AI_ACCOUNT_ID;
+
+  if (!WORKERS_AI_TOKEN || !ACCOUNT_ID) {
+    return c.json({ error: 'The assistant is currently unavailable. Please try again later.' }, 500);
+  }
+
+  // Parse messages from the request body
+  let body;
+  try {
+    body = await c.req.json();
+  } catch (e) {
+    return c.json({ error: 'Invalid JSON body' }, 400);
+  }
+
+  const { messages } = body;
+  if (!messages || !Array.isArray(messages)) {
+    return c.json({ error: 'Missing or invalid messages array' }, 400);
+  }
+
+  // Call Cloudflare Workers AI REST API
+  const aiUrl = `https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/ai/run/@cf/meta/llama-3.1-8b-instruct`;
+  const aiRes = await fetch(aiUrl, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${WORKERS_AI_TOKEN}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ messages }),
+  });
+
+  const aiData = await aiRes.json();
+  if (!aiRes.ok) {
+    return c.json({ error: aiData.error || 'AI request failed' }, aiRes.status as any);
+  }
+
+  return c.json(aiData);
 });
 
 export default app

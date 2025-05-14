@@ -2,56 +2,36 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Link } from "react-router-dom"
 
+import Footer from "../components/Footer";
+
 export default function LandingPage() {
   return (
-    <div className="min-h-screen">
-      {/* Hero Section */}
-      <section className="py-20 px-4 md:px-6 lg:px-8 bg-gradient-to-b from-background to-muted">
-        <div className="container mx-auto max-w-6xl">
-          <div className="text-center space-y-6">
-            <h1 className="text-4xl md:text-6xl font-bold tracking-tight">
-              Progressive AI Academy
-            </h1>
-            <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto">
-              Personalized education powered by AI, from elementary through graduate levels.
-              Learn at your own pace with adaptive lessons and real-time tutoring.
-            </p>
-            <div className="flex flex-wrap justify-center gap-4">
-              <Button size="lg" asChild>
-                <Link to="/dashboard">Get Started</Link>
-              </Button>
-              <Button size="lg" variant="outline" asChild>
-                <Link to="/onboarding">Onboarding</Link>
-              </Button>
-              <Button size="lg" variant="outline" asChild>
-                <Link to="/sample-lesson">Try Sample Lesson</Link>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Sample Lesson Preview */}
-      <section className="py-16 px-4 md:px-6 lg:px-8">
-        <div className="container mx-auto max-w-6xl">
-          <h2 className="text-3xl font-bold text-center mb-12">Try a Sample Lesson</h2>
-          <Card className="max-w-3xl mx-auto">
-            <CardHeader>
-              <CardTitle>Introduction to AI</CardTitle>
-              <CardDescription>Learn the fundamentals of artificial intelligence</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="mb-4">
-                Discover how AI is transforming our world and learn the basic concepts that power modern AI systems.
+    <div>
+      <div className="min-h-screen">
+        {/* Hero Section */}
+        <section className="py-20 px-4 md:px-6 lg:px-8 bg-gradient-to-b from-background to-muted">
+          <div className="container mx-auto max-w-6xl">
+            <div className="text-center space-y-6">
+              <h1 className="text-4xl md:text-6xl font-bold tracking-tight">
+                Progressive AI Academy
+              </h1>
+              <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto">
+                Personalized education powered by AI, from elementary through graduate levels.
+                Learn at your own pace with adaptive lessons and real-time tutoring.
               </p>
-              <Button className="w-full" asChild>
-                <Link to="/sample-lesson">Try This Sample Lesson</Link>
-              </Button>
-              <Button className="w-full mt-2" variant="outline" asChild>
-                <Link to="/onboarding">Go to Onboarding</Link>
-              </Button>
-            </CardContent>
-          </Card>
+              <div className="flex flex-wrap justify-center gap-4">
+                <Button size="lg" asChild>
+                  <Link to="/dashboard">Get Started</Link>
+                </Button>
+                <Button size="lg" variant="outline" asChild>
+                  <Link to="/onboarding">Onboarding</Link>
+                </Button>
+                <Button size="lg" variant="outline" asChild>
+                  <Link to="/sample-lesson">Try Sample Lesson</Link>
+                </Button>
+              </div>
+            </div>
+
         </div>
       </section>
 
@@ -92,5 +72,7 @@ export default function LandingPage() {
         </div>
       </section>
     </div>
-  )
-} 
+      <Footer />
+    </div>
+  );
+}

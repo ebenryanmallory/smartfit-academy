@@ -2,6 +2,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { LessonViewer } from "@/components/LessonViewer";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
+import ChatAssistant from "@/components/ChatAssistant";
 import type { LessonData, LessonSection } from "@/data/lessons/lesson-1";
 
 export default function LessonPage() {
@@ -57,5 +58,10 @@ export default function LessonPage() {
     (section: LessonSection) => `## ${section.title}\n\n${section.content}`
   ).join('\n\n');
 
-  return <LessonViewer title={lesson.title} description={lesson.description} content={combinedContent} />;
+  return (
+    <>
+      <ChatAssistant />
+      <LessonViewer title={lesson.title} description={lesson.description} content={combinedContent} />
+    </>
+  );
 }

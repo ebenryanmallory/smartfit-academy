@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Button } from '../components/ui/button';
+import Footer from "../components/Footer";
 import {
   Card,
   CardContent,
@@ -69,6 +70,7 @@ function Home() {
           </CardFooter>
         </Card>
       </div>
+      <Footer />
     </div>
   );
 }

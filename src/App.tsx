@@ -8,7 +8,9 @@ import Home from './pages/Home';
 import Lessons from './pages/Lessons';
 import LessonPage from './pages/LessonPage';
 import Navigation from './components/Navigation';
-import './App.css';
+import Footer from './components/Footer';
+import StyleGuide from './pages/StyleGuide';
+
 
 const Onboarding = lazy(() => import('./pages/Onboarding'));
 const SampleLesson = lazy(() => import('./pages/SampleLesson'));
@@ -35,6 +37,7 @@ function App() {
                 <Route path="/onboarding" element={<Onboarding />} />
                 <Route path="/sample-lesson" element={<SampleLesson />} />
                 <Route path="/lessons/:id" element={<LessonPage />} />
+                <Route path="/style-guide" element={<StyleGuide />} />
                 
                 {/* Protected routes (will add auth check later) */}
                 <Route path="/dashboard" element={<Home />} />
@@ -46,12 +49,6 @@ function App() {
               </Routes>
             </Suspense>
           </main>
-
-          <footer className="border-t">
-            <div className="container mx-auto px-4 py-4 text-center text-gray-600">
-              © 2025 Progressive AI Academy
-            </div>
-          </footer>
         </div>
       </BrowserRouter>
     </ClerkProviderWrapper>

@@ -8,11 +8,9 @@
     "build:assets": "vite build",
     "build:worker": "npm run build",
     "build:all": "npm run build:assets && npm run build:worker",
-    "dev": "vite",
-    "dev:full": "npm run build:all && npx wrangler dev --config wrangler.toml --local",
+    "vite": "npx vite",
+    "dev": "npm run build:all && npx wrangler dev --config wrangler.toml --remote",
     "lint": "eslint .",
-    "preview": "vite preview",
-    "wrangler:dev": "wrangler dev --config wrangler.toml --persist --local",
     "wrangler:deploy": "wrangler deploy --config wrangler.toml",
     "migrate:d1": "wrangler d1 migrations apply progressive-ai-academy-db",
     "migrate:d1:remote": "wrangler d1 migrations apply progressive-ai-academy-db --remote"
