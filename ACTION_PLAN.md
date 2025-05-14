@@ -102,8 +102,7 @@ Progressive AI Academy is a next-generation learning platform that leverages AI 
 
 ## 6. Development Workflow
 - **Repository**: Single repo (monorepo optional)
-- **Infrastructure**: Cloudflare (Pages for frontend hosting, Workers for serverless/API, D1 for database, Access for auth, KV for caching)
-- **CI/CD**: GitHub Actions → Cloudflare Pages/Workers deployments
+- **Infrastructure**: Cloudflare (Workers for serverless/API, D1 for database, KV for caching)
 - **Testing**: Jest + React Testing Library
 - **Linting/Formatting**: ESLint, Prettier
 
