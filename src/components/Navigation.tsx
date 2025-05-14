@@ -1,4 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
+import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/clerk-react';
 import {
   NavigationMenu,
   NavigationMenuList,
@@ -6,69 +7,62 @@ import {
   NavigationMenuLink,
 } from './ui/navigation-menu';
 import { Button } from './ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from './ui/dropdown-menu';
-import { User } from 'lucide-react';
+import { LayoutDashboard, BookOpen, LogIn } from 'lucide-react';
 
 function Navigation() {
   const location = useLocation();
-  const isAuthenticated = false; // TODO: Replace with actual auth check
 
   return (
     <div className="flex items-center gap-4">
-      <NavigationMenu>
-        <NavigationMenuList>
-          <NavigationMenuItem>
-            <Link 
-              to="/dashboard" 
-              className={`block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground ${
-                location.pathname === '/dashboard' ? 'bg-accent text-accent-foreground' : ''
-              }`}
-            >
-              <div className="text-sm font-medium leading-none">Dashboard</div>
-            </Link>
-          </NavigationMenuItem>
-          <NavigationMenuItem>
-            <Link 
-              to="/dashboard/lessons" 
-              className={`block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground ${
-                location.pathname.startsWith('/dashboard/lessons') ? 'bg-accent text-accent-foreground' : ''
-              }`}
-            >
-              <div className="text-sm font-medium leading-none">Lessons</div>
-            </Link>
-          </NavigationMenuItem>
-        </NavigationMenuList>
-      </NavigationMenu>
+      <SignedIn>
+        <NavigationMenu>
+          <NavigationMenuList>
+            <NavigationMenuItem>
+              <Link 
+                to="/dashboard" 
+                className={`flex items-center gap-2 block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground ${
+                  location.pathname === '/dashboard' ? 'bg-accent text-accent-foreground' : ''
+                }`}
+              >
+                <LayoutDashboard className="h-4 w-4" />
+                <div className="text-sm font-medium leading-none">Dashboard</div>
+              </Link>
+            </NavigationMenuItem>
+            <NavigationMenuItem>
+              <Link 
+                to="/dashboard/lessons" 
+                className={`flex items-center gap-2 block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground ${
+                  location.pathname.startsWith('/dashboard/lessons') ? 'bg-accent text-accent-foreground' : ''
+                }`}
+              >
+                <BookOpen className="h-4 w-4" />
+                <div className="text-sm font-medium leading-none">Lessons</div>
+              </Link>
+            </NavigationMenuItem>
+          </NavigationMenuList>
+        </NavigationMenu>
+      </SignedIn>
 
-      {isAuthenticated ? (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon">
-              <User className="h-5 w-5" />
+      <div className="ml-auto">
+        <SignedIn>
+          <UserButton 
+            afterSignOutUrl="/"
+            appearance={{
+              elements: {
+                avatarBox: "w-10 h-10"
+              }
+            }}
+          />
+        </SignedIn>
+        <SignedOut>
+          <SignInButton mode="modal">
+            <Button variant="default" className="flex items-center gap-2">
+              <LogIn className="h-4 w-4" />
+              Sign In
             </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem>
-              <Link to="/dashboard/profile" className="w-full">Profile</Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Link to="/dashboard/settings" className="w-full">Settings</Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <button className="w-full text-left">Sign Out</button>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      ) : (
-        <Button asChild>
-          <Link to="/dashboard">Sign In</Link>
-        </Button>
-      )}
+          </SignInButton>
+        </SignedOut>
+      </div>
     </div>
   );
 }
