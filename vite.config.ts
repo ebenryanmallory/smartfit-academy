@@ -8,6 +8,16 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     emptyOutDir: true,
+    cssMinify: true,
+    rollupOptions: {
+      output: {
+        assetFileNames: 'assets/[name].[hash][extname]'
+      }
+    }
+  },
+  css: {
+    postcss: './postcss.config.js',
+    devSourcemap: true
   },
   plugins: [react()],
   resolve: {
