@@ -16,12 +16,15 @@ export default function LandingPage() {
               Personalized education powered by AI, from elementary through graduate levels.
               Learn at your own pace with adaptive lessons and real-time tutoring.
             </p>
-            <div className="flex justify-center gap-4">
+            <div className="flex flex-wrap justify-center gap-4">
               <Button size="lg" asChild>
                 <Link to="/dashboard">Get Started</Link>
               </Button>
               <Button size="lg" variant="outline" asChild>
-                <Link to="/dashboard/lessons">View Sample Lesson</Link>
+                <Link to="/onboarding">Onboarding</Link>
+              </Button>
+              <Button size="lg" variant="outline" asChild>
+                <Link to="/sample-lesson">Try Sample Lesson</Link>
               </Button>
             </div>
           </div>
@@ -42,7 +45,10 @@ export default function LandingPage() {
                 Discover how AI is transforming our world and learn the basic concepts that power modern AI systems.
               </p>
               <Button className="w-full" asChild>
-                <Link to="/dashboard/lessons">Start Learning</Link>
+                <Link to="/sample-lesson">Try This Sample Lesson</Link>
+              </Button>
+              <Button className="w-full mt-2" variant="outline" asChild>
+                <Link to="/onboarding">Go to Onboarding</Link>
               </Button>
             </CardContent>
           </Card>

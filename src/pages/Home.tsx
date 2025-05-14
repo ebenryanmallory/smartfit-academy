@@ -17,9 +17,17 @@ function Home() {
         <p className="text-lg text-gray-600">
           Track your progress and continue your learning journey.
         </p>
-        <Button asChild size="lg">
-          <Link to="/dashboard/lessons">Continue Learning</Link>
-        </Button>
+        <div className="flex flex-wrap justify-center gap-2">
+          <Button asChild size="lg">
+            <Link to="/dashboard/lessons">Continue Learning</Link>
+          </Button>
+          <Button asChild size="lg" variant="outline">
+            <Link to="/onboarding">Onboarding</Link>
+          </Button>
+          <Button asChild size="lg" variant="outline">
+            <Link to="/sample-lesson">Sample Lesson</Link>
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">

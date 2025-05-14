@@ -2,40 +2,24 @@ import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
-const lessons = [
-  {
-    id: 1,
-    title: "Introduction to AI",
-    description: "Learn the fundamentals of Artificial Intelligence and its impact on our world.",
-    status: "available",
-  },
-  {
-    id: 2,
-    title: "Getting Started with Programming",
-    description: "Learn the basics of programming with Python, from variables to functions.",
-    status: "available",
-  },
-  {
-    id: 3,
-    title: "Machine Learning Basics",
-    description: "Explore the core concepts of machine learning and how it powers modern AI systems.",
-    status: "coming-soon",
-  },
-  {
-    id: 4,
-    title: "Neural Networks Deep Dive",
-    description: "Master the architecture and implementation of neural networks for AI applications.",
-    status: "coming-soon",
-  },
-];
+import { lessonMeta } from "@/data/lessonMeta";
+// lessonMeta is now the source of truth for lesson metadata
 
 export default function Lessons() {
   return (
     <div className="container mx-auto py-12 px-4">
       <div className="max-w-4xl mx-auto">
+        <div className="flex flex-wrap gap-2 mb-4">
+          <Button asChild size="sm" variant="outline">
+            <Link to="/onboarding">Onboarding</Link>
+          </Button>
+          <Button asChild size="sm" variant="outline">
+            <Link to="/sample-lesson">Sample Lesson</Link>
+          </Button>
+        </div>
         <h1 className="text-4xl font-bold mb-8">Available Lessons</h1>
         <div className="grid gap-6">
-          {lessons.map((lesson) => (
+          {lessonMeta.map((lesson: import("@/data/lessonMeta").LessonMeta) => (
             <Card key={lesson.id} className="hover:shadow-lg transition-shadow">
               <CardHeader>
                 <CardTitle className="text-2xl">{lesson.title}</CardTitle>
