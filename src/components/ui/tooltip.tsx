@@ -1,12 +1,12 @@
 import * as React from "react"
-import {
-  Tooltip as ShadcnTooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip"
+import * as TooltipPrimitive from "@radix-ui/react-tooltip"
 
-interface TooltipProps {
+const TooltipProvider = TooltipPrimitive.Provider
+const Tooltip = TooltipPrimitive.Root
+const TooltipTrigger = TooltipPrimitive.Trigger
+const TooltipContent = TooltipPrimitive.Content
+
+interface TooltipProps extends React.ComponentProps<typeof Tooltip> {
   children: React.ReactNode
   content: React.ReactNode
   side?: "top" | "right" | "bottom" | "left"
@@ -14,7 +14,7 @@ interface TooltipProps {
   delayDuration?: number
 }
 
-export function Tooltip({
+export function TooltipWithContent({
   children,
   content,
   side = "top",
@@ -23,7 +23,7 @@ export function Tooltip({
 }: TooltipProps) {
   return (
     <TooltipProvider delayDuration={delayDuration}>
-      <ShadcnTooltip>
+      <Tooltip>
         <TooltipTrigger asChild>{children}</TooltipTrigger>
         <TooltipContent
           side={side}
@@ -32,7 +32,14 @@ export function Tooltip({
         >
           {content}
         </TooltipContent>
-      </ShadcnTooltip>
+      </Tooltip>
     </TooltipProvider>
   )
+}
+
+export {
+  Tooltip,
+  TooltipProvider,
+  TooltipTrigger,
+  TooltipContent,
 }
