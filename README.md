@@ -1,23 +1,26 @@
 # Progressive AI Academy
 
-An open-source, next-generation learning platform that leverages AI to deliver adaptive, personalized education from elementary through graduate levels. Built with modern web technologies and Cloudflare's edge infrastructure for a scalable, fast, and secure experience.
+A next-generation learning platform that leverages AI to deliver adaptive, personalized education from elementary through graduate levels. Built with modern web technologies and Cloudflare's edge infrastructure for a scalable, fast, and secure experience.
 
 ## 🌟 Features
 
-- **Adaptive Learning**: AI-powered personalized education paths
-- **Interactive Lessons**: Code playgrounds, quizzes, and assessments
-- **AI Chat Tutor**: Real-time assistance powered by Anthropic Claude
-- **Progress Tracking**: Monitor your learning journey with detailed analytics
-- **Multi-level Content**: Content ranging from elementary to graduate level
-- **Modern Tech Stack**: Built with React, TypeScript, and Cloudflare's edge infrastructure
+- **Onboarding & Assessment**: Skill quiz to place learners at the right level
+- **Adaptive Recommendations**: Claude-powered lesson suggestions
+- **Lesson Viewer**: Interactive UI with code sandbox snippets
+- **Chat Tutor**: Anthropic-powered Q&A assistant
+- **Progress Dashboard**: Track completed modules, scores, badges
+- **Admin CMS**: Authoring interface for lessons, quizzes, projects
 
 ## 🚀 Tech Stack
 
 - **Frontend**: Vite + React + shadcn/ui (Tailwind CSS)
-- **Backend/API**: Hono server running on Cloudflare Workers (TypeScript)
+- **Backend/API**: Hono.js running on Cloudflare Workers (TypeScript)
+  - Uses Cloudflare Workers runtime (V8 JavaScript engine)
+  - Edge-first architecture for global low-latency
 - **AI Integration**: Anthropic Claude (JavaScript/TypeScript SDK)
-- **Database**: Cloudflare D1 (SQL), KV (caching/session)
-- **Hosting**: Cloudflare Workers (serving API and static assets)
+- **Database**: 
+  - Cloudflare D1 (SQL) for structured data
+  - Cloudflare KV for caching and session storage
 - **Authentication**: Clerk.js with GitHub and Google providers
 
 ## 🛠️ Getting Started
@@ -63,19 +66,40 @@ yarn dev
 - Build for production: `npm run build`
 - Deploy to Cloudflare: `npm run deploy`
 
-## 📚 Project Structure
+## 📊 Architecture Overview
 
-```
-progressive-ai-academy/
-├── src/                    # Source files
-│   ├── components/        # React components
-│   ├── pages/            # Page components
-│   ├── api/              # API routes
-│   └── utils/            # Utility functions
-├── public/               # Static assets
-├── dist/                # Build output
-└── wrangler.toml        # Cloudflare configuration
-```
+### Cloudflare Infrastructure
+- **Static Assets**: Built frontend (`dist/`) served directly by Hono Worker using Cloudflare's edge network
+- **API**: All backend endpoints (lesson data, user progress, chat) handled by Hono routes on Worker
+- **Data**: Cloudflare D1 for structured data (users, lessons, progress), KV for caching and session storage
+- **AI**: Anthropic Claude SDK integration for adaptive recommendations and tutoring
+- **CI/CD**: Automated build, local dev, and deployment via Wrangler
+
+### Core Components
+- **Lesson System**: Dynamic content delivery with progress tracking and recommendations
+- **User System**: Authentication, profiles, progress tracking
+- **AI Integration**: Claude-powered chat tutor and adaptive recommendations
+- **Analytics**: Learning progress and engagement tracking
+
+## Learning Path & Content Model
+
+### Progression Levels
+- **Elementary**: Foundational concepts and basic programming principles
+- **High School**: Intermediate programming and computer science fundamentals
+- **Undergraduate**: Advanced topics and practical applications
+- **Graduate**: Specialized subjects and research-oriented content
+
+### Module Types
+- **Concept Lessons**: Text and video content explaining core concepts
+- **Interactive Coding Exercises**: Hands-on programming challenges with instant feedback
+- **Quizzes & Assessments**: Knowledge checks and skill evaluations
+- **Final Projects**: Comprehensive applications demonstrating learned concepts
+
+### Data Models
+- **User & Profile**: User accounts, preferences, and learning history
+- **Progress Tracking**: Completion status, scores, and achievements
+- **Content Management**: Lessons, modules, quizzes, and projects
+- **AI Recommendations**: Personalized learning paths and suggestions
 
 ## 🤝 Contributing
 
