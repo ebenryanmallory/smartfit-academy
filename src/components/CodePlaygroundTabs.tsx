@@ -94,7 +94,7 @@ export function CodePlaygroundTabs({ pythonCode, javascriptCode, title }: CodePl
 
   return (
     <Card className="my-4 overflow-hidden">
-      <div className="flex items-center justify-between bg-muted px-4 py-2 border-b">
+      <div className="flex items-center justify-between px-4 py-2 border-b">
         <p className="text-sm font-medium">{title || "Code Playground"}</p>
         <div className="flex gap-2">
           <Button

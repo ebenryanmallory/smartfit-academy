@@ -1,4 +1,5 @@
 import ReactMarkdown from 'react-markdown';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CodeSnippet } from './CodeSnippet';
 import { CodePlaygroundTabs } from './CodePlaygroundTabs';
@@ -53,6 +54,25 @@ export function LessonViewer({ title, description, content }: LessonViewerProps)
           <div className="prose prose-slate dark:prose-invert max-w-none">
             <ReactMarkdown
               components={{
+                a({ href, children, ...props }) {
+                  const isExternal = href && /^https?:\/\//.test(href);
+                  return (
+                    <Button
+                      asChild
+                      variant="link"
+                      className="p-0 h-auto align-baseline"
+                    >
+                      <a
+                        href={href}
+                        target={isExternal ? '_blank' : undefined}
+                        rel={isExternal ? 'noopener noreferrer' : undefined}
+                        {...props}
+                      >
+                        {children}
+                      </a>
+                    </Button>
+                  );
+                },
                 code({ node, inline, className, children, ...props }) {
                   const match = /language-(\w+)/.exec(className || '');
                   const language = match ? match[1] : '';
