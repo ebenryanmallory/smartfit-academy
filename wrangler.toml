@@ -1,4 +1,4 @@
-name = "progressive-ai-academy"
+name = "smartfit-academy"
 compatibility_date = "2025-01-01"
 main = "worker/index.ts"
 minify = true
@@ -8,6 +8,11 @@ assets = { directory = "dist" }
 # [build]
 # command = "npm run build:all"
 # watch_dir = "src"
+
+# Custom domain configuration
+routes = [
+	{ pattern = "smartfit.academy", custom_domain = true }
+]
 
 [[d1_databases]]
 binding = "DB"

@@ -1,5 +1,3 @@
-declare const __STATIC_CONTENT_MANIFEST: string | undefined;
-
 import { Hono } from 'hono'
 import { clerkMiddleware, getAuth } from '@hono/clerk-auth'
 
@@ -97,6 +95,61 @@ app.get('/api/d1/user', async (c) => {
   }
   return c.json({ user });
 });
+
+// ---------------- User Progress Routes ----------------
+
+// Protected: Upsert (insert or update) user progress for a lesson
+app.post('/api/d1/user/progress', async (c) => {
+  const auth = getAuth(c);
+  if (!auth?.userId) {
+    return c.json({ error: 'Unauthorized' }, 401);
+  }
+
+  // Parse body
+  let body;
+  try {
+    body = await c.req.json();
+  } catch (e) {
+    return c.json({ error: 'Invalid JSON body' }, 400);
+  }
+  const { lessonId, completed, score, additionalData } = body;
+  if (!lessonId) {
+    return c.json({ error: 'Missing lessonId' }, 400);
+  }
+
+  const db = c.env.DB;
+  const userId = auth.userId;
+
+  // Upsert user progress
+  await db.prepare(
+    `INSERT INTO user_progress (user_id, lesson_id, completed, score, additional_data) VALUES (?, ?, ?, ?, ?)
+     ON CONFLICT(user_id, lesson_id) DO UPDATE SET completed = excluded.completed, score = excluded.score, additional_data = excluded.additional_data, updated_at = CURRENT_TIMESTAMP`
+  ).bind(userId, lessonId, completed ? 1 : 0, score ?? null, additionalData ? JSON.stringify(additionalData) : null).run();
+
+  const progress = await db.prepare('SELECT * FROM user_progress WHERE user_id = ? AND lesson_id = ?').bind(userId, lessonId).first();
+  return c.json({ progress });
+});
+
+// Protected: Get progress for current user (optionally filter by lesson)
+app.get('/api/d1/user/progress', async (c) => {
+  const auth = getAuth(c);
+  if (!auth?.userId) {
+    return c.json({ error: 'Unauthorized' }, 401);
+  }
+  const db = c.env.DB;
+  const userId = auth.userId;
+  const lessonId = c.req.query('lessonId');
+
+  let result;
+  if (lessonId) {
+    result = await db.prepare('SELECT * FROM user_progress WHERE user_id = ? AND lesson_id = ?').bind(userId, lessonId).first();
+    return c.json({ progress: result });
+  }
+  result = await db.prepare('SELECT * FROM user_progress WHERE user_id = ?').bind(userId).all();
+  return c.json({ progress: result.results });
+});
+
+// ------------------------------------------------------
 
 // Llama3 LLM endpoint
 app.post('/llm/llama3', async (c) => {
