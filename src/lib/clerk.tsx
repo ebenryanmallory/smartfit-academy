@@ -2,6 +2,7 @@ import { ClerkProvider } from '@clerk/clerk-react';
 import { ReactNode } from 'react';
 
 // Initialize Clerk with your publishable key
+// Use Cloudflare secrets in production, fallback to Vite env for local dev
 const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
 if (!clerkPubKey) {
