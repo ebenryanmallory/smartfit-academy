@@ -1,0 +1,45 @@
+<svg width="100" height="66" viewBox="0 0 100 66" xmlns="http://www.w3.org/2000/svg">
+  <!-- 
+    A simple, rounded, whimsical but professional dolphin logo.
+    Designed by Cascade AI for SmartFit Academy.
+    Legible at small sizes.
+    Color: Shades of blue.
+    Contours: Smooth Bezier curves.
+  -->
+  <style>
+    .dolphin {
+      fill: #2196F3; /* Material Design Blue 500 - vibrant and friendly */
+      stroke: #0D47A1; /* Material Design Blue 900 - deep blue for outline */
+      stroke-width: 1.5;
+      stroke-linejoin: round; /* Rounded corners for path joins */
+      stroke-linecap: round;  /* Rounded ends for path segments */
+    }
+    .eye-white {
+      fill: #FFFFFF; /* White for the eye */
+    }
+    .eye-pupil {
+      fill: #0D47A1; /* Pupil matches the outline for cohesion */
+    }
+  </style>
+  
+  <g transform="translate(2 2)"> <!-- Small padding for stroke to prevent clipping at edges -->
+    <path class="dolphin"
+          d="M 96,30            /* 1. Snout tip */
+             C 95,15 80,5 65,10   /* 2. Curve: Snout -> Forehead -> Top of back */
+             C 55,13 50,20 48,28  /* 3. Curve: Mid-back, leading to dorsal fin area */
+             Q 45,22 42,28        /* 4. Dorsal fin (simple quadratic Bezier curve for a rounded bump) */
+             C 35,40 20,50 12,58  /* 5. Curve: Lower back -> Tail stem */
+             
+             /* Tail Fluke */
+             Q 2,64 8,60          /* 6. Lower part of tail fluke */
+             Q 18,52 20,48        /* 7. Upper part of tail fluke, connecting back smoothly */
+             
+             C 30,42 55,38 75,40  /* 8. Belly curve */
+             C 88,41 97,38 96,30 Z /* 9. Curve: Lower jaw -> Snout tip (closes the path) */
+             "/>
+
+    <!-- Eye: Positioned on the head area -->
+    <circle class="eye-white" cx="82" cy="25" r="3.5" />
+    <circle class="eye-pupil" cx="83" cy="25" r="1.8" />
+  </g>
+</svg>

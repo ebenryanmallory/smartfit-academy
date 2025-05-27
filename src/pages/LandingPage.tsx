@@ -33,18 +33,12 @@ export default function LandingPage() {
       {/* Hero Section */}
       <section className="container-section">
         <div className="content-container-md">
-          <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-foreground">
-            Progressive AI Academy
-          </h1>
           <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto">
             Adaptive, personalized education for every learner. Our AI-powered platform delivers tailored lessons, instant feedback, and a seamless learning experience from foundational concepts to advanced research.
           </p>
           <div className="flex flex-wrap justify-center gap-4 mt-8">
             <Button className="btn-primary" asChild>
               <Link to="/dashboard">Get Started</Link>
-            </Button>
-            <Button variant="outline" size="lg" className="btn-outline" asChild>
-              <Link to="/onboarding">Onboarding</Link>
             </Button>
             <Button variant="link" asChild>
               <Link to="/sample-lesson">Try Sample Lesson</Link>
