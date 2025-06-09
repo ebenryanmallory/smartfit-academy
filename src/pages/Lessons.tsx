@@ -30,7 +30,7 @@ export default function Lessons() {
                 </CardHeader>
                 <CardContent>
                   {lesson.status === "available" ? (
-                    <Button asChild>
+                    <Button asChild variant="primary">
                       <Link to={`/lessons/${lesson.id}`}>Start Lesson</Link>
                     </Button>
                   ) : (
