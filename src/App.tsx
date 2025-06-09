@@ -1,5 +1,5 @@
 import React, { Suspense, lazy } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import { Toaster } from "sonner";
 import { ClerkProviderWrapper } from './lib/clerk.tsx';
 import { EnsureUserInD1 } from './components/auth/EnsureUserInD1';
@@ -10,6 +10,8 @@ import LessonPage from './pages/LessonPage';
 import Navigation from './components/Navigation';
 import Footer from './components/Footer';
 import StyleGuide from './pages/StyleGuide';
+import ScrollToTop from './components/ScrollToTop';
+import NotificationBanner from './components/NotificationBanner';
 
 
 const Onboarding = lazy(() => import('./pages/Onboarding'));
@@ -20,14 +22,24 @@ function App() {
     <ClerkProviderWrapper>
       <EnsureUserInD1 />
       <BrowserRouter>
+        <ScrollToTop />
         <div className="min-h-screen flex flex-col">
           <Toaster />
           <header className="border-b">
-            <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-              <h1 className="text-2xl font-bold">SmartFit Academy</h1>
+            <div className="content-container mx-auto px-4 py-4 flex items-center justify-between">
+              <Link to="/" className="flex items-center">
+                <img 
+                  src="/smartfit-logo.svg" 
+                  alt="SmartFit Academy" 
+                  className="h-12 w-auto"
+                />
+              </Link>
               <Navigation />
             </div>
           </header>
+          
+          {/* Construction notification banner */}
+          <NotificationBanner />
           
           <main className="flex-1">
             <Suspense fallback={<div>Loading...</div>}>
