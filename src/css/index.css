@@ -1,11 +1,8 @@
-@import "tw-animate-css";
+@import "tailwindcss";
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-
-@custom-variant dark (&:is(.dark *));
+#root {
+  width: 100vw;
+}
 
 /* --- Combined Components --- */
 @layer components {
@@ -107,7 +104,7 @@
   /* Button Components */
   .btn-primary {
     background-color: var(--color-primary);
-    color: #fff;
+    color: #fff !important;
     padding: var(--button-padding);
     border-radius: var(--radius-md);
     font-weight: var(--font-weight-bold);
@@ -380,11 +377,6 @@ body, .body-text {
 /* --- End Design System --- */
 
 /* --- Merged from App.css --- */
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-}
 
 .logo {
   height: 6em;
@@ -492,6 +484,7 @@ button {
   font-weight: 500;
   cursor: pointer;
   transition: border-color 0.25s;
+  color: inherit;
 }
 
 @media (prefers-color-scheme: light) {
@@ -576,13 +569,4 @@ button {
   --sidebar-accent-foreground: oklch(0.985 0.001 106.423);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.553 0.013 58.071);
-}
-
-@layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
 }
