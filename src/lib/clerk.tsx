@@ -1,37 +1,8 @@
 import { ClerkProvider } from '@clerk/clerk-react';
 import { ReactNode } from 'react';
 
-// Robust development environment detection
-const isDevelopment = () => {
-  // Check multiple indicators to ensure we're truly in development
-  const isViteDev = import.meta.env.DEV;
-  const isLocalhost = typeof window !== 'undefined' && 
-    (window.location.hostname === 'localhost' || 
-     window.location.hostname === '127.0.0.1' || 
-     window.location.hostname.includes('.local'));
-  const hasDevMode = import.meta.env.MODE === 'development';
-  
-  // Must satisfy multiple conditions to be considered development
-  // Localhost check is most reliable since Vite always uses localhost
-  return isViteDev && (isLocalhost || hasDevMode);
-};
-
-// Initialize Clerk with appropriate key based on environment
-// Use test key only in confirmed development environment
-const getClerkKey = () => {
-  if (isDevelopment()) {
-    const testKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY_TEST;
-    const prodKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
-    
-    // Use test key if available in dev, fallback to prod key
-    return testKey || prodKey;
-  }
-  
-  // Always use production key in non-dev environments
-  return import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
-};
-
-const clerkPubKey = getClerkKey();
+// Use production key for all environments
+const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
 if (!clerkPubKey) {
   throw new Error('Missing Clerk Publishable Key');

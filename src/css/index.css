@@ -458,12 +458,6 @@ body, .body-text {
   --sidebar-ring: oklch(0.709 0.01 56.259);
 }
 
-a {
-  font-weight: 500;
-  color: var(--color-primary);
-  text-decoration: inherit;
-}
-
 body {
   margin: 0;
   display: flex;
