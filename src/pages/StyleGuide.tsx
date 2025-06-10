@@ -51,7 +51,7 @@ const StyleGuide = () => {
   const [email, setEmail] = useState('');
 
   return (
-  <div className="max-w-5xl mx-auto p-8 space-y-16">
+  <div className="content-container mx-auto p-8 space-y-16">
     <header className="space-y-2">
       <h1 className="text-4xl font-bold text-foreground">Style Guide</h1>
       <p className="text-muted-foreground">Design system documentation and component library</p>
@@ -402,6 +402,147 @@ const message = greet('World');
 console.log(message); // Output: Hello, World!`
               }
             />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    {/* Grid - Bento Box Layout */}
+    <section className="space-y-8">
+      <div className="space-y-3">
+        <h2 className="text-3xl font-bold text-foreground">Grid Layouts</h2>
+        <p className="text-muted-foreground">Bento box style grid components for showcasing features</p>
+      </div>
+      
+      <div className="space-y-6">
+        <div className="space-y-3">
+          <h3 className="text-2xl font-semibold text-foreground">Bento Grid</h3>
+          <p className="text-muted-foreground">Flexible grid layout with varying sizes and content types</p>
+        </div>
+        
+                 {/* Grid Container */}
+         <div className="flex flex-wrap gap-5 lg:gap-4 md:gap-3 mt-10 lg:mt-9 md:mt-6 sm:mt-5">
+          
+          {/* Grid Item 1 - Small */}
+          <div className="relative w-full sm:w-[calc(50%-1rem)] md:w-[calc(33%-0.5rem)] h-[350px] lg:h-[280px] md:h-[240px] overflow-hidden rounded-xl bg-card border border-border shadow-md order-1">
+            <div className="absolute bottom-0 z-10 w-full p-6 lg:p-5 md:p-4 bg-gradient-to-t from-background/95 via-background/80 to-transparent">
+              <div className="space-y-2">
+                <h4 className="font-semibold text-foreground">Quick Actions</h4>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  Access common actions with keyboard shortcuts for efficient workflow.
+                </p>
+              </div>
+            </div>
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-accent/10">
+              <div className="flex items-center justify-center h-full">
+                <div className="text-6xl opacity-20">⌨️</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Grid Item 2 - Large */}
+          <div className="relative w-full sm:w-[calc(50%-1rem)] md:w-[calc(66%-0.5rem)] h-[350px] lg:h-[280px] md:h-[240px] overflow-hidden rounded-xl bg-card border border-border shadow-md order-2">
+            <div className="absolute bottom-0 z-10 w-full p-6 lg:p-5 md:p-4 bg-gradient-to-t from-background/95 via-background/80 to-transparent">
+              <div className="space-y-2 max-w-[400px] md:max-w-[320px]">
+                <h4 className="font-semibold text-foreground">Team Planning</h4>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  Keep track of the bigger picture by viewing all individual tasks in one centralized team calendar.
+                </p>
+              </div>
+            </div>
+            <div className="absolute inset-0 bg-gradient-to-br from-secondary/10 via-transparent to-primary/10">
+              <div className="flex items-center justify-center h-full">
+                <div className="text-8xl opacity-20">📅</div>
+              </div>
+            </div>
+          </div>
+
+                     {/* Grid Item 3 - Small (but ordered 4th visually) */}
+           <div className="relative w-full sm:w-[calc(50%-1rem)] md:w-[calc(33%-0.5rem)] h-[350px] lg:h-[280px] md:h-[240px] overflow-hidden rounded-xl bg-card border border-border shadow-md order-4">
+             <div className="absolute bottom-0 z-10 w-full p-6 lg:p-5 md:p-4 bg-gradient-to-t from-background/95 via-background/80 to-transparent">
+               <div className="space-y-2">
+                 <h4 className="font-semibold text-foreground">Notifications</h4>
+                 <p className="text-sm text-muted-foreground leading-relaxed">
+                   Keep up to date with any changes by receiving instant notifications.
+                 </p>
+               </div>
+             </div>
+             <div className="absolute inset-0 bg-gradient-to-br from-accent/10 via-transparent to-secondary/10">
+               <div className="flex items-center justify-center h-full">
+                 <div className="text-6xl opacity-20">🔔</div>
+               </div>
+             </div>
+           </div>
+
+           {/* Grid Item 4 - Large (but ordered 3rd visually to appear first in second row) */}
+           <div className="relative w-full sm:w-[calc(50%-1rem)] md:w-[calc(66%-0.5rem)] h-[350px] lg:h-[280px] md:h-[240px] overflow-hidden rounded-xl bg-card border border-border shadow-md order-3">
+            <div className="absolute bottom-0 z-10 w-full p-6 lg:p-5 md:p-4 bg-gradient-to-t from-background/95 via-background/80 to-transparent">
+              <div className="space-y-2 max-w-[380px] lg:max-w-[320px]">
+                <h4 className="font-semibold text-foreground">Time Blocking</h4>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  Transform daily tasks into structured time blocks for focused productivity.
+                </p>
+              </div>
+            </div>
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-accent/10">
+              <div className="flex items-center justify-center h-full">
+                <div className="text-8xl opacity-20">⏰</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+        
+        {/* Background Decorative Elements */}
+        <div className="absolute inset-0 -z-10 pointer-events-none overflow-hidden">
+          <div className="absolute top-1/4 right-1/4 w-64 h-64 bg-primary/5 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-1/4 left-1/4 w-48 h-48 bg-accent/5 rounded-full blur-2xl"></div>
+        </div>
+        
+        {/* Grid Variants */}
+        <div className="space-y-4 mt-12">
+          <h4 className="text-lg font-medium text-foreground">Grid Variations</h4>
+          
+          <div className="gap-4 grid grid-cols-2" style={{ width: '100%' }}>
+            <div data-slot="card" className="bg-gradient-to-br border flex flex-col from-primary/10 gap-6 h-32 items-center justify-center p-6 rounded-xl shadow-sm text-card-foreground to-transparent">
+              <div className="text-center">
+                <div className="text-2xl mb-2">📊</div>
+                <p className="text-sm font-medium">Analytics</p>
+              </div>
+            </div>
+            <div data-slot="card" className="text-card-foreground flex-col gap-6 rounded-xl border shadow-sm p-6 h-32 flex items-center justify-center bg-gradient-to-br from-secondary/10 to-transparent">
+              <div className="text-center">
+                <div className="text-2xl mb-2">⚙️</div>
+                <p className="text-sm font-medium">Settings</p>
+              </div>
+            </div>
+            <div data-slot="card" className="text-card-foreground flex-col gap-6 rounded-xl border shadow-sm p-6 h-32 flex items-center justify-center bg-gradient-to-br from-accent/10 to-transparent">
+              <div className="text-center">
+                <div className="text-2xl mb-2">👥</div>
+                <p className="text-sm font-medium">Team</p>
+              </div>
+            </div>
+            <div data-slot="card" className="text-card-foreground flex-col gap-6 rounded-xl border shadow-sm p-6 h-32 flex items-center justify-center bg-gradient-to-br from-muted/30 to-transparent">
+              <div className="text-center">
+                <div className="text-2xl mb-2">📈</div>
+                <p className="text-sm font-medium">Reports</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
+            <div data-slot="card" className="text-card-foreground flex flex-col gap-6 rounded-xl border shadow-sm p-6 md:col-span-2 bg-gradient-to-r from-primary/5 to-accent/5">
+              <div className="space-y-2">
+                <h5 className="font-semibold">Feature Highlight</h5>
+                <p className="text-sm text-muted-foreground">This card spans two columns on larger screens but takes full width on mobile.</p>
+              </div>
+            </div>
+            <div data-slot="card" className="text-card-foreground flex flex-col gap-6 rounded-xl border shadow-sm p-6 bg-gradient-to-br from-secondary/10 to-transparent">
+              <div className="space-y-2">
+                <h5 className="font-semibold">Side Panel</h5>
+                <p className="text-sm text-muted-foreground">Complementary content area.</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
