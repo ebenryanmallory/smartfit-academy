@@ -57,7 +57,7 @@ export default function LessonPage() {
   if (loading) {
     return (
       <div className="container mx-auto py-12 px-4">
-        <div className="max-w-4xl mx-auto text-center">
+        <div className="mx-auto text-center">
           <h1 className="text-4xl font-bold mb-4">Loading Lesson...</h1>
         </div>
       </div>
@@ -67,7 +67,7 @@ export default function LessonPage() {
   if (!lesson) {
     return (
       <div className="container mx-auto py-12 px-4">
-        <div className="max-w-4xl mx-auto text-center">
+        <div className="mx-auto text-center">
           <h1 className="text-4xl font-bold mb-4">Lesson Not Found</h1>
           <p className="text-muted-foreground mb-8">
             The lesson you're looking for doesn't exist or isn't available yet for the selected audience level.
@@ -94,51 +94,49 @@ export default function LessonPage() {
   return (
     <>
       <ChatAssistant />
-      <div className="container mx-auto py-6 px-4">
-        <div className="max-w-4xl mx-auto">
-          {/* Header with Audience Level Selector */}
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-4">
-              <Button 
-                onClick={() => navigate('/dashboard/lessons')} 
-                variant="outline" 
-                size="sm"
-                className="flex items-center gap-2"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                Back to Lessons
-              </Button>
-            </div>
-            <div className="flex items-center gap-3">
-              <GraduationCap className="h-5 w-5 text-muted-foreground" />
-              <span className="text-sm text-muted-foreground">Audience Level:</span>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="flex items-center gap-2">
-                    <span>{currentAudienceData?.icon}</span>
-                    {currentAudienceData?.label}
-                    <ChevronDown className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48">
-                  {audienceLevels.map((level) => (
-                    <DropdownMenuItem
-                      key={level.value}
-                      onClick={() => setAudienceLevel(level.value)}
-                      className={`flex items-center gap-2 ${
-                        audienceLevel === level.value ? 'bg-accent' : ''
-                      }`}
-                    >
-                      <span>{level.icon}</span>
-                      {level.label}
-                      {audienceLevel === level.value && (
-                        <span className="ml-auto text-primary">✓</span>
-                      )}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
+      <div className="content-container mx-auto py-6 px-4">
+        {/* Header with Audience Level Selector */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-4">
+            <Button 
+              onClick={() => navigate('/dashboard/lessons')} 
+              variant="outline" 
+              size="sm"
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back to Lessons
+            </Button>
+          </div>
+          <div className="flex items-center gap-3">
+            <GraduationCap className="h-5 w-5 text-muted-foreground" />
+            <span className="text-sm text-muted-foreground">Audience Level:</span>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="flex items-center gap-2">
+                  <span>{currentAudienceData?.icon}</span>
+                  {currentAudienceData?.label}
+                  <ChevronDown className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                {audienceLevels.map((level) => (
+                  <DropdownMenuItem
+                    key={level.value}
+                    onClick={() => setAudienceLevel(level.value)}
+                    className={`flex items-center gap-2 ${
+                      audienceLevel === level.value ? 'bg-accent' : ''
+                    }`}
+                  >
+                    <span>{level.icon}</span>
+                    {level.label}
+                    {audienceLevel === level.value && (
+                      <span className="ml-auto text-primary">✓</span>
+                    )}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </div>

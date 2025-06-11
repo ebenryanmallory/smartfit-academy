@@ -1,7 +1,7 @@
 import React, { Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import { Toaster } from "sonner";
-import { ClerkProviderWrapper } from './lib/clerk.tsx';
+import { ClerkProviderWrapper } from './components/auth/clerk.tsx';
 import { EnsureUserInD1 } from './components/auth/EnsureUserInD1';
 import LandingPage from './pages/LandingPage';
 import Home from './pages/Home';

@@ -38,8 +38,8 @@ function convertPythonToJS(pythonCode: string): string {
 
 export function LessonViewer({ title, description, content }: LessonViewerProps) {
   return (
-    <div className="container mx-auto py-8 px-4">
-      <Card className="max-w-4xl mx-auto">
+    <div className="content-container mx-auto py-8 px-4">
+      <Card className="mx-auto">
         <CardHeader>
           <CardTitle className="text-3xl font-bold">{title}</CardTitle>
           <p className="text-muted-foreground mt-2">{description}</p>

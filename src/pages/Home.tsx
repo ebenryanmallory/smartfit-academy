@@ -1,6 +1,10 @@
 import { Link } from 'react-router-dom';
+import { useState, useRef } from 'react';
 import { Button } from '../components/ui/button';
 import Footer from "../components/Footer";
+import BottomChatAssistant from "../components/BottomChatAssistant";
+import UserTopics, { UserTopicsRef } from "../components/UserTopics";
+import { useUser } from '@clerk/clerk-react';
 import {
   Card,
   CardContent,
@@ -12,8 +16,38 @@ import {
 import { GraduationCap, Zap, Users, CheckCircle } from "lucide-react";
 
 function Home() {
+  const [isAssistantExpanded, setIsAssistantExpanded] = useState(false);
+  const [userTopics, setUserTopics] = useState<Array<{ id: number; user_id: string; topic: string; created_at: string }>>([]);
+  const { isSignedIn } = useUser();
+  const userTopicsRef = useRef<UserTopicsRef>(null);
+
+  const handleExpandAssistant = () => {
+    setIsAssistantExpanded(true);
+    // Scroll to bottom to show the assistant
+    setTimeout(() => {
+      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    }, 100);
+  };
+
+  const handleTopicClick = (topic: string) => {
+    setIsAssistantExpanded(true);
+  };
+
+  const handleTopicsChange = (topics: Array<{ id: number; user_id: string; topic: string; created_at: string }>) => {
+    setUserTopics(topics);
+  };
+
+  const handleTopicSaved = async () => {
+    // Refresh the topics when a new topic is saved
+    await userTopicsRef.current?.refreshTopics();
+  };
+
+  const handleToggleAssistant = () => {
+    setIsAssistantExpanded(!isAssistantExpanded);
+  };
+
   return (
-    <div className="flex flex-col min-h-screen bg-background">
+    <div className="flex flex-col min-h-screen bg-background pb-48">
       {/* Hero/Intro Section */}
       <section className="container-section">
         <div className="content-container-md">
@@ -29,6 +63,35 @@ function Home() {
             </Button>
 
           </div>
+        </div>
+      </section>
+
+      {/* User's Learning Topics - Show prominently if user has saved topics */}
+      {isSignedIn && (
+        <UserTopics 
+          ref={userTopicsRef}
+          onTopicClick={handleTopicClick}
+          onTopicsChange={handleTopicsChange}
+          className="mb-8"
+        />
+      )}
+
+      {/* Create Your Journey Section */}
+      <section className="container-section bg-gradient-to-r from-primary/10 to-accent/10">
+        <div className="content-container text-center">
+          <h2 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">
+            Create Your Educational Journey
+          </h2>
+          <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto">
+            Start exploring topics that interest you. Our AI assistant will help you discover new areas of learning and build a personalized curriculum just for you.
+          </p>
+          <Button 
+            size="lg" 
+            className="text-lg px-8 py-4 h-auto"
+            onClick={handleExpandAssistant}
+          >
+            Start Exploring Topics
+          </Button>
         </div>
       </section>
 
@@ -188,6 +251,12 @@ function Home() {
       <div className="mt-auto">
         <Footer />
       </div>
+      
+      <BottomChatAssistant 
+        isExpanded={isAssistantExpanded} 
+        onToggleExpanded={handleToggleAssistant}
+        onTopicSaved={handleTopicSaved}
+      />
     </div>
   );
 }
