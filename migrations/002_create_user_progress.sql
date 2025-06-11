@@ -12,3 +12,13 @@ CREATE TABLE IF NOT EXISTS user_progress (
   UNIQUE (user_id, lesson_id),
   FOREIGN KEY (user_id) REFERENCES users(id)
 );
+
+-- Create user_topics table for tracking user's saved learning topics
+CREATE TABLE IF NOT EXISTS user_topics (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id TEXT NOT NULL,
+  topic TEXT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE (user_id, topic),
+  FOREIGN KEY (user_id) REFERENCES users(id)
+);
