@@ -6,7 +6,7 @@ minify = true
 assets = { directory = "dist" }
 
 # [build]
-# command = "npm run build:all"
+# command = "npm run build:prod"
 # watch_dir = "src"
 
 # Custom domain configuration
