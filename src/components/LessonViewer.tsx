@@ -1,14 +1,25 @@
 import ReactMarkdown from 'react-markdown';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useUser } from "@clerk/clerk-react";
 import { CodeSnippet } from './CodeSnippet';
 import { CodePlaygroundTabs } from './CodePlaygroundTabs';
 import { SaveProgressPrompt } from './SaveProgressPrompt';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+
+interface NavigationInfo {
+  currentIndex: number;
+  totalLessons: number;
+  previousLesson?: { uuid: string; title: string };
+  nextLesson?: { uuid: string; title: string };
+}
 
 interface LessonViewerProps {
   title: string;
   description: string;
   content: string;
+  navigationInfo?: NavigationInfo | null;
+  onNavigate?: (lessonUuid: string) => void;
 }
 
 // Python to JavaScript code conversion helper
@@ -36,19 +47,22 @@ function convertPythonToJS(pythonCode: string): string {
   return jsCode;
 }
 
-export function LessonViewer({ title, description, content }: LessonViewerProps) {
+export function LessonViewer({ title, description, content, navigationInfo, onNavigate }: LessonViewerProps) {
+  const { isSignedIn } = useUser();
+
   return (
     <div className="content-container mx-auto py-8 px-4">
       <Card className="mx-auto">
         <CardHeader>
           <CardTitle className="text-3xl font-bold">{title}</CardTitle>
           <p className="text-muted-foreground mt-2">{description}</p>
-          <SaveProgressPrompt
-            title="Start Your Learning Journey"
-            description="Sign in to track your progress and unlock more lessons."
-            className="mt-4"
-            buttonText="Sign in to start learning"
-          />
+          {!isSignedIn && (
+            <SaveProgressPrompt
+              title="Start Your Learning Journey"
+              description="Sign in to track your progress, create custom schedules, and unlock unlimited lessons."
+              className="mt-4"
+            />
+          )}
         </CardHeader>
         <CardContent>
           <div className="prose prose-slate dark:prose-invert max-w-none">
@@ -73,12 +87,12 @@ export function LessonViewer({ title, description, content }: LessonViewerProps)
                     </Button>
                   );
                 },
-                code({ node, inline, className, children, ...props }) {
+                code({ node, className, children, ...props }) {
                   const match = /language-(\w+)/.exec(className || '');
                   const language = match ? match[1] : '';
                   const isInteractive = className?.includes('interactive');
                   
-                  if (!inline && language) {
+                  if (language) {
                     if (isInteractive) {
                       const pythonCode = String(children).replace(/\n$/, '');
                       const javascriptCode = convertPythonToJS(pythonCode);
@@ -89,12 +103,13 @@ export function LessonViewer({ title, description, content }: LessonViewerProps)
                             javascriptCode={javascriptCode}
                             title={`Interactive ${language.toUpperCase()} Playground`}
                           />
-                          <SaveProgressPrompt
-                            title="Save Your Code Solutions"
-                            description="Sign in to save your code solutions and track your progress."
-                            className="mt-4"
-                            buttonText="Sign in to save your code"
-                          />
+                          {!isSignedIn && (
+                            <SaveProgressPrompt
+                              title="Save Your Code Solutions"
+                              description="Sign in to save your code solutions and get progress tracking with rewards."
+                              className="mt-4"
+                            />
+                          )}
                         </>
                       );
                     }
@@ -116,12 +131,11 @@ export function LessonViewer({ title, description, content }: LessonViewerProps)
                   return (
                     <>
                       <h2 {...props}>{children}</h2>
-                      {String(children).includes("Try It Yourself") && (
+                      {!isSignedIn && String(children).includes("Try It Yourself") && (
                         <SaveProgressPrompt
                           title="Track Your Learning"
-                          description="Sign in to track your progress and get personalized recommendations."
+                          description="Sign in to track your progress and get personalized learning paths."
                           className="mt-4 mb-8"
-                          buttonText="Sign in to track progress"
                         />
                       )}
                     </>
@@ -132,25 +146,67 @@ export function LessonViewer({ title, description, content }: LessonViewerProps)
               {content}
             </ReactMarkdown>
             
-            <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-3 gap-6 mt-8">
-              <SaveProgressPrompt
-                title="Access More Lessons"
-                description="Sign in to unlock our full library of lessons and learning paths."
-                buttonText="Sign in to access more lessons"
-              />
-              
-              <SaveProgressPrompt
-                title="Get Personalized Recommendations"
-                description="Sign in to receive AI-powered lesson recommendations based on your progress."
-                buttonText="Sign in for recommendations"
-              />
-              
-              <SaveProgressPrompt
-                title="Join Our Learning Community"
-                description="Sign in to connect with other learners and share your progress."
-                buttonText="Sign in to join community"
-              />
-            </div>
+            {/* Navigation buttons for lesson plans */}
+            {navigationInfo && onNavigate && (
+              <div className="flex items-center justify-between mt-12 pt-8 border-t border-gray-200">
+                <div className="flex-1">
+                  {navigationInfo.previousLesson && (
+                    <Button
+                      onClick={() => onNavigate(navigationInfo.previousLesson!.uuid)}
+                      variant="outline"
+                      className="flex items-center gap-2"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                      <div className="text-left">
+                        <div className="text-xs text-muted-foreground">Previous</div>
+                        <div className="font-medium">{navigationInfo.previousLesson.title}</div>
+                      </div>
+                    </Button>
+                  )}
+                </div>
+                
+                <div className="flex-shrink-0 mx-4">
+                  <span className="text-sm text-muted-foreground">
+                    {navigationInfo.currentIndex + 1} of {navigationInfo.totalLessons}
+                  </span>
+                </div>
+                
+                <div className="flex-1 flex justify-end">
+                  {navigationInfo.nextLesson && (
+                    <Button
+                      onClick={() => onNavigate(navigationInfo.nextLesson!.uuid)}
+                      variant="outline"
+                      className="flex items-center gap-2"
+                    >
+                      <div className="text-right">
+                        <div className="text-xs text-muted-foreground">Next</div>
+                        <div className="font-medium">{navigationInfo.nextLesson.title}</div>
+                      </div>
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              </div>
+            )}
+            
+            {!isSignedIn && (
+              <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-3 gap-6 mt-8">
+                <SaveProgressPrompt
+                  title="Access Unlimited Lessons"
+                  description="Sign in to unlock unlimited lessons and personalized learning paths."
+                />
+                
+                <SaveProgressPrompt
+                  title="Get Custom Schedules"
+                  description="Sign in to create custom learning schedules that fit your lifestyle."
+                />
+                
+                <SaveProgressPrompt
+                  title="Track Your Progress"
+                  description="Sign in to track your progress and earn rewards for your achievements."
+                />
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>

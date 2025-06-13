@@ -1,4 +1,4 @@
-# Progressive AI Academy
+# SmartFit Academy
 
 A next-generation learning platform that leverages AI to deliver adaptive, personalized education from elementary through graduate levels. Built with modern web technologies and Cloudflare's edge infrastructure for a scalable, fast, and secure experience.
 
@@ -128,4 +128,4 @@ For support, please open an issue in the GitHub repository or contact us at [sup
 
 ---
 
-Built with ❤️ by the Progressive AI Academy team
+Built with ❤️ by SmartFit Academy

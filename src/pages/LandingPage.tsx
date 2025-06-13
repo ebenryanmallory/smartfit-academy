@@ -2,7 +2,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { GraduationCap, Zap, Users, CheckCircle, BookOpen, Code, Brain, Rocket, Target, Clock, Award, Heart, TrendingUp } from "lucide-react";
-import Footer from "../components/Footer";
 import { motion } from "motion/react";
 
 const features = [
@@ -386,9 +385,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <div className="mt-auto">
-        <Footer />
-      </div>
     </div>
   );
 }

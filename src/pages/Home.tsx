@@ -1,9 +1,10 @@
 import { Link } from 'react-router-dom';
 import { useState, useRef } from 'react';
 import { Button } from '../components/ui/button';
-import Footer from "../components/Footer";
 import BottomChatAssistant from "../components/BottomChatAssistant";
 import UserTopics, { UserTopicsRef } from "../components/UserTopics";
+import UserLessonPlans, { UserLessonPlansRef } from "../components/UserLessonPlans";
+import GenerateTopicLessonModal from "../components/GenerateTopicLessonModal";
 import { useUser } from '@clerk/clerk-react';
 import {
   Card,
@@ -17,9 +18,12 @@ import { GraduationCap, Zap, Users, CheckCircle } from "lucide-react";
 
 function Home() {
   const [isAssistantExpanded, setIsAssistantExpanded] = useState(false);
-  const [userTopics, setUserTopics] = useState<Array<{ id: number; user_id: string; topic: string; created_at: string }>>([]);
+  const [isLessonModalOpen, setIsLessonModalOpen] = useState(false);
+  const [selectedTopic, setSelectedTopic] = useState<string>('');
+  const [hasLessonPlans, setHasLessonPlans] = useState(false);
   const { isSignedIn } = useUser();
   const userTopicsRef = useRef<UserTopicsRef>(null);
+  const userLessonPlansRef = useRef<UserLessonPlansRef>(null);
 
   const handleExpandAssistant = () => {
     setIsAssistantExpanded(true);
@@ -30,48 +34,68 @@ function Home() {
   };
 
   const handleTopicClick = (topic: string) => {
-    setIsAssistantExpanded(true);
+    setSelectedTopic(topic);
+    setIsLessonModalOpen(true);
   };
 
-  const handleTopicsChange = (topics: Array<{ id: number; user_id: string; topic: string; created_at: string }>) => {
-    setUserTopics(topics);
-  };
+
 
   const handleTopicSaved = async () => {
     // Refresh the topics when a new topic is saved
     await userTopicsRef.current?.refreshTopics();
+    // Also refresh lesson plans in case a new lesson plan was generated
+    await userLessonPlansRef.current?.refreshLessonPlans();
+  };
+
+  const handleLessonPlansChange = (lessonPlans: any[]) => {
+    setHasLessonPlans(lessonPlans.length > 0);
   };
 
   const handleToggleAssistant = () => {
     setIsAssistantExpanded(!isAssistantExpanded);
   };
 
+  const handleCloseLessonModal = () => {
+    setIsLessonModalOpen(false);
+    setSelectedTopic('');
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-background pb-48">
-      {/* Hero/Intro Section */}
-      <section className="container-section">
-        <div className="content-container-md">
-          <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto text-center">
-            A next-generation learning platform that leverages AI to deliver adaptive, personalized education from elementary through graduate levels. Built for modern learners, powered by cutting-edge technology, and designed for your success.
-          </p>
-          <div className="flex flex-wrap justify-center gap-4 mt-8">
-            <Button variant="secondary" asChild className='button-padding'>
-              <Link to="/dashboard/lessons">Available lessons</Link>
-            </Button>
-            <Button variant="outline" asChild className='button-padding'>
-              <Link to="/sample-lesson">Try a Sample Lesson</Link>
-            </Button>
+      {/* User's Lesson Plans - Show if user is signed in and has saved lesson plans */}
+      {isSignedIn && (
+        <UserLessonPlans 
+          ref={userLessonPlansRef}
+          onLessonPlansChange={handleLessonPlansChange}
+          className="mb-8"
+        />
+      )}
 
+      {/* Hero/Intro Section - Only show if user is not signed in OR has no lesson plans */}
+      {(!isSignedIn || !hasLessonPlans) && (
+        <section className="container-section">
+          <div className="content-container-md">
+            <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto text-center">
+              A next-generation learning platform that leverages AI to deliver adaptive, personalized education from elementary through graduate levels. Built for modern learners, powered by cutting-edge technology, and designed for your success.
+            </p>
+            <div className="flex flex-wrap justify-center gap-4 mt-8">
+              <Button variant="secondary" asChild className='button-padding'>
+                <Link to="/dashboard/lessons">Available lessons</Link>
+              </Button>
+              <Button variant="outline" asChild className='button-padding'>
+                <Link to="/sample-lesson">Try a Sample Lesson</Link>
+              </Button>
+
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* User's Learning Topics - Show prominently if user has saved topics */}
       {isSignedIn && (
         <UserTopics 
           ref={userTopicsRef}
           onTopicClick={handleTopicClick}
-          onTopicsChange={handleTopicsChange}
           className="mb-8"
         />
       )}
@@ -186,7 +210,7 @@ function Home() {
       {/* Value Proposition & How It Works */}
       <section className="container-section bg-secondary">
         <div className="content-container">
-          <h2 className="text-3xl font-bold text-center mb-12 text-foreground">Why Progressive AI Academy?</h2>
+          <h2 className="text-3xl font-bold text-center mb-12 text-foreground">Why SmartFit?</h2>
           <div className="two-column-grid">
             <Card className="info-card">
               <CardHeader className="px-0 pt-0">
@@ -248,14 +272,16 @@ function Home() {
         </div>
       </section>
 
-      <div className="mt-auto">
-        <Footer />
-      </div>
-      
       <BottomChatAssistant 
         isExpanded={isAssistantExpanded} 
         onToggleExpanded={handleToggleAssistant}
         onTopicSaved={handleTopicSaved}
+      />
+
+      <GenerateTopicLessonModal
+        isOpen={isLessonModalOpen}
+        onClose={handleCloseLessonModal}
+        topic={selectedTopic}
       />
     </div>
   );

@@ -1,15 +1,17 @@
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-
+import SavedLessonPlans from "@/components/SavedLessonPlans";
+import { useUser } from '@clerk/clerk-react';
 
 import { lessonMeta } from "@/data/lessonMeta";
 // lessonMeta is now the source of truth for lesson metadata
 
 export default function Lessons() {
+  const { isSignedIn } = useUser();
+
   return (
     <>
-
       <div className="content-container mx-auto py-12 px-4">
         <div className="flex flex-wrap gap-2 mb-4">
           <Button asChild size="sm" variant="outline">
@@ -19,6 +21,13 @@ export default function Lessons() {
             <Link to="/sample-lesson">Sample Lesson</Link>
           </Button>
         </div>
+        {/* Saved Lesson Plans Section */}
+        {isSignedIn && (
+          <div className="mb-12">
+            <SavedLessonPlans />
+          </div>
+        )}
+
         <h1 className="text-4xl font-bold mb-8">Available Lessons</h1>
         <div className="grid gap-6">
           {lessonMeta.map((lesson: import("@/data/lessonMeta").LessonMeta) => (

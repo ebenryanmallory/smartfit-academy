@@ -1,6 +1,10 @@
 import { Hono } from 'hono'
 import { clerkMiddleware, getAuth } from '@hono/clerk-auth'
-import { educationalAssistantInstructions } from './instructions/educational-assistant.js'
+import { 
+  educationalAssistantInstructions,
+  lessonPlanGeneratorInstructions,
+  lessonContentGeneratorInstructions
+} from './instructions/index.js'
 
 // Define the user type
 interface User {
@@ -142,6 +146,52 @@ app.get('/api/d1/user', async (c) => {
     return c.json({ error: 'User not found' }, 404);
   }
   return c.json({ user });
+});
+
+// Protected: Update user education level
+app.post('/api/d1/user/education-level', async (c) => {
+  const auth = getAuth(c);
+  if (!auth?.userId) {
+    return c.json({ error: 'Unauthorized' }, 401);
+  }
+
+  // Parse body
+  let body;
+  try {
+    body = await c.req.json();
+  } catch (e) {
+    return c.json({ error: 'Invalid JSON body' }, 400);
+  }
+  
+  const { educationLevel } = body;
+  if (!educationLevel || typeof educationLevel !== 'string') {
+    return c.json({ error: 'Missing or invalid educationLevel' }, 400);
+  }
+
+  // Validate education level
+  const validLevels = ['elementary', 'highschool', 'undergrad', 'grad'];
+  if (!validLevels.includes(educationLevel)) {
+    return c.json({ error: 'Invalid education level. Must be one of: elementary, highschool, undergrad, grad' }, 400);
+  }
+
+  const db = c.env.DB;
+  const userId = auth.userId;
+  const email = auth.sessionClaims?.email || `${userId}@unknown.com`;
+
+  try {
+    // Ensure user exists in database (auto-initialize if needed)
+    await db.prepare('INSERT OR IGNORE INTO users (id, email) VALUES (?, ?)').bind(userId, email).run();
+    
+    // Update education level
+    await db.prepare('UPDATE users SET education_level = ? WHERE id = ?').bind(educationLevel, userId).run();
+    
+    // Return updated user
+    const user = await db.prepare('SELECT * FROM users WHERE id = ?').bind(userId).first();
+    return c.json({ user });
+  } catch (error) {
+    console.error('Error updating education level:', error);
+    return c.json({ error: 'Failed to update education level' }, 500);
+  }
 });
 
 // ---------------- User Progress Routes ----------------
@@ -303,6 +353,350 @@ app.delete('/api/d1/user/topics/:topic', async (c) => {
   }
 });
 
+// ---------------- User Lesson Plans Routes ----------------
+
+// Protected: Save a lesson plan with its lessons
+app.post('/api/d1/user/lesson-plans', async (c) => {
+  const auth = getAuth(c);
+  
+  if (!auth?.userId) {
+    console.error('No userId in POST lesson plans route - authentication required');
+    return c.json({ 
+      error: 'Unauthorized', 
+      details: 'Valid authentication required',
+      timestamp: new Date().toISOString()
+    }, 401);
+  }
+
+  // Parse body
+  let body;
+  try {
+    body = await c.req.json();
+    console.log('Received lesson plan data:', JSON.stringify(body, null, 2));
+  } catch (e) {
+    console.error('Failed to parse JSON body:', e);
+    return c.json({ error: 'Invalid JSON body' }, 400);
+  }
+  
+  const { topic, title, totalEstimatedTime, lessons, uuid } = body;
+  console.log('Extracted fields:', { topic, title, totalEstimatedTime, lessonsCount: lessons?.length, uuid });
+  
+  if (!topic || !title || !lessons || !Array.isArray(lessons)) {
+    console.error('Missing required fields:', { topic: !!topic, title: !!title, lessons: !!lessons, isArray: Array.isArray(lessons) });
+    return c.json({ error: 'Missing required fields: topic, title, lessons' }, 400);
+  }
+
+  const db = c.env.DB;
+  const userId = auth.userId;
+  const email = auth.sessionClaims?.email || `${userId}@unknown.com`;
+
+  console.log('Starting lesson plan save for user:', userId);
+
+  try {
+    // Ensure user exists in database (auto-initialize if needed)
+    console.log('Ensuring user exists in database...');
+    await db.prepare('INSERT OR IGNORE INTO users (id, email) VALUES (?, ?)').bind(userId, email).run();
+    console.log('User initialization complete');
+    
+    // Insert lesson plan
+    console.log('Inserting lesson plan with data:', { userId, topic, title, totalEstimatedTime, uuid });
+    const lessonPlanResult = await db.prepare(
+      'INSERT INTO lesson_plans (user_id, topic, title, total_estimated_time, uuid) VALUES (?, ?, ?, ?, ?)'
+    ).bind(userId, topic, title, totalEstimatedTime || null, uuid || null).run();
+    
+    const lessonPlanId = lessonPlanResult.meta.last_row_id;
+    console.log('Lesson plan inserted with ID:', lessonPlanId);
+    
+    // Insert individual lessons
+    console.log('Inserting', lessons.length, 'lessons...');
+    for (let i = 0; i < lessons.length; i++) {
+      const lesson = lessons[i];
+      console.log(`Inserting lesson ${i + 1}:`, { 
+        title: lesson.title, 
+        description: lesson.description?.substring(0, 50) + '...', 
+        hasContent: !!lesson.content,
+        uuid: lesson.uuid,
+        lesson_order: lesson.lesson_order || i + 1
+      });
+      
+      try {
+        await db.prepare(
+          'INSERT INTO lessons (lesson_plan_id, lesson_order, title, description, content, uuid) VALUES (?, ?, ?, ?, ?, ?)'
+        ).bind(lessonPlanId, lesson.lesson_order || i + 1, lesson.title, lesson.description || null, lesson.content || null, lesson.uuid || null).run();
+        console.log(`Lesson ${i + 1} inserted successfully`);
+      } catch (lessonError) {
+        console.error(`Error inserting lesson ${i + 1}:`, lessonError);
+        console.error('Lesson data that failed:', lesson);
+        throw lessonError;
+      }
+    }
+    
+    console.log('All lessons inserted successfully');
+    
+    // Return the complete lesson plan with lessons
+    console.log('Fetching saved lesson plan...');
+    const savedLessonPlan = await db.prepare('SELECT * FROM lesson_plans WHERE id = ?').bind(lessonPlanId).first();
+    const savedLessons = await db.prepare('SELECT * FROM lessons WHERE lesson_plan_id = ? ORDER BY lesson_order').bind(lessonPlanId).all();
+    
+    console.log('Lesson plan save completed successfully');
+    return c.json({ 
+      lessonPlan: {
+        ...savedLessonPlan,
+        lessons: savedLessons.results
+      }
+    });
+  } catch (error) {
+    console.error('Error saving lesson plan - Full error details:', error);
+    console.error('Error name:', error.name);
+    console.error('Error message:', error.message);
+    console.error('Error stack:', error.stack);
+    
+    // Log the specific data that caused the error
+    console.error('Request data that caused error:', {
+      userId,
+      topic,
+      title,
+      totalEstimatedTime,
+      uuid,
+      lessonsCount: lessons?.length,
+      firstLesson: lessons?.[0]
+    });
+    
+    return c.json({ 
+      error: 'Failed to save lesson plan', 
+      details: error.message,
+      errorType: error.name,
+      timestamp: new Date().toISOString()
+    }, 500);
+  }
+});
+
+// Protected: Get all lesson plans for current user
+app.get('/api/d1/user/lesson-plans', async (c) => {
+  const auth = getAuth(c);
+  
+  if (!auth?.userId) {
+    console.error('No userId in lesson plans GET route - authentication required');
+    return c.json({ 
+      error: 'Unauthorized', 
+      details: 'Valid authentication required',
+      timestamp: new Date().toISOString()
+    }, 401);
+  }
+  
+  const db = c.env.DB;
+  const userId = auth.userId;
+  
+  try {
+    // Ensure user exists in database (auto-initialize if needed)
+    const email = auth.sessionClaims?.email || `${userId}@unknown.com`;
+    await db.prepare('INSERT OR IGNORE INTO users (id, email) VALUES (?, ?)').bind(userId, email).run();
+    
+    const lessonPlans = await db.prepare('SELECT * FROM lesson_plans WHERE user_id = ? ORDER BY created_at DESC').bind(userId).all();
+    
+    // Get lessons for each lesson plan
+    const lessonPlansWithLessons = await Promise.all(
+      lessonPlans.results.map(async (plan: any) => {
+        const lessons = await db.prepare('SELECT * FROM lessons WHERE lesson_plan_id = ? ORDER BY lesson_order').bind(plan.id).all();
+        return {
+          ...plan,
+          lessons: lessons.results
+        };
+      })
+    );
+    
+    return c.json({ lessonPlans: lessonPlansWithLessons });
+  } catch (error) {
+    console.error('Error fetching lesson plans:', error);
+    return c.json({ error: 'Failed to fetch lesson plans' }, 500);
+  }
+});
+
+// Protected: Get a specific lesson plan with its lessons
+app.get('/api/d1/user/lesson-plans/:id', async (c) => {
+  const auth = getAuth(c);
+  
+  if (!auth?.userId) {
+    return c.json({ 
+      error: 'Unauthorized', 
+      details: 'Valid authentication required',
+      timestamp: new Date().toISOString()
+    }, 401);
+  }
+  
+  const lessonPlanId = c.req.param('id');
+  if (!lessonPlanId) {
+    return c.json({ error: 'Missing lesson plan ID parameter' }, 400);
+  }
+  
+  const db = c.env.DB;
+  const userId = auth.userId;
+  
+  try {
+    // Get lesson plan (ensure it belongs to the user)
+    const lessonPlan = await db.prepare('SELECT * FROM lesson_plans WHERE id = ? AND user_id = ?').bind(lessonPlanId, userId).first();
+    
+    if (!lessonPlan) {
+      return c.json({ error: 'Lesson plan not found' }, 404);
+    }
+    
+    // Get lessons for this lesson plan
+    const lessons = await db.prepare('SELECT * FROM lessons WHERE lesson_plan_id = ? ORDER BY lesson_order').bind(lessonPlanId).all();
+    
+    return c.json({ 
+      lessonPlan: {
+        ...lessonPlan,
+        lessons: lessons.results
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching lesson plan:', error);
+    return c.json({ error: 'Failed to fetch lesson plan' }, 500);
+  }
+});
+
+// Protected: Delete a lesson plan and all its lessons
+app.delete('/api/d1/user/lesson-plans/:id', async (c) => {
+  const auth = getAuth(c);
+  
+  if (!auth?.userId) {
+    return c.json({ 
+      error: 'Unauthorized', 
+      details: 'Valid authentication required',
+      timestamp: new Date().toISOString()
+    }, 401);
+  }
+  
+  const lessonPlanId = c.req.param('id');
+  if (!lessonPlanId) {
+    return c.json({ error: 'Missing lesson plan ID parameter' }, 400);
+  }
+  
+  const db = c.env.DB;
+  const userId = auth.userId;
+  
+  try {
+    // Delete lesson plan (CASCADE will delete associated lessons)
+    const result = await db.prepare('DELETE FROM lesson_plans WHERE id = ? AND user_id = ?').bind(lessonPlanId, userId).run();
+    
+    return c.json({ success: true, deleted: result.meta.changes > 0 });
+  } catch (error) {
+    console.error('Error deleting lesson plan:', error);
+    return c.json({ error: 'Failed to delete lesson plan' }, 500);
+  }
+});
+
+// Protected: Get a specific lesson by ID
+app.get('/api/d1/user/lessons/:id', async (c) => {
+  const auth = getAuth(c);
+  
+  if (!auth?.userId) {
+    return c.json({ 
+      error: 'Unauthorized', 
+      details: 'Valid authentication required',
+      timestamp: new Date().toISOString()
+    }, 401);
+  }
+  
+  const lessonId = c.req.param('id');
+  if (!lessonId) {
+    return c.json({ error: 'Missing lesson ID parameter' }, 400);
+  }
+  
+  const db = c.env.DB;
+  const userId = auth.userId;
+  
+  try {
+    // Get lesson with its lesson plan (ensure it belongs to the user)
+    // Try UUID lookup first, then fall back to numeric ID for backward compatibility
+    let lesson = await db.prepare(`
+      SELECT l.*, lp.topic, lp.title as plan_title, lp.total_estimated_time
+      FROM lessons l 
+      JOIN lesson_plans lp ON l.lesson_plan_id = lp.id 
+      WHERE l.uuid = ? AND lp.user_id = ?
+    `).bind(lessonId, userId).first();
+    
+    // If UUID lookup failed, try numeric ID lookup for backward compatibility
+    if (!lesson && /^\d+$/.test(lessonId)) {
+      lesson = await db.prepare(`
+        SELECT l.*, lp.topic, lp.title as plan_title, lp.total_estimated_time
+        FROM lessons l 
+        JOIN lesson_plans lp ON l.lesson_plan_id = lp.id 
+        WHERE l.id = ? AND lp.user_id = ?
+      `).bind(lessonId, userId).first();
+    }
+    
+    if (!lesson) {
+      return c.json({ error: 'Lesson not found or access denied' }, 404);
+    }
+    
+    return c.json({ lesson });
+  } catch (error) {
+    console.error('Error fetching lesson:', error);
+    return c.json({ error: 'Failed to fetch lesson' }, 500);
+  }
+});
+
+// Protected: Update lesson content within a lesson plan
+app.put('/api/d1/user/lesson-plans/:planId/lessons/:lessonId', async (c) => {
+  const auth = getAuth(c);
+  
+  if (!auth?.userId) {
+    return c.json({ 
+      error: 'Unauthorized', 
+      details: 'Valid authentication required',
+      timestamp: new Date().toISOString()
+    }, 401);
+  }
+  
+  const lessonPlanId = c.req.param('planId');
+  const lessonId = c.req.param('lessonId');
+  
+  if (!lessonPlanId || !lessonId) {
+    return c.json({ error: 'Missing lesson plan ID or lesson ID parameter' }, 400);
+  }
+  
+  // Parse body
+  let body;
+  try {
+    body = await c.req.json();
+  } catch (e) {
+    return c.json({ error: 'Invalid JSON body' }, 400);
+  }
+  
+  const { content } = body;
+  if (content === undefined) {
+    return c.json({ error: 'Missing content field' }, 400);
+  }
+  
+  const db = c.env.DB;
+  const userId = auth.userId;
+  
+  try {
+    // Verify lesson plan belongs to user and lesson belongs to plan
+    const verification = await db.prepare(`
+      SELECT l.id 
+      FROM lessons l 
+      JOIN lesson_plans lp ON l.lesson_plan_id = lp.id 
+      WHERE l.id = ? AND lp.id = ? AND lp.user_id = ?
+    `).bind(lessonId, lessonPlanId, userId).first();
+    
+    if (!verification) {
+      return c.json({ error: 'Lesson not found or access denied' }, 404);
+    }
+    
+    // Update lesson content
+    await db.prepare('UPDATE lessons SET content = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?').bind(content, lessonId).run();
+    
+    // Return updated lesson
+    const updatedLesson = await db.prepare('SELECT * FROM lessons WHERE id = ?').bind(lessonId).first();
+    return c.json({ lesson: updatedLesson });
+  } catch (error) {
+    console.error('Error updating lesson content:', error);
+    return c.json({ error: 'Failed to update lesson content' }, 500);
+  }
+});
+
 // ------------------------------------------------------
 
 // Llama3 LLM endpoint
@@ -324,7 +718,7 @@ app.post('/llm/llama3', async (c) => {
     return c.json({ error: 'Invalid JSON body' }, 400);
   }
 
-  const { messages, useCustomInstructions } = body;
+  const { messages, useCustomInstructions, instructionType, educationLevel } = body;
   if (!messages || !Array.isArray(messages)) {
     return c.json({ error: 'Missing or invalid messages array' }, 400);
   }
@@ -332,10 +726,38 @@ app.post('/llm/llama3', async (c) => {
   // Prepare messages array with optional custom instructions
   let processedMessages = [...messages];
   
-  if (useCustomInstructions) {
+  if (useCustomInstructions || instructionType) {
+    let instructionContent = educationalAssistantInstructions; // default
+    
+    // Select instruction type if specified
+    if (instructionType) {
+      switch (instructionType) {
+        case 'educationalAssistant':
+          instructionContent = educationalAssistantInstructions;
+          break;
+        case 'lessonPlanGenerator':
+          // Use education level if provided, default to 'undergrad'
+          const validEducationLevelsForPlan = ['elementary', 'highschool', 'undergrad', 'grad'];
+          const targetEducationLevelForPlan = validEducationLevelsForPlan.includes(educationLevel) ? educationLevel : 'undergrad';
+          instructionContent = lessonPlanGeneratorInstructions(targetEducationLevelForPlan);
+          console.log(`Using lesson plan generator for education level: ${targetEducationLevelForPlan}`);
+          break;
+        case 'lessonContentGenerator':
+          // Use education level if provided, default to 'undergrad'
+          const validEducationLevels = ['elementary', 'highschool', 'undergrad', 'grad'];
+          const targetEducationLevel = validEducationLevels.includes(educationLevel) ? educationLevel : 'undergrad';
+          instructionContent = lessonContentGeneratorInstructions(targetEducationLevel);
+          console.log(`Using lesson content generator for education level: ${targetEducationLevel}`);
+          break;
+        default:
+          console.warn(`Unknown instruction type: ${instructionType}, using default`);
+          instructionContent = educationalAssistantInstructions;
+      }
+    }
+    
     const systemInstruction = {
       role: 'system',
-      content: educationalAssistantInstructions
+      content: instructionContent
     };
     
     // Insert system instruction at the beginning, or replace existing system message
@@ -346,23 +768,255 @@ app.post('/llm/llama3', async (c) => {
     }
   }
 
-  // Call Cloudflare Workers AI REST API
-  const aiUrl = `https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/ai/run/@cf/meta/llama-3.1-8b-instruct`;
-  const aiRes = await fetch(aiUrl, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${WORKERS_AI_TOKEN}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ messages: processedMessages }),
-  });
+  try {
+    // Call Cloudflare Workers AI REST API
+    const aiUrl = `https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/ai/run/@cf/meta/llama-3.1-8b-instruct`;
+    
+    // Prepare request body with appropriate max_tokens based on instruction type
+    const requestBody: any = { messages: processedMessages };
+    
+    // Set higher token limits for lesson plan generation to prevent truncation
+    if (instructionType === 'lessonPlanGenerator') {
+      requestBody.max_tokens = 4096; // Much higher limit for comprehensive lesson plans
+      requestBody.temperature = 0.7; // Slightly higher creativity for educational content
+    } else if (instructionType === 'lessonContentGenerator') {
+      requestBody.max_tokens = 2048; // Higher limit for detailed lesson content
+      requestBody.temperature = 0.7;
+    } else {
+      requestBody.max_tokens = 1024; // Higher than default for general educational assistance
+      requestBody.temperature = 0.6;
+    }
+    
+    // Check if streaming is requested
+    const isStreaming = requestBody.stream === true;
 
-  const aiData = await aiRes.json();
-  if (!aiRes.ok) {
-    return c.json({ error: aiData.error || 'AI request failed' }, aiRes.status as any);
+    // Prepare request body with streaming parameter
+    const requestBodyForAI = {
+      messages: processedMessages,
+      stream: isStreaming,
+      max_tokens: requestBody.max_tokens,
+      temperature: requestBody.temperature
+    };
+
+    if (isStreaming) {
+      // Handle streaming response
+      const aiRes = await fetch(aiUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${WORKERS_AI_TOKEN}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBodyForAI),
+      });
+
+      if (!aiRes.ok) {
+        const errorText = await aiRes.text();
+        console.error('Cloudflare Workers AI API error:', aiRes.status, errorText);
+        return c.json({ error: `AI API error: ${aiRes.status}` }, 500);
+      }
+
+      // Return the streaming response directly
+      return new Response(aiRes.body, {
+        headers: {
+          'Content-Type': 'text/event-stream',
+          'Cache-Control': 'no-cache',
+          'Connection': 'keep-alive',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'POST, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        },
+      });
+    } else {
+      // Handle non-streaming response (existing code)
+      const aiRes = await fetch(aiUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${WORKERS_AI_TOKEN}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      const aiData = await aiRes.json();
+      if (!aiRes.ok) {
+        console.error('AI API error:', aiData);
+        return c.json({ error: aiData.error || 'AI request failed' }, aiRes.status as any);
+      }
+
+      // Extract the response content
+      const responseContent = aiData.result?.response || aiData.response || '';
+      console.log('Raw AI response length:', responseContent.length);
+      console.log('Raw AI response preview:', responseContent.substring(0, 200) + '...');
+      
+      // Log token usage if available for debugging
+      if (aiData.result?.usage) {
+        console.log('Token usage:', aiData.result.usage);
+      }
+
+      // For lesson plan generation, validate the JSON structure
+      if (instructionType === 'lessonPlanGenerator') {
+        try {
+          // Check if response looks like it might be truncated
+          if (responseContent.length < 50) {
+            throw new Error('Response appears to be too short or empty');
+          }
+
+          // Try to find JSON boundaries
+          const jsonStart = responseContent.indexOf('{');
+          const jsonEnd = responseContent.lastIndexOf('}');
+          
+          if (jsonStart === -1 || jsonEnd === -1 || jsonEnd <= jsonStart) {
+            throw new Error('No valid JSON structure found in response');
+          }
+
+          const jsonContent = responseContent.substring(jsonStart, jsonEnd + 1);
+          console.log('Extracted JSON content length:', jsonContent.length);
+          console.log('JSON content preview:', jsonContent.substring(0, 300) + '...');
+          
+          // Check for potential truncation indicators
+          const lastChar = responseContent.trim().slice(-1);
+          if (lastChar !== '}' && lastChar !== ']') {
+            console.warn('Response may be truncated - does not end with } or ]');
+            console.warn('Last 100 characters:', responseContent.slice(-100));
+          }
+
+          // Parse and validate the JSON structure
+          let parsedData;
+          try {
+            parsedData = JSON.parse(jsonContent);
+          } catch (parseError) {
+            // If JSON parsing fails, try to repair common truncation issues
+            console.log('Initial JSON parse failed, attempting repair...');
+            
+            let repairedJson = jsonContent;
+            
+            // Try to close incomplete objects/arrays
+            const openBraces = (repairedJson.match(/\{/g) || []).length;
+            const closeBraces = (repairedJson.match(/\}/g) || []).length;
+            const openBrackets = (repairedJson.match(/\[/g) || []).length;
+            const closeBrackets = (repairedJson.match(/\]/g) || []).length;
+            
+            // Add missing closing braces
+            for (let i = 0; i < openBraces - closeBraces; i++) {
+              repairedJson += '}';
+            }
+            
+            // Add missing closing brackets
+            for (let i = 0; i < openBrackets - closeBrackets; i++) {
+              repairedJson += ']';
+            }
+            
+            // Remove trailing commas that might cause issues
+            repairedJson = repairedJson.replace(/,(\s*[}\]])/g, '$1');
+            
+            // Try to parse the repaired JSON
+            try {
+              parsedData = JSON.parse(repairedJson);
+              console.log('Successfully repaired and parsed JSON');
+            } catch (repairError) {
+              console.error('JSON repair failed:', repairError);
+              throw parseError; // Throw original error
+            }
+          }
+          
+          // Validate lesson plan structure
+          if (!parsedData.lessonPlan) {
+            throw new Error('Missing lessonPlan object in response');
+          }
+          
+          if (!parsedData.lessonPlan.lessons || !Array.isArray(parsedData.lessonPlan.lessons)) {
+            throw new Error('Missing or invalid lessons array in response');
+          }
+          
+          if (parsedData.lessonPlan.lessons.length === 0) {
+            throw new Error('Lessons array is empty');
+          }
+
+          // Validate each lesson has required fields
+          for (let i = 0; i < parsedData.lessonPlan.lessons.length; i++) {
+            const lesson = parsedData.lessonPlan.lessons[i];
+            if (!lesson.title || typeof lesson.title !== 'string') {
+              throw new Error(`Lesson ${i + 1} is missing a valid title`);
+            }
+            if (!lesson.description || typeof lesson.description !== 'string') {
+              throw new Error(`Lesson ${i + 1} is missing a valid description`);
+            }
+            
+            // Check for truncated lessons (common issue)
+            if (lesson.title.length < 5 || lesson.description.length < 10) {
+              throw new Error(`Lesson ${i + 1} appears to be truncated or incomplete`);
+            }
+            
+            // Validate sections array
+            if (!lesson.sections || !Array.isArray(lesson.sections)) {
+              throw new Error(`Lesson ${i + 1} is missing a valid sections array`);
+            }
+            
+            if (lesson.sections.length === 0) {
+              throw new Error(`Lesson ${i + 1} has no sections`);
+            }
+            
+            // Validate each section
+            for (let j = 0; j < lesson.sections.length; j++) {
+              const section = lesson.sections[j];
+              if (!section.title || typeof section.title !== 'string') {
+                throw new Error(`Lesson ${i + 1}, Section ${j + 1} is missing a valid title`);
+              }
+              if (!section.content || typeof section.content !== 'string') {
+                throw new Error(`Lesson ${i + 1}, Section ${j + 1} is missing valid content`);
+              }
+              
+              // Check for truncated sections
+              if (section.title.length < 3) {
+                throw new Error(`Lesson ${i + 1}, Section ${j + 1} title appears truncated`);
+              }
+              if (section.content.length < 50) {
+                throw new Error(`Lesson ${i + 1}, Section ${j + 1} content appears truncated or too short`);
+              }
+            }
+          }
+
+          // Ensure we have reasonable metadata
+          if (!parsedData.lessonPlan.totalEstimatedTime) {
+            parsedData.lessonPlan.totalEstimatedTime = 'Not specified';
+          }
+
+          console.log('Validated lesson plan structure successfully');
+          
+          // Return the validated response with the original structure
+          return c.json({
+            ...aiData,
+            result: {
+              ...aiData.result,
+              response: JSON.stringify(parsedData)
+            }
+          });
+
+        } catch (validationError) {
+          console.error('Lesson plan validation failed:', validationError);
+          console.error('Raw response that failed validation:', responseContent);
+          
+          // Return a structured error that the frontend can handle
+          return c.json({
+            error: 'Invalid lesson plan format',
+            details: validationError.message,
+            rawResponse: responseContent.substring(0, 500), // First 500 chars for debugging
+            validationFailed: true
+          }, 422); // Unprocessable Entity
+        }
+      }
+
+      // For other instruction types, return as-is
+      return c.json(aiData);
+    }
+
+  } catch (error) {
+    console.error('LLM endpoint error:', error);
+    return c.json({ 
+      error: 'Failed to process AI request', 
+      details: error.message 
+    }, 500);
   }
-
-  return c.json(aiData);
 });
 
 // Define valid SPA routes based on App.tsx routes
@@ -384,7 +1038,7 @@ function isValidSpaRoute(path: string): boolean {
   }
   
   // Check for dynamic routes
-  // /lessons/:id pattern
+  // /lessons/:id pattern (including saved lessons like /lessons/saved-123)
   if (path.startsWith('/lessons/') && path.split('/').length === 3) {
     return true;
   }
