@@ -1,18 +1,26 @@
-import { educationalAssistantInstructions } from './educational-assistant';
+import { educationalAssistantInstructions } from './educational-assistant.js';
+import { lessonPlanGeneratorInstructions } from './lesson-plan-generator.js';
+import { lessonContentGeneratorInstructions } from './lesson-content-generator.js';
 
 // Export all instruction sets
 export const instructions = {
   educationalAssistant: educationalAssistantInstructions,
+  // Note: lessonPlanGenerator and lessonContentGenerator are now functions
+  // They should be called directly with an education level parameter
   // Future instruction sets can be added here
   // lessonTutor: lessonTutorInstructions,
   // codeReviewer: codeReviewerInstructions,
   // etc.
 };
 
-// Helper function to get instruction by type
-export function getInstructions(type: keyof typeof instructions): string {
+// Helper function to get instruction by type (only for constant instructions)
+export function getInstructions(type: 'educationalAssistant'): string {
   return instructions[type];
 }
 
 // Export individual instructions for direct import
-export { educationalAssistantInstructions }; 
+export { 
+  educationalAssistantInstructions,
+  lessonPlanGeneratorInstructions,
+  lessonContentGeneratorInstructions
+}; 
