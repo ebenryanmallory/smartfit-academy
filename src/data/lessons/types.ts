@@ -4,7 +4,7 @@ export interface LessonSection {
 }
 
 export interface LessonData {
-  id: number;
+  id: string;
   title: string;
   description: string;
   sections: LessonSection[];

@@ -7,8 +7,8 @@
 
 import type { LessonData } from "../types";
 
-export const lesson3: LessonData = {
-  id: 3,
+export const lesson: LessonData = {
+  id: "c-machine-learning-fundamentals",
   title: "Advanced Machine Learning: Theory, Algorithms, and Implementation",
   description: "Comprehensive exploration of machine learning theory, mathematical foundations, optimization algorithms, and state-of-the-art implementations for research and industry applications.",
   sections: [

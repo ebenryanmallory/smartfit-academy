@@ -7,8 +7,8 @@
 
 import type { LessonData } from "../types";
 
-export const lesson4: LessonData = {
-  id: 4,
+export const lesson: LessonData = {
+  id: "c-data-science-fundamentals",
   title: "Advanced Data Science: Statistical Learning, Computational Methods, and Research Applications",
   description: "Comprehensive exploration of advanced data science methodologies, theoretical foundations, scalable algorithms, and cutting-edge research applications for graduate-level study and professional research.",
   sections: [

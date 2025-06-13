@@ -7,8 +7,8 @@
 
 import type { LessonData } from "../types";
 
-export const lesson1: LessonData = {
-  id: 1,
+export const lesson: LessonData = {
+  id: "c-intro-ai",
   title: "Foundations of Artificial Intelligence: Theory and Practice",
   description: "Advanced exploration of AI paradigms, mathematical foundations, and contemporary research directions in machine intelligence.",
   sections: [

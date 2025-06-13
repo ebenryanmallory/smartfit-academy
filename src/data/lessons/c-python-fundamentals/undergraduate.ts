@@ -6,8 +6,8 @@
 // This convention avoids accidental termination of the template literal and is the required style for all lessons in this codebase.
 import type { LessonData } from "../types";
 
-export const lesson2: LessonData = {
-  id: 2,
+export const lesson: LessonData = {
+  id: "c-python-fundamentals",
   title: "Programming Fundamentals and Problem Solving",
   description: "Master essential programming concepts, data structures, and algorithmic thinking using Python for computer science applications.",
   sections: [

@@ -7,8 +7,8 @@
 
 import type { LessonData } from "../types";
 
-export const lesson2: LessonData = {
-  id: 2,
+export const lesson: LessonData = {
+  id: "c-python-fundamentals",
   title: "Advanced Programming Paradigms and Language Theory",
   description: "Comprehensive exploration of programming language design, computational models, and advanced Python implementation techniques for research and industry applications.",
   sections: [

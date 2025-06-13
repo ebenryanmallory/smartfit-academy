@@ -7,8 +7,8 @@
 
 import type { LessonData } from "../types";
 
-export const lesson1: LessonData = {
-  id: 1,
+export const lesson: LessonData = {
+  id: "c-intro-ai",
   title: "Introduction to Artificial Intelligence",
   description: "Explore AI fundamentals, real-world applications, and get hands-on with basic programming concepts.",
   sections: [

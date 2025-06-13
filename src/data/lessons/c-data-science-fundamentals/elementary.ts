@@ -7,8 +7,8 @@
 
 import type { LessonData } from "../types";
 
-export const lesson4: LessonData = {
-  id: 4,
+export const lesson: LessonData = {
+  id: "c-data-science-fundamentals",
   title: "Data Detective Adventures - For Young Explorers",
   description: "Become a data detective and learn how to collect, organize, and discover amazing secrets hidden in information all around us!",
   sections: [
