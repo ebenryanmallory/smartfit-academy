@@ -16,7 +16,7 @@ import {
 } from '../components/ui/card';
 import { GraduationCap, Zap, Users, CheckCircle } from "lucide-react";
 
-function Home() {
+function Dashboard() {
   const [isAssistantExpanded, setIsAssistantExpanded] = useState(false);
   const [isLessonModalOpen, setIsLessonModalOpen] = useState(false);
   const [selectedTopic, setSelectedTopic] = useState<string>('');
@@ -37,8 +37,6 @@ function Home() {
     setSelectedTopic(topic);
     setIsLessonModalOpen(true);
   };
-
-
 
   const handleTopicSaved = async () => {
     // Refresh the topics when a new topic is saved
@@ -100,6 +98,86 @@ function Home() {
         />
       )}
 
+      {/* Features Overview - Only show for non-signed-in users */}
+      {!isSignedIn && (
+        <section className="container-section">
+          <div className="content-container">
+            <h2 className="text-3xl md:text-4xl font-bold text-center mb-10 text-foreground">Platform Features</h2>
+            <div className="responsive-grid">
+              <Card className="feature-card">
+                <CardHeader>
+                  <div className="mb-4">
+                    <GraduationCap className="h-8 w-8 text-primary mx-auto" />
+                  </div>
+                  <CardTitle className="text-xl font-bold mb-2">Onboarding & Assessment</CardTitle>
+                  <CardDescription>Skill quiz to place learners at the right level</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground">
+                    Take a quick skill assessment to personalize your journey and start at the level that's right for you.
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="feature-card">
+                <CardHeader>
+                  <div className="mb-4">
+                    <Zap className="h-8 w-8 text-accent mx-auto" />
+                  </div>
+                  <CardTitle className="text-xl font-bold mb-2">Adaptive Recommendations</CardTitle>
+                  <CardDescription>Claude-powered lesson suggestions</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground">
+                    Receive personalized lesson and project recommendations, powered by AI, to maximize your learning efficiency.
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="feature-card">
+                <CardHeader>
+                  <div className="mb-4">
+                    <Users className="h-8 w-8 text-secondary mx-auto" />
+                  </div>
+                  <CardTitle className="text-xl font-bold mb-2">Interactive Lesson Viewer</CardTitle>
+                  <CardDescription>Code sandboxes & live feedback</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground">
+                    Explore lessons with embedded code playgrounds and instant feedback to reinforce concepts as you learn.
+                  </p>
+                </CardContent>
+                <CardFooter className="bg-muted/20 pt-0">
+                  <Button asChild variant="outline" size="sm" className="w-full button-padding">
+                    <Link to="/sample-lesson">Try a Lesson</Link>
+                  </Button>
+                </CardFooter>
+              </Card>
+
+              <Card className="feature-card">
+                <CardHeader>
+                  <div className="mb-4">
+                    <CheckCircle className="h-8 w-8 text-success mx-auto" />
+                  </div>
+                  <CardTitle className="text-xl font-bold mb-2">Chat Tutor & Progress Dashboard</CardTitle>
+                  <CardDescription>AI Q&A and achievement tracking</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground">
+                    Get instant help from our AI-powered tutor and track your progress, achievements, and badges as you advance.
+                  </p>
+                </CardContent>
+                <CardFooter className="bg-muted/20 pt-0">
+                  <Button asChild variant="outline" size="sm" className="w-full button-padding">
+                    <Link to="/dashboard/lessons">Go to Dashboard</Link>
+                  </Button>
+                </CardFooter>
+              </Card>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Create Your Journey Section */}
       <section className="container-section bg-gradient-to-r from-primary/10 to-accent/10">
         <div className="content-container text-center">
@@ -119,94 +197,54 @@ function Home() {
         </div>
       </section>
 
-      {/* Features Overview */}
+      {/* Create Topics by Goal Section */}
       <section className="container-section">
-        <div className="content-container">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-10 text-foreground">Platform Features</h2>
-          <div className="responsive-grid">
-            <Card className="feature-card">
-              <CardHeader>
-                <div className="mb-4">
-                  <GraduationCap className="h-8 w-8 text-primary mx-auto" />
-                </div>
-                <CardTitle className="text-xl font-bold mb-2">Onboarding & Assessment</CardTitle>
-                <CardDescription>Skill quiz to place learners at the right level</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">
-                  Take a quick skill assessment to personalize your journey and start at the level that's right for you.
-                </p>
-              </CardContent>
-              <CardFooter className="bg-muted/20 pt-0">
-                <Button asChild variant="outline" size="sm" className="w-full button-padding">
-                  <Link to="/onboarding">Start Assessment</Link>
-                </Button>
-              </CardFooter>
-            </Card>
-
-            <Card className="feature-card">
-              <CardHeader>
-                <div className="mb-4">
-                  <Zap className="h-8 w-8 text-accent mx-auto" />
-                </div>
-                <CardTitle className="text-xl font-bold mb-2">Adaptive Recommendations</CardTitle>
-                <CardDescription>Claude-powered lesson suggestions</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">
-                  Receive personalized lesson and project recommendations, powered by AI, to maximize your learning efficiency.
-                </p>
-              </CardContent>
-              <CardFooter className="bg-muted/20 pt-0">
-                <Button asChild variant="outline" size="sm" className="w-full button-padding">
-                  <Link to="/dashboard/lessons">See Recommendations</Link>
-                </Button>
-              </CardFooter>
-            </Card>
-
-            <Card className="feature-card">
-              <CardHeader>
-                <div className="mb-4">
-                  <Users className="h-8 w-8 text-secondary mx-auto" />
-                </div>
-                <CardTitle className="text-xl font-bold mb-2">Interactive Lesson Viewer</CardTitle>
-                <CardDescription>Code sandboxes & live feedback</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">
-                  Explore lessons with embedded code playgrounds and instant feedback to reinforce concepts as you learn.
-                </p>
-              </CardContent>
-              <CardFooter className="bg-muted/20 pt-0">
-                <Button asChild variant="outline" size="sm" className="w-full button-padding">
-                  <Link to="/sample-lesson">Try a Lesson</Link>
-                </Button>
-              </CardFooter>
-            </Card>
-
-            <Card className="feature-card">
-              <CardHeader>
-                <div className="mb-4">
-                  <CheckCircle className="h-8 w-8 text-success mx-auto" />
-                </div>
-                <CardTitle className="text-xl font-bold mb-2">Chat Tutor & Progress Dashboard</CardTitle>
-                <CardDescription>AI Q&A and achievement tracking</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">
-                  Get instant help from our AI-powered tutor and track your progress, achievements, and badges as you advance.
-                </p>
-              </CardContent>
-              <CardFooter className="bg-muted/20 pt-0">
-                <Button asChild variant="outline" size="sm" className="w-full button-padding">
-                  <Link to="/dashboard/lessons">Go to Dashboard</Link>
-                </Button>
-              </CardFooter>
-            </Card>
+        <div className="content-container text-center">
+          <h2 className="text-3xl md:text-4xl font-bold mb-6 text-foreground">
+            Create Topics by Goal
+          </h2>
+          <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto">
+            Preparing for a standardized test? Let our AI create a comprehensive study plan tailored to your target exam. 
+            Get structured topics, practice materials, and a personalized timeline to help you achieve your best score.
+          </p>
+          <div className="flex flex-wrap justify-center gap-4">
+            <Button 
+              size="lg" 
+              variant="outline"
+              className="text-lg px-8 py-4 h-auto"
+              onClick={() => {
+                setSelectedTopic('GED Test Preparation');
+                setIsLessonModalOpen(true);
+              }}
+            >
+              GED Prep
+            </Button>
+            <Button 
+              size="lg" 
+              variant="outline"
+              className="text-lg px-8 py-4 h-auto"
+              onClick={() => {
+                setSelectedTopic('SAT Test Preparation');
+                setIsLessonModalOpen(true);
+              }}
+            >
+              SAT Prep
+            </Button>
+            <Button 
+              size="lg" 
+              variant="outline"
+              className="text-lg px-8 py-4 h-auto"
+              onClick={() => {
+                setSelectedTopic('ACT Test Preparation');
+                setIsLessonModalOpen(true);
+              }}
+            >
+              ACT Prep
+            </Button>
           </div>
         </div>
       </section>
-
+      
       {/* Value Proposition & How It Works */}
       <section className="container-section bg-secondary">
         <div className="content-container">
@@ -287,4 +325,4 @@ function Home() {
   );
 }
 
-export default Home;
+export default Dashboard;

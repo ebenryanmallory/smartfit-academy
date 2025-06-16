@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useUser, useAuth } from '@clerk/clerk-react';
 import { toast } from 'sonner';
 import { generateUserLessonId } from '@/utils/lessonIdUtils';
+import { getTestPrepLessonPlans } from '@/data/test-prep/lessonPlans';
 
 import {
   Dialog,
@@ -59,6 +60,62 @@ interface GenerateTopicLessonModalProps {
   topic: string;
 }
 
+
+
+// Function to save multiple lesson plans directly to user data
+const saveTestPrepLessonPlans = async (topic: string, user: any, getToken: any) => {
+  const lessonPlansData = getTestPrepLessonPlans(topic);
+  
+  if (lessonPlansData.length === 0) {
+    throw new Error('No lesson plans found for this topic');
+  }
+
+  const token = await getToken();
+  if (!token) {
+    throw new Error('Failed to get authentication token');
+  }
+
+  // Save each lesson plan separately
+  const savePromises = lessonPlansData.map(async (planData, index) => {
+    const lessonPlanData = {
+      topic: planData.title, // Use the specific lesson plan title as topic
+      title: `${planData.title} - Study Plan`,
+      totalEstimatedTime: `${planData.lessons.length * 2}-${planData.lessons.length * 3} hours`,
+      uuid: generateUserLessonId(),
+      lessons: planData.lessons.map((lessonTitle, lessonIndex) => ({
+        title: lessonTitle,
+        description: `Comprehensive lesson covering ${lessonTitle.toLowerCase()}`,
+        content: null, // Will be generated when expanded
+        uuid: generateUserLessonId(),
+        lesson_order: lessonIndex + 1
+      }))
+    };
+
+    const response = await fetch('/api/d1/user/lesson-plans', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify(lessonPlanData),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`Failed to save lesson plan ${index + 1}:`, response.status, errorText);
+      throw new Error(`Failed to save lesson plan: ${planData.title}`);
+    }
+
+    return response.json();
+  });
+
+  // Wait for all lesson plans to be saved
+  await Promise.all(savePromises);
+  
+  return lessonPlansData.length;
+};
+
 const GenerateTopicLessonModal: React.FC<GenerateTopicLessonModalProps> = ({
   isOpen,
   onClose,
@@ -72,6 +129,39 @@ const GenerateTopicLessonModal: React.FC<GenerateTopicLessonModalProps> = ({
 
   const [saving, setSaving] = useState(false);
   const [userEducationLevel, setUserEducationLevel] = useState<EducationLevel>('undergrad'); // Default to undergrad
+
+  // Get pre-populated lesson plan data for test prep topics
+  const testPrepLessonPlans = getTestPrepLessonPlans(topic);
+  const isTestPrep = testPrepLessonPlans.length > 0;
+  const [showTestPrepPreview, setShowTestPrepPreview] = useState(false);
+
+  // Function to create and save test prep lesson plans
+  const createTestPrepPlans = async () => {
+    if (!user) {
+      toast.error('Please sign in to create lesson plans');
+      return;
+    }
+
+    setShowTestPrepPreview(false);
+    setSaving(true);
+
+    try {
+      const savedCount = await saveTestPrepLessonPlans(topic, user, getToken);
+      
+      toast.success(`Successfully created ${savedCount} lesson plans!`, {
+        description: 'Your comprehensive study plans are now available in your dashboard.',
+      });
+      
+      // Close the modal after successful save
+      onClose();
+    } catch (err) {
+      console.error('Error creating test prep lesson plans:', err);
+      toast.error('Failed to create lesson plans. Please try again.');
+      setShowTestPrepPreview(true); // Show preview again on error
+    } finally {
+      setSaving(false);
+    }
+  };
 
   // Fetch user's education level
   const fetchUserEducationLevel = useCallback(async () => {
@@ -351,7 +441,21 @@ const GenerateTopicLessonModal: React.FC<GenerateTopicLessonModalProps> = ({
 **Lesson Title:** ${lessonPlan.lessons[lessonIndex].title}
 **Lesson Description:** ${lessonPlan.lessons[lessonIndex].description || 'No specific description provided'}
 
-Please generate comprehensive, educational content in markdown format for this specific lesson. The content should be engaging, informative, and appropriate for students learning about this topic.
+${lessonId.startsWith('test-prep-') ? `
+**IMPORTANT: This is a standardized test preparation lesson.**
+${topic.toLowerCase().includes('ged') ? 'Focus on GED test strategies, question types, and practice problems that mirror the actual GED exam format.' : ''}
+${topic.toLowerCase().includes('sat') ? 'Focus on SAT test strategies, question formats, timing tips, and practice problems that mirror the actual SAT exam.' : ''}
+${topic.toLowerCase().includes('act') ? 'Focus on ACT test strategies, question types, pacing techniques, and practice problems that mirror the actual ACT exam.' : ''}
+
+Include:
+- Specific test-taking strategies
+- Sample questions in the actual test format
+- Time management tips
+- Common mistakes to avoid
+- Practice exercises with detailed explanations
+` : ''}
+
+Please generate comprehensive, educational content in markdown format for this specific lesson. The content should be engaging, informative, and appropriate for ${getEducationLevelDisplayName(userEducationLevel)} students.
 
 Include practical examples, clear explanations, and interactive elements like questions or exercises where appropriate.`
             }
@@ -533,14 +637,21 @@ Include practical examples, clear explanations, and interactive elements like qu
     }
   }, [user, getToken, lessonPlan, topic, onClose]);
 
-
-
-  // Generate lesson plan when modal opens
+  // Handle modal opening logic
   useEffect(() => {
     if (isOpen && topic) {
-      generateLessonPlan();
+      if (isTestPrep) {
+        // For test prep topics, show preview first
+        setShowTestPrepPreview(true);
+        setLessonPlan(null);
+        setError(null);
+        setLoading(false);
+      } else {
+        // For regular topics, generate AI lesson plan immediately (original behavior)
+        generateLessonPlan();
+      }
     }
-  }, [isOpen, topic, generateLessonPlan]);
+  }, [isOpen, topic, isTestPrep, generateLessonPlan]);
 
   // Reset state when modal closes
   useEffect(() => {
@@ -548,6 +659,7 @@ Include practical examples, clear explanations, and interactive elements like qu
       setLessonPlan(null);
       setError(null);
       setLoading(false);
+      setShowTestPrepPreview(false);
     }
   }, [isOpen]);
 
@@ -565,6 +677,42 @@ Include practical examples, clear explanations, and interactive elements like qu
         </DialogHeader>
 
         <div className="flex-1 overflow-y-auto">
+          {/* Pre-populated lesson titles preview for test prep */}
+          {showTestPrepPreview && (
+            <div className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <GraduationCap className="h-5 w-5" />
+                    Comprehensive {topic} Study Plan
+                  </CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    Your personalized lesson plan will include these key topics:
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {testPrepLessonPlans.map((plan, index) => (
+                      <div key={index} className="flex items-center gap-2 p-2 rounded-lg bg-muted/30">
+                        <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-medium text-primary">
+                          {index + 1}
+                        </div>
+                        <span className="text-sm font-medium">{plan.title}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                    <p className="text-sm text-blue-800">
+                      <strong>Ready to start?</strong> Click "Create All Study Plans" below to generate {testPrepLessonPlans.length} comprehensive 
+                      lesson plans (one for each topic above). Each lesson plan will contain 5 individual lessons with 
+                      AI-generated content, practice problems, and test-specific strategies.
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
           {loading && (
             <Card className="h-full flex items-center justify-center">
               <CardContent className="text-center py-8">
@@ -744,6 +892,26 @@ Include practical examples, clear explanations, and interactive elements like qu
             )}
           </div>
           <div className="flex gap-2">
+            {/* Show Generate Full Plan button for test prep preview */}
+            {showTestPrepPreview && (
+              <Button 
+                onClick={createTestPrepPlans}
+                disabled={saving}
+                className="min-w-[160px]"
+              >
+                {saving ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Creating Plans...
+                  </>
+                ) : (
+                  <>
+                    <BookOpen className="h-4 w-4 mr-2" />
+                    Create All Study Plans
+                  </>
+                )}
+              </Button>
+            )}
             {lessonPlan && (
               <Button 
                 onClick={saveLessonPlan}

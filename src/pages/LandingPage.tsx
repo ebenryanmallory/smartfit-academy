@@ -175,50 +175,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="bg-gradient-to-b from-background to-secondary/10">
-        <div className="container-section content-container">
-          <motion.div 
-            className="text-center mb-16 space-y-4"
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.6 }}
-          >
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground tracking-tight">
-              Why Students Choose Us
-            </h2>
-            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto font-light">
-              We understand the real challenges you face when learning something new
-            </p>
-            <div className="w-16 h-0.5 bg-gradient-to-r from-primary to-accent mx-auto rounded-full opacity-50"></div>
-          </motion.div>
-          
-          <motion.div 
-            className="responsive-grid"
-            variants={staggerContainer}
-            initial="initial"
-            whileInView="animate"
-            viewport={{ once: true, margin: "-50px" }}
-          >
-            {features.map((feature, idx) => (
-              <motion.div key={idx} className="group" variants={fadeInUp}>
-                <Card className="feature-card h-full border-0 shadow-sm hover:shadow-lg transition-all duration-500 bg-card/50 backdrop-blur-sm hover:bg-card/80 hover:-translate-y-1">
-                  <div className="mb-6 p-3 rounded-full bg-gradient-to-br from-primary/10 to-accent/10 w-fit mx-auto group-hover:scale-110 transition-transform duration-300">
-                    {feature.icon}
-                  </div>
-                  <CardTitle className="text-xl font-semibold mb-4 text-center text-foreground group-hover:text-primary transition-colors duration-300">
-                    {feature.title}
-                  </CardTitle>
-                  <CardDescription className="text-muted-foreground text-center leading-relaxed">
-                    {feature.desc}
-                  </CardDescription>
-                </Card>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </section>
+
 
       {/* Original Hero Content - Now as Value Proposition */}
       <section className="bg-gradient-to-r from-palette-4/10 via-background to-palette-5/10">
@@ -291,6 +248,108 @@ export default function LandingPage() {
                 </Card>
               </motion.div>
             ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Beyond the Classroom - Bento Grid */}
+      <section className="bg-gradient-to-b from-background to-palette-3/20">
+        <div className="container-section content-container">
+          <motion.div 
+            className="text-center mb-16 space-y-4"
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6 }}
+          >
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground tracking-tight">
+              Beyond the Classroom
+            </h2>
+            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto font-light">
+              Comprehensive support for your academic journey, from test prep to ongoing study assistance
+            </p>
+            <div className="w-16 h-0.5 bg-gradient-to-r from-primary to-accent mx-auto rounded-full opacity-50"></div>
+          </motion.div>
+          
+          {/* Bento Grid Layout with Original Content Style */}
+          <motion.div 
+            className="flex flex-wrap gap-5 lg:gap-4 md:gap-3 mt-10 lg:mt-9 md:mt-6 sm:mt-5"
+            variants={staggerContainer}
+            initial="initial"
+            whileInView="animate"
+            viewport={{ once: true, margin: "-50px" }}
+          >
+            {/* GED Preparation - Small */}
+            <motion.div 
+              className="relative w-full sm:w-[calc(50%-1rem)] md:w-[calc(33%-0.5rem)] h-[350px] lg:h-[280px] md:h-[240px] overflow-hidden rounded-xl bg-card border border-border shadow-md hover:shadow-lg transition-all duration-500 hover:-translate-y-1 order-1"
+              variants={fadeInUp}
+            >
+              <div className="h-full flex flex-col items-center justify-center p-6 text-center">
+                <div className="mb-6 p-3 rounded-full bg-gradient-to-br from-primary/10 to-accent/10 w-fit">
+                  <GraduationCap className="h-8 w-8 text-primary" />
+                </div>
+                <h4 className="text-xl font-semibold mb-4 text-foreground">
+                  GED Preparation
+                </h4>
+                <p className="text-muted-foreground leading-relaxed">
+                  Complete GED prep with personalized study plans, practice tests, and AI tutoring across all subject areas. Build confidence for test day success.
+                </p>
+              </div>
+            </motion.div>
+
+            {/* SAT/ACT Preparation - Large */}
+            <motion.div 
+              className="relative w-full sm:w-[calc(50%-1rem)] md:w-[calc(66%-0.5rem)] h-[350px] lg:h-[280px] md:h-[240px] overflow-hidden rounded-xl bg-card border border-border shadow-md hover:shadow-lg transition-all duration-500 hover:-translate-y-1 order-2"
+              variants={fadeInUp}
+            >
+              <div className="h-full flex flex-col items-center justify-center p-6 text-center">
+                <div className="mb-6 p-3 rounded-full bg-gradient-to-br from-secondary/10 to-accent/10 w-fit">
+                  <Target className="h-8 w-8 text-secondary" />
+                </div>
+                <h4 className="text-xl font-semibold mb-4 text-foreground">
+                  SAT/ACT Preparation
+                </h4>
+                <p className="text-muted-foreground leading-relaxed">
+                  Boost your college admission scores with adaptive practice, targeted weak area improvement, and strategic test-taking techniques.
+                </p>
+              </div>
+            </motion.div>
+
+            {/* Self Paced - Small (but ordered 4th visually) */}
+            <motion.div 
+              className="relative w-full sm:w-[calc(50%-1rem)] md:w-[calc(33%-0.5rem)] h-[350px] lg:h-[280px] md:h-[240px] overflow-hidden rounded-xl bg-card border border-border shadow-md hover:shadow-lg transition-all duration-500 hover:-translate-y-1 order-4"
+              variants={fadeInUp}
+            >
+              <div className="h-full flex flex-col items-center justify-center p-6 text-center">
+                <div className="mb-6 p-3 rounded-full bg-gradient-to-br from-success/10 to-accent/10 w-fit">
+                  <TrendingUp className="h-8 w-8 text-success" />
+                </div>
+                <h4 className="text-xl font-semibold mb-4 text-foreground">
+                  Self Paced
+                </h4>
+                <p className="text-muted-foreground leading-relaxed">
+                  Learn at your own speed with progress tracking and achievements that celebrate every milestone on your educational journey.
+                </p>
+              </div>
+            </motion.div>
+
+            {/* Study Companion - Large (but ordered 3rd visually to appear first in second row) */}
+            <motion.div 
+              className="relative w-full sm:w-[calc(50%-1rem)] md:w-[calc(66%-0.5rem)] h-[350px] lg:h-[280px] md:h-[240px] overflow-hidden rounded-xl bg-card border border-border shadow-md hover:shadow-lg transition-all duration-500 hover:-translate-y-1 order-3"
+              variants={fadeInUp}
+            >
+              <div className="h-full flex flex-col items-center justify-center p-6 text-center">
+                <div className="mb-6 p-3 rounded-full bg-gradient-to-br from-accent/10 to-success/10 w-fit">
+                  <BookOpen className="h-8 w-8 text-accent" />
+                </div>
+                <h4 className="text-xl font-semibold mb-4 text-foreground">
+                  Study Companion
+                </h4>
+                <p className="text-muted-foreground leading-relaxed">
+                  Get homework help, study guides, and exam prep for your current courses. AI assistance that complements your classroom learning.
+                </p>
+              </div>
+            </motion.div>
           </motion.div>
         </div>
       </section>
@@ -378,7 +437,7 @@ export default function LandingPage() {
               transition={{ duration: 0.5, delay: 0.2 }}
             >
               <Button className="btn-primary" asChild>
-                <Link to="/dashboard">Sign Up Now</Link>
+                <Link to="/dashboard">Start Here</Link>
               </Button>
             </motion.div>
           </motion.div>

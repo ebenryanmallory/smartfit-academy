@@ -155,25 +155,7 @@ const UserTopics = forwardRef<UserTopicsRef, UserTopicsProps>(({ onTopicClick, c
                   <RefreshCw className="h-4 w-4" />
                 </Button>
               </div>
-              
-              {/* TEST TOPIC - FOR TESTING PURPOSES ONLY - WILL BE REMOVED */}
-              <div className="border-t pt-4">
-                <p className="text-sm text-muted-foreground mb-2">
-                  Test the lesson generation feature:
-                </p>
-                <div className="flex items-center gap-1">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onTopicClick?.('Introduction to Photosynthesis')}
-                    className="text-sm px-3 py-1 h-auto hover:bg-blue-50 hover:border-blue-300"
-                  >
-                    Introduction to Photosynthesis
-                  </Button>
-                  <span className="text-xs text-muted-foreground ml-2">(Test Topic)</span>
-                </div>
-              </div>
-              {/* END TEST TOPIC */}
+
             </Card>
           </div>
         </div>

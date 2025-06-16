@@ -4,7 +4,7 @@ import { Toaster } from "sonner";
 import { ClerkProviderWrapper } from './components/auth/clerk.tsx';
 import { EnsureUserInD1 } from './components/auth/EnsureUserInD1';
 import LandingPage from './pages/LandingPage';
-import Home from './pages/Home';
+import Dashboard from './pages/Dashboard';
 import Lessons from './pages/Lessons';
 import LessonPage from './pages/LessonPage';
 import Navigation from './components/Navigation';
@@ -52,7 +52,7 @@ function App() {
                 <Route path="/style-guide" element={<StyleGuide />} />
                 
                 {/* Protected routes (will add auth check later) */}
-                <Route path="/dashboard" element={<Home />} />
+                <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/dashboard/lessons" element={<Lessons />} />
                 <Route path="/dashboard/lessons/:id" element={<Lessons />} />
                 
