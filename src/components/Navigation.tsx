@@ -14,6 +14,17 @@ function Navigation() {
 
   return (
     <div className="flex items-center gap-4">
+      <SignedOut>
+        <Link 
+          to="/pricing" 
+          className={`flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors hover:bg-accent hover:text-accent-foreground ${
+            location.pathname === '/pricing' ? 'bg-accent text-accent-foreground' : ''
+          }`}
+        >
+          Pricing
+        </Link>
+      </SignedOut>
+      
       <SignedIn>
         <NavigationMenu>
           <NavigationMenuList>

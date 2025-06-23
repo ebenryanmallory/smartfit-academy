@@ -1,6 +1,8 @@
-import { educationalAssistantInstructions } from './educational-assistant.js';
-import { lessonPlanGeneratorInstructions } from './lesson-plan-generator.js';
-import { lessonContentGeneratorInstructions } from './lesson-content-generator.js';
+import { educationalAssistantInstructions } from './educational-assistant';
+import { lessonPlanGeneratorInstructions } from './lesson-plan-generator';
+import { lessonContentGeneratorInstructions } from './lesson-content-generator';
+import { relevanceEngineInstructions } from './relevance-engine-generator';
+import { historicalConnectionGeneratorInstructions } from './historical-connection-generator';
 // Export all instruction sets
 export const instructions = {
     educationalAssistant: educationalAssistantInstructions,
@@ -16,4 +18,4 @@ export function getInstructions(type) {
     return instructions[type];
 }
 // Export individual instructions for direct import
-export { educationalAssistantInstructions, lessonPlanGeneratorInstructions, lessonContentGeneratorInstructions };
+export { educationalAssistantInstructions, lessonPlanGeneratorInstructions, lessonContentGeneratorInstructions, relevanceEngineInstructions, historicalConnectionGeneratorInstructions };

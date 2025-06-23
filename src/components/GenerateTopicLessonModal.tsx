@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useUser, useAuth } from '@clerk/clerk-react';
+import { useUser, useAuth, SignInButton } from '@clerk/clerk-react';
 import { toast } from 'sonner';
 import { generateUserLessonId } from '@/utils/lessonIdUtils';
 import { getTestPrepLessonPlans } from '@/data/test-prep/lessonPlans';
@@ -13,7 +13,8 @@ import {
 } from './ui/dialog';
 import { Button } from './ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { Loader2, BookOpen, X, ChevronDown, ChevronRight, Trash2, RefreshCw, Plus, Minus, GraduationCap } from 'lucide-react';
+import { LessonContentLoader } from './ui/LessonContentLoader';
+import { Loader2, BookOpen, X, ChevronDown, ChevronRight, Trash2, RefreshCw, Plus, Minus, GraduationCap, Clock, Sparkles } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
 type EducationLevel = 'elementary' | 'highschool' | 'undergrad' | 'grad';
@@ -52,18 +53,21 @@ interface Lesson {
 interface LessonPlan {
   lessons: Lesson[];
   totalEstimatedTime: string;
+  savedLessonPlanId?: number; // Track the saved lesson plan ID for content updates
 }
 
 interface GenerateTopicLessonModalProps {
   isOpen: boolean;
   onClose: () => void;
   topic: string;
+  useRelevanceEngine?: boolean; // Flag to use Relevance Engine instead of regular lesson plan generator
+  previewMode?: boolean; // Flag to allow non-authenticated users to preview lessons
 }
 
 
 
 // Function to save multiple lesson plans directly to user data
-const saveTestPrepLessonPlans = async (topic: string, user: any, getToken: any) => {
+const saveTestPrepLessonPlans = async (topic: string, _user: any, getToken: any) => {
   const lessonPlansData = getTestPrepLessonPlans(topic);
   
   if (lessonPlansData.length === 0) {
@@ -120,6 +124,8 @@ const GenerateTopicLessonModal: React.FC<GenerateTopicLessonModalProps> = ({
   isOpen,
   onClose,
   topic,
+  useRelevanceEngine = false,
+  previewMode = false,
 }) => {
   const { user } = useUser();
   const { getToken } = useAuth();
@@ -134,6 +140,10 @@ const GenerateTopicLessonModal: React.FC<GenerateTopicLessonModalProps> = ({
   const testPrepLessonPlans = getTestPrepLessonPlans(topic);
   const isTestPrep = testPrepLessonPlans.length > 0;
   const [showTestPrepPreview, setShowTestPrepPreview] = useState(false);
+
+  // State for handling background content generation errors
+  const [contentGenerationError, setContentGenerationError] = useState<string | null>(null);
+  const [showAdvancedControls, setShowAdvancedControls] = useState(false);
 
   // Function to create and save test prep lesson plans
   const createTestPrepPlans = async () => {
@@ -199,8 +209,8 @@ const GenerateTopicLessonModal: React.FC<GenerateTopicLessonModalProps> = ({
     }
   }, [isOpen, user, fetchUserEducationLevel]);
 
-  const generateLessonPlanWithStreaming = useCallback(async (retryCount = 0) => {
-    if (!user) {
+  const generateLessonPlanWithStreaming = useCallback(async (_retryCount = 0) => {
+    if (!user && !previewMode) {
       toast.error('Please sign in to generate lesson plans');
       return;
     }
@@ -210,32 +220,36 @@ const GenerateTopicLessonModal: React.FC<GenerateTopicLessonModalProps> = ({
     setLessonPlan(null);
 
     try {
-      const token = await getToken();
-      if (!token) {
-        throw new Error('Failed to get authentication token');
+      let token = null;
+      if (user) {
+        token = await getToken();
+        if (!token && !previewMode) {
+          throw new Error('Failed to get authentication token');
+        }
+      }
+
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
       }
 
       const response = await fetch('/llm/llama3', {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
+        headers,
+        credentials: token ? 'include' : 'omit',
         body: JSON.stringify({
           messages: [
             {
               role: 'user',
-              content: `Create a comprehensive lesson plan for the topic: "${topic}". 
-              
-              Please generate a structured lesson plan that breaks this topic down into multiple individual lessons.
-              
-              Tailor the content complexity for ${getEducationLevelDisplayName(userEducationLevel)} students.
-              
-              IMPORTANT: Respond with ONLY valid, complete JSON. Do not truncate your response.`
+              content: useRelevanceEngine 
+                ? `Create a Time Machine lesson plan for the topic: "${topic}"`
+                : `Create a lesson plan for the topic: "${topic}"`
             }
           ],
-          instructionType: 'lessonPlanGenerator',
+          instructionType: useRelevanceEngine ? 'relevanceEngine' : 'lessonPlanGenerator',
           educationLevel: userEducationLevel
         }),
       });
@@ -386,7 +400,14 @@ const GenerateTopicLessonModal: React.FC<GenerateTopicLessonModalProps> = ({
       };
 
       setLessonPlan(validatedPlan);
-      toast.success(`Lesson plan generated successfully with ${validatedLessons.length} lessons!`);
+      
+      toast.success(`${useRelevanceEngine ? 'Time Machine lesson plan' : 'Lesson plan'} generated successfully with ${validatedLessons.length} lessons!`, {
+        description: previewMode
+          ? 'This is a preview! Sign in to save your lesson plan and access full features.'
+          : useRelevanceEngine 
+            ? 'Your historical connections are ready! Review the lessons and save to your dashboard.'
+            : 'Review and modify the plan as needed, then click "Save Plan" to save it to your dashboard.',
+      });
       
     } catch (err) {
       console.error('Error generating lesson plan:', err);
@@ -398,66 +419,109 @@ const GenerateTopicLessonModal: React.FC<GenerateTopicLessonModalProps> = ({
     } finally {
       setLoading(false);
     }
-  }, [user, getToken, topic, userEducationLevel]);
+  }, [user, getToken, topic, userEducationLevel, previewMode, useRelevanceEngine]);
 
   // Wrapper function for event handlers
   const generateLessonPlan = useCallback(() => {
     return generateLessonPlanWithStreaming(0);
   }, [generateLessonPlanWithStreaming]);
 
-  const loadLessonContent = useCallback(async (lessonId: string) => {
-    if (!user || !lessonPlan) return;
+  // Manual save function that saves the final lesson plan structure
+  const saveLessonPlan = useCallback(async () => {
+    if (!user || !lessonPlan) {
+      toast.error('Please sign in and generate a lesson plan first');
+      return;
+    }
 
-    const lessonIndex = lessonPlan.lessons.findIndex(l => l.id === lessonId);
-    if (lessonIndex === -1) return;
-
-    // Update lesson to show loading state
-    setLessonPlan(prev => {
-      if (!prev) return prev;
-      const updated = { ...prev };
-      updated.lessons[lessonIndex] = { ...updated.lessons[lessonIndex], isLoadingContent: true };
-      return updated;
-    });
+    setSaving(true);
 
     try {
-      // Make API call to load lesson content
       const token = await getToken();
       if (!token) throw new Error('Failed to get authentication token');
 
-      const response = await fetch('/llm/llama3', {
+      // Prepare the lesson plan data for saving (without content)
+      const lessonPlanData = {
+        topic: topic,
+        title: `${topic} - Study Plan`,
+        totalEstimatedTime: lessonPlan.totalEstimatedTime,
+        uuid: generateUserLessonId(),
+        lessons: lessonPlan.lessons.map((lesson, index) => ({
+          title: lesson.title,
+          description: lesson.description,
+          content: lesson.content || null, // Save any content that was already generated
+          uuid: generateUserLessonId(),
+          lesson_order: index + 1
+        }))
+      };
+
+      const response = await fetch('/api/d1/user/lesson-plans', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
         credentials: 'include',
+        body: JSON.stringify(lessonPlanData),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to save lesson plan: ${response.status}`);
+      }
+
+      const savedData = await response.json();
+      const savedLessonPlanId = savedData.lessonPlan?.id;
+      
+      // Update the lesson plan with the saved ID
+      if (savedLessonPlanId) {
+        setLessonPlan(prev => prev ? { ...prev, savedLessonPlanId } : null);
+      }
+      
+      toast.success('Study plan saved successfully!', {
+        description: 'Your lesson plan is now available in your dashboard. Content will be generated as you explore each lesson.',
+      });
+      
+      // Close the modal after successful save
+      setTimeout(() => onClose(), 1500);
+    } catch (error) {
+      console.error('Error saving lesson plan:', error);
+      toast.error('Failed to save lesson plan. Please try again.');
+    } finally {
+      setSaving(false);
+    }
+  }, [user, getToken, lessonPlan, topic, onClose]);
+
+  // Generate content in memory only (no database save until "Save Plan")
+  const generateContentInMemory = useCallback(async (lessonId: string, lessonTitle: string, lessonDescription: string) => {
+    try {
+      let token = null;
+      if (user) {
+        token = await getToken();
+        if (!token && !previewMode) {
+          throw new Error('Failed to get authentication token');
+        }
+      }
+
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const response = await fetch('/llm/llama3', {
+        method: 'POST',
+        headers,
+        credentials: token ? 'include' : 'omit',
         body: JSON.stringify({
           messages: [
             {
               role: 'user',
-              content: `Create detailed lesson content for:
-
-**Topic:** ${topic}
-**Lesson Title:** ${lessonPlan.lessons[lessonIndex].title}
-**Lesson Description:** ${lessonPlan.lessons[lessonIndex].description || 'No specific description provided'}
-
-${lessonId.startsWith('test-prep-') ? `
-**IMPORTANT: This is a standardized test preparation lesson.**
-${topic.toLowerCase().includes('ged') ? 'Focus on GED test strategies, question types, and practice problems that mirror the actual GED exam format.' : ''}
-${topic.toLowerCase().includes('sat') ? 'Focus on SAT test strategies, question formats, timing tips, and practice problems that mirror the actual SAT exam.' : ''}
-${topic.toLowerCase().includes('act') ? 'Focus on ACT test strategies, question types, pacing techniques, and practice problems that mirror the actual ACT exam.' : ''}
-
-Include:
-- Specific test-taking strategies
-- Sample questions in the actual test format
-- Time management tips
-- Common mistakes to avoid
-- Practice exercises with detailed explanations
-` : ''}
-
-Please generate comprehensive, educational content in markdown format for this specific lesson. The content should be engaging, informative, and appropriate for ${getEducationLevelDisplayName(userEducationLevel)} students.
-
-Include practical examples, clear explanations, and interactive elements like questions or exercises where appropriate.`
+              content: `Create lesson content for:
+- Topic: ${topic}
+- Lesson Title: ${lessonTitle}
+- Lesson Description: ${lessonDescription || 'No specific description provided'}${lessonId.startsWith('test-prep-') ? `
+- Note: This is standardized test preparation content` : ''}`
             }
           ],
           instructionType: 'lessonContentGenerator',
@@ -466,11 +530,58 @@ Include practical examples, clear explanations, and interactive elements like qu
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to load lesson content: ${response.status}`);
+        throw new Error(`Failed to generate content: ${response.status}`);
       }
 
       const data = await response.json();
       const responseContent = data.result?.response || data.response || '';
+
+      // Return content without saving to database
+      return responseContent;
+    } catch (error) {
+      console.error('Error generating content in memory:', error);
+      throw error;
+    }
+  }, [user, getToken, topic, userEducationLevel, previewMode]);
+
+  // Generate content and store in component state (no database save until "Save Plan")
+  const loadLessonContent = useCallback(async (lessonId: string) => {
+    if ((!user && !previewMode) || !lessonPlan) return;
+
+    const lessonIndex = lessonPlan.lessons.findIndex(l => l.id === lessonId);
+    if (lessonIndex === -1) return;
+
+    const lesson = lessonPlan.lessons[lessonIndex];
+
+    // If content already exists, just expand
+    if (lesson.content) {
+      setLessonPlan(prev => {
+        if (!prev) return prev;
+        const updated = { ...prev };
+        updated.lessons[lessonIndex] = {
+          ...updated.lessons[lessonIndex],
+          isExpanded: true,
+        };
+        return updated;
+      });
+      return;
+    }
+
+    // Show loading state
+    setLessonPlan(prev => {
+      if (!prev) return prev;
+      const updated = { ...prev };
+      updated.lessons[lessonIndex] = { ...updated.lessons[lessonIndex], isLoadingContent: true };
+      return updated;
+    });
+
+    try {
+      // Generate content but only store in component state
+      const responseContent = await generateContentInMemory(
+        lesson.id,
+        lesson.title,
+        lesson.description
+      );
       
       // Update lesson with content
       setLessonPlan(prev => {
@@ -487,7 +598,8 @@ Include practical examples, clear explanations, and interactive elements like qu
 
     } catch (err) {
       console.error('Error loading lesson content:', err);
-      toast.error('Failed to load lesson content');
+      setContentGenerationError(`Failed to generate content for "${lesson.title}". Please try again.`);
+      setShowAdvancedControls(true);
       
       // Reset loading state
       setLessonPlan(prev => {
@@ -497,7 +609,7 @@ Include practical examples, clear explanations, and interactive elements like qu
         return updated;
       });
     }
-  }, [user, getToken, topic, lessonPlan, userEducationLevel]);
+  }, [user, lessonPlan, generateContentInMemory, previewMode]);
 
   const toggleLessonExpansion = (lessonId: string) => {
     if (!lessonPlan) return;
@@ -566,77 +678,6 @@ Include practical examples, clear explanations, and interactive elements like qu
     generateLessonPlan();
   };
 
-  const saveLessonPlan = useCallback(async () => {
-    if (!user || !lessonPlan) {
-      toast.error('Please sign in and generate a lesson plan first');
-      return;
-    }
-
-    setSaving(true);
-
-    try {
-      const token = await getToken();
-      if (!token) {
-        throw new Error('Failed to get authentication token');
-      }
-
-      // Prepare the lesson plan data for saving
-      const lessonPlanData = {
-        topic: topic,
-        title: `${topic} - Lesson Plan`,
-        totalEstimatedTime: lessonPlan.totalEstimatedTime,
-        uuid: generateUserLessonId(), // Generate short ID for the lesson plan
-
-        lessons: lessonPlan.lessons.map((lesson, index) => {
-          // If lesson has sections, convert them to content for storage
-          let content = lesson.content;
-          if (lesson.sections && lesson.sections.length > 0 && !content) {
-            content = lesson.sections.map(section => 
-              `## ${section.title}\n\n${section.content}`
-            ).join('\n\n');
-          }
-          
-          return {
-            title: lesson.title,
-            description: lesson.description,
-            content: content || null,
-            uuid: generateUserLessonId(), // Generate short ID for each lesson
-            lesson_order: index + 1
-          };
-        })
-      };
-
-      const response = await fetch('/api/d1/user/lesson-plans', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify(lessonPlanData),
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Failed to save lesson plan:', response.status, errorText);
-        throw new Error(`Failed to save lesson plan: ${response.status}`);
-      }
-
-      await response.json();
-      toast.success('Lesson plan saved successfully!', {
-        description: 'You can access it from your dashboard anytime.',
-      });
-      
-      // Close the modal after successful save
-      onClose();
-    } catch (err) {
-      console.error('Error saving lesson plan:', err);
-      toast.error('Failed to save lesson plan. Please try again.');
-    } finally {
-      setSaving(false);
-    }
-  }, [user, getToken, lessonPlan, topic, onClose]);
-
   // Handle modal opening logic
   useEffect(() => {
     if (isOpen && topic) {
@@ -668,13 +709,53 @@ Include practical examples, clear explanations, and interactive elements like qu
       <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl">
-            <BookOpen className="h-5 w-5" />
-            Craft Lesson Plan: {topic}
+            {useRelevanceEngine ? (
+              <>
+                <Clock className="h-5 w-5" />
+                Time Machine: {topic}
+              </>
+            ) : (
+              <>
+                <BookOpen className="h-5 w-5" />
+                Craft Lesson Plan: {topic}
+              </>
+            )}
           </DialogTitle>
           <DialogDescription>
-            AI-generated lesson plan with expandable lessons for your selected topic
+            {useRelevanceEngine 
+              ? 'Connecting your trending topic to historical wisdom and classical texts'
+              : 'AI-generated lesson plan with expandable lessons for your selected topic'
+            }
           </DialogDescription>
         </DialogHeader>
+
+        {/* Preview Mode Banner */}
+        {previewMode && (
+          <div className="bg-gradient-to-r from-blue-50 to-primary/5 border border-blue-200 rounded-lg p-4 mb-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                  <Sparkles className="h-4 w-4 text-blue-600" />
+                </div>
+                <div>
+                  <h4 className="font-semibold text-blue-900">Preview Mode</h4>
+                  <p className="text-sm text-blue-700">
+                    You're previewing our lesson generation! Sign in to save your plans and access advanced features.
+                  </p>
+                </div>
+              </div>
+              <SignInButton mode="modal">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="border-blue-300 text-blue-700 hover:bg-blue-50"
+                >
+                  Sign In
+                </Button>
+              </SignInButton>
+            </div>
+          </div>
+        )}
 
         <div className="flex-1 overflow-y-auto">
           {/* Pre-populated lesson titles preview for test prep */}
@@ -717,9 +798,14 @@ Include practical examples, clear explanations, and interactive elements like qu
             <Card className="h-full flex items-center justify-center">
               <CardContent className="text-center py-8">
                 <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
-                <h3 className="text-lg font-medium mb-2">Generating Your Lesson Plan</h3>
+                <h3 className="text-lg font-medium mb-2">
+                  {useRelevanceEngine ? 'Connecting Past and Present' : 'Generating Your Lesson Plan'}
+                </h3>
                 <p className="text-muted-foreground">
-                  Our AI is crafting a personalized lesson plan for "{topic}"...
+                  {useRelevanceEngine 
+                    ? `Our Time Machine is finding historical parallels and classical wisdom for "${topic}"...`
+                    : `Our AI is crafting a personalized lesson plan for "${topic}"...`
+                  }
                 </p>
               </CardContent>
             </Card>
@@ -740,8 +826,6 @@ Include practical examples, clear explanations, and interactive elements like qu
                 >
                   Try Again
                 </Button>
-                
-
               </CardContent>
             </Card>
           )}
@@ -761,6 +845,12 @@ Include practical examples, clear explanations, and interactive elements like qu
                           <GraduationCap className="h-3 w-3" />
                           {getEducationLevelDisplayName(userEducationLevel)}
                         </span>
+                        {showAdvancedControls && (
+                          <span className="flex items-center gap-1">
+                            <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                            {lessonPlan.lessons.filter(l => l.content).length} with content
+                          </span>
+                        )}
                       </p>
                     </div>
                     <div className="flex gap-2">
@@ -769,6 +859,7 @@ Include practical examples, clear explanations, and interactive elements like qu
                         size="sm"
                         onClick={() => regeneratePlan('more')}
                         className="text-xs"
+                        disabled={saving}
                       >
                         <Plus className="h-3 w-3 mr-1" />
                         More Thorough
@@ -778,6 +869,7 @@ Include practical examples, clear explanations, and interactive elements like qu
                         size="sm"
                         onClick={() => regeneratePlan('less')}
                         className="text-xs"
+                        disabled={saving}
                       >
                         <Minus className="h-3 w-3 mr-1" />
                         More Succinct
@@ -806,7 +898,22 @@ Include practical examples, clear explanations, and interactive elements like qu
                           )}
                         </Button>
                         <div className="flex-1">
-                          <CardTitle className="text-base">{lesson.title}</CardTitle>
+                          <div className="flex items-center gap-2">
+                            <CardTitle className="text-base">{lesson.title}</CardTitle>
+                            {showAdvancedControls && (
+                              <>
+                                {lesson.content ? (
+                                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                    {lessonPlan.savedLessonPlanId ? 'Content Saved' : 'Content Ready'}
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                    Outline Only
+                                  </span>
+                                )}
+                              </>
+                            )}
+                          </div>
                           <p className="text-sm text-muted-foreground mt-1">
                             {lesson.description}
                           </p>
@@ -816,16 +923,12 @@ Include practical examples, clear explanations, and interactive elements like qu
                         variant="ghost"
                         size="sm"
                         onClick={() => removeLesson(lesson.id)}
-                        disabled={lessonPlan.lessons.length <= 1}
+                        disabled={lessonPlan.lessons.length <= 1 || saving}
                         className={`p-1 h-auto ${
-                          lessonPlan.lessons.length <= 1 
-                            ? 'text-gray-400 cursor-not-allowed' 
-                            : 'text-red-500 hover:text-red-700'
+                          lessonPlan.lessons.length <= 1 || saving ? 'text-gray-400 cursor-not-allowed' : 'text-red-500 hover:text-red-700'
                         }`}
                         title={
-                          lessonPlan.lessons.length <= 1 
-                            ? "Cannot remove the last lesson. Your plan must have at least one lesson." 
-                            : "Remove lesson"
+                          lessonPlan.lessons.length <= 1 ? "Cannot remove the last lesson. Your plan must have at least one lesson." : saving ? "Cannot remove lessons while saving" : "Remove lesson"
                         }
                       >
                         <Trash2 className="h-4 w-4" />
@@ -836,10 +939,7 @@ Include practical examples, clear explanations, and interactive elements like qu
                   {lesson.isExpanded && (
                     <CardContent className="pt-0">
                       {lesson.isLoadingContent ? (
-                        <div className="flex items-center justify-center py-8">
-                          <Loader2 className="h-6 w-6 animate-spin mr-2" />
-                          <span className="text-sm text-muted-foreground">Loading lesson content...</span>
-                        </div>
+                        <LessonContentLoader lessonTitle={lesson.title} topic={topic} variant="card" />
                       ) : lesson.sections && lesson.sections.length > 0 ? (
                         <div className="space-y-4">
                           {lesson.sections.map((section, sectionIndex) => (
@@ -859,14 +959,19 @@ Include practical examples, clear explanations, and interactive elements like qu
                         </div>
                       ) : (
                         <div className="text-center py-4">
-                          <p className="text-sm text-muted-foreground mb-2">Content not loaded yet</p>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => loadLessonContent(lesson.id)}
-                          >
-                            Load Content
-                          </Button>
+                          <p className="text-sm text-muted-foreground mb-2">
+                            Content will be generated automatically when you expand this lesson.
+                          </p>
+                          {showAdvancedControls && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => loadLessonContent(lesson.id)}
+                            >
+                              <BookOpen className="h-4 w-4 mr-1" />
+                              Generate Content Now
+                            </Button>
+                          )}
                         </div>
                       )}
                     </CardContent>
@@ -876,6 +981,36 @@ Include practical examples, clear explanations, and interactive elements like qu
             </div>
           )}
         </div>
+
+        {/* Error display and advanced controls */}
+        {contentGenerationError && (
+          <div className="p-4 border-t bg-red-50 border-red-200">
+            <div className="flex items-start justify-between">
+              <div>
+                <h4 className="text-sm font-medium text-red-800 mb-1">Content Generation Error</h4>
+                <p className="text-sm text-red-700">{contentGenerationError}</p>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setContentGenerationError(null)}
+                className="text-red-500 hover:text-red-700"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="mt-3 flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowAdvancedControls(true)}
+                className="text-xs"
+              >
+                Show Advanced Controls
+              </Button>
+            </div>
+          </div>
+        )}
 
         <div className="flex justify-between items-center pt-4 border-t">
           <div className="flex gap-2">
@@ -888,6 +1023,26 @@ Include practical examples, clear explanations, and interactive elements like qu
               >
                 <RefreshCw className="h-4 w-4 mr-1" />
                 Regenerate Plan
+              </Button>
+            )}
+            {showAdvancedControls && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowAdvancedControls(false)}
+                className="text-xs text-muted-foreground"
+              >
+                Hide Advanced Options
+              </Button>
+            )}
+            {!showAdvancedControls && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowAdvancedControls(true)}
+                className="text-xs text-muted-foreground"
+              >
+                Advanced Options
               </Button>
             )}
           </div>
@@ -912,7 +1067,7 @@ Include practical examples, clear explanations, and interactive elements like qu
                 )}
               </Button>
             )}
-            {lessonPlan && (
+            {lessonPlan && !lessonPlan.savedLessonPlanId && !previewMode && (
               <Button 
                 onClick={saveLessonPlan}
                 disabled={saving}
@@ -926,6 +1081,23 @@ Include practical examples, clear explanations, and interactive elements like qu
                 ) : (
                   'Save Plan'
                 )}
+              </Button>
+            )}
+            {lessonPlan && previewMode && (
+              <SignInButton mode="modal">
+                <Button 
+                  className="min-w-[120px]"
+                >
+                  Sign In to Save
+                </Button>
+              </SignInButton>
+            )}
+            {lessonPlan?.savedLessonPlanId && (
+              <Button 
+                onClick={onClose}
+                className="min-w-[120px]"
+              >
+                View in Dashboard
               </Button>
             )}
           </div>

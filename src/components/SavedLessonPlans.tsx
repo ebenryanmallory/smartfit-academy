@@ -3,7 +3,8 @@ import { useUser, useAuth } from '@clerk/clerk-react';
 import { toast } from 'sonner';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
-import { BookOpen, RefreshCw, Clock, GraduationCap, ChevronDown, ChevronRight, Trash2, ExternalLink } from 'lucide-react';
+import { LessonContentLoader } from './ui/LessonContentLoader';
+import { BookOpen, RefreshCw, Clock, GraduationCap, ChevronDown, ChevronRight, Trash2, Play } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { Link } from 'react-router-dom';
 
@@ -67,6 +68,7 @@ const SavedLessonPlans = forwardRef<SavedLessonPlansRef, SavedLessonPlansProps>(
   const [error, setError] = useState<string | null>(null);
   const [expandedPlans, setExpandedPlans] = useState<Set<number>>(new Set());
   const [expandedLessons, setExpandedLessons] = useState<Set<number>>(new Set());
+  const [loadingContent, setLoadingContent] = useState<Set<number>>(new Set());
   const [userEducationLevel, setUserEducationLevel] = useState<EducationLevel>('undergrad');
 
   const fetchUserEducationLevel = async () => {
@@ -185,7 +187,19 @@ const SavedLessonPlans = forwardRef<SavedLessonPlansRef, SavedLessonPlansProps>(
     });
   };
 
-  const toggleLessonExpansion = (lessonId: number) => {
+  const toggleLessonExpansion = async (lessonId: number) => {
+    // Find the lesson and check if it needs content generation
+    const lesson = lessonPlans.flatMap(plan => plan.lessons).find(l => l.id === lessonId);
+    if (!lesson) return;
+
+    const isCurrentlyExpanded = expandedLessons.has(lessonId);
+    
+    // If expanding and no content exists, generate it first
+    if (!isCurrentlyExpanded && !lesson.content) {
+      await generateLessonContent(lessonId);
+    }
+
+    // Toggle expansion state
     setExpandedLessons(prev => {
       const newSet = new Set(prev);
       if (newSet.has(lessonId)) {
@@ -195,6 +209,94 @@ const SavedLessonPlans = forwardRef<SavedLessonPlansRef, SavedLessonPlansProps>(
       }
       return newSet;
     });
+  };
+
+  // Generate content for a lesson that doesn't have it yet
+  const generateLessonContent = async (lessonId: number) => {
+    if (!isSignedIn) return;
+
+    const lesson = lessonPlans.flatMap(plan => plan.lessons).find(l => l.id === lessonId);
+    const lessonPlan = lessonPlans.find(plan => plan.lessons.some(l => l.id === lessonId));
+    if (!lesson || !lessonPlan) return;
+
+    // Set loading state
+    setLoadingContent(prev => new Set([...prev, lessonId]));
+
+    try {
+      const token = await getToken();
+      if (!token) throw new Error('Failed to get authentication token');
+
+      // Generate content using the same API as the modal
+      const response = await fetch('/llm/llama3', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          messages: [
+            {
+              role: 'user',
+              content: `Create detailed lesson content for:
+
+**Topic:** ${lessonPlan.topic}
+**Lesson Title:** ${lesson.title}
+**Lesson Description:** ${lesson.description || 'No specific description provided'}
+
+Please generate comprehensive, educational content in markdown format for this specific lesson. The content should be engaging, informative, and appropriate for ${getEducationLevelDisplayName(userEducationLevel)} students.
+
+Include practical examples, clear explanations, and interactive elements like questions or exercises where appropriate.`
+            }
+          ],
+          instructionType: 'lessonContentGenerator',
+          educationLevel: userEducationLevel
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to generate content: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const responseContent = data.result?.response || data.response || '';
+
+      // Save the generated content to the database
+      const saveResponse = await fetch(`/api/d1/user/lesson-plans/${lessonPlan.id}/lessons/${lessonId}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          content: responseContent
+        }),
+      });
+
+      if (!saveResponse.ok) {
+        throw new Error(`Failed to save content: ${saveResponse.status}`);
+      }
+
+      // Update the local state with the new content
+      setLessonPlans(prev => prev.map(plan => ({
+        ...plan,
+        lessons: plan.lessons.map(l => 
+          l.id === lessonId ? { ...l, content: responseContent } : l
+        )
+      })));
+
+    } catch (error) {
+      console.error('Error generating lesson content:', error);
+      toast.error(`Failed to generate content for "${lesson.title}". Please try again.`);
+    } finally {
+      // Remove loading state
+      setLoadingContent(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(lessonId);
+        return newSet;
+      });
+    }
   };
 
   // Expose methods to parent components
@@ -248,9 +350,14 @@ const SavedLessonPlans = forwardRef<SavedLessonPlansRef, SavedLessonPlansProps>(
       <Card className={`p-6 text-center ${className}`}>
         <BookOpen className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
         <h3 className="text-lg font-medium mb-2">No Saved Lesson Plans</h3>
-        <p className="text-muted-foreground">
-          Generate and save lesson plans from the home page to see them here.
+        <p className="text-muted-foreground mb-4">
+          Generate and save lesson plans from the dashboard to see them here.
         </p>
+        <Button asChild variant="outline">
+          <Link to="/dashboard">
+            Go to Dashboard
+          </Link>
+        </Button>
       </Card>
     );
   }
@@ -262,15 +369,29 @@ const SavedLessonPlans = forwardRef<SavedLessonPlansRef, SavedLessonPlansProps>(
           <BookOpen className="h-6 w-6" />
           Your Saved Lesson Plans ({lessonPlans.length})
         </h2>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={fetchLessonPlans}
-          className="text-muted-foreground hover:text-foreground"
-          title="Refresh lesson plans"
-        >
-          <RefreshCw className="h-4 w-4" />
-        </Button>
+        <div className="flex items-center gap-2">
+          {lessonPlans.length > 0 && lessonPlans[0].lessons.length > 0 && (
+            <Button
+              asChild
+              variant="default"
+              size="sm"
+            >
+              <Link to={`/lessons/${lessonPlans[0].lessons[0].uuid || lessonPlans[0].lessons[0].id}`}>
+                <Play className="h-4 w-4 mr-1" />
+                Continue Learning
+              </Link>
+            </Button>
+          )}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={fetchLessonPlans}
+            className="text-muted-foreground hover:text-foreground"
+            title="Refresh lesson plans"
+          >
+            <RefreshCw className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
 
       {lessonPlans.map((plan) => (
@@ -362,24 +483,34 @@ const SavedLessonPlans = forwardRef<SavedLessonPlansRef, SavedLessonPlansProps>(
                             className="text-xs h-7"
                           >
                             <Link to={`/lessons/${lesson.uuid || lesson.id}`}>
-                              <ExternalLink className="h-3 w-3 mr-1" />
-                              View Lesson
+                              <Play className="h-3 w-3 mr-1" />
+                              Start Lesson
                             </Link>
                           </Button>
-                          <span className="text-xs text-muted-foreground">
-                            Lesson {lesson.lesson_order}
+                          <span className="text-xs text-muted-foreground bg-gray-100 px-2 py-1 rounded">
+                            Lesson {lesson.lesson_order} of {plan.lessons.length}
                           </span>
                         </div>
                       </div>
                     </CardHeader>
 
-                    {expandedLessons.has(lesson.id) && lesson.content && (
+                    {expandedLessons.has(lesson.id) && (
                       <CardContent className="pt-0">
-                        <div className="border rounded-lg p-3 bg-muted/20">
-                          <div className="prose prose-sm max-w-none">
-                            <ReactMarkdown>{lesson.content}</ReactMarkdown>
+                        {loadingContent.has(lesson.id) ? (
+                          <LessonContentLoader lessonTitle={lesson.title} variant="inline" />
+                        ) : lesson.content ? (
+                          <div className="border rounded-lg p-3 bg-muted/20">
+                            <div className="prose prose-sm max-w-none">
+                              <ReactMarkdown>{lesson.content}</ReactMarkdown>
+                            </div>
                           </div>
-                        </div>
+                        ) : (
+                          <div className="text-center py-4">
+                            <p className="text-sm text-muted-foreground">
+                              Content will be generated automatically when you expand this lesson.
+                            </p>
+                          </div>
+                        )}
                       </CardContent>
                     )}
                   </Card>

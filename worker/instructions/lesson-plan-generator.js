@@ -1,4 +1,4 @@
-import { getEducationLevelConfig } from './education-level-config.js';
+import { getEducationLevelConfig } from './education-level-config';
 export function lessonPlanGeneratorInstructions(educationLevel) {
     const config = getEducationLevelConfig(educationLevel);
     return `You are a lesson plan generator for SmartFit Academy. Your role is to create comprehensive, structured lesson plans for educational topics that can be broken down into multiple individual lessons.

@@ -7,6 +7,8 @@ import LandingPage from './pages/LandingPage';
 import Dashboard from './pages/Dashboard';
 import Lessons from './pages/Lessons';
 import LessonPage from './pages/LessonPage';
+import RelevanceEngine from './pages/RelevanceEngine';
+import Pricing from './pages/Pricing';
 import Navigation from './components/Navigation';
 import Footer from './components/Footer';
 import StyleGuide from './pages/StyleGuide';
@@ -29,7 +31,7 @@ function App() {
             <div className="content-container mx-auto px-4 py-4 flex items-center justify-between">
               <Link to="/" className="flex items-center">
                 <img 
-                  src="/smartfit-logo.svg" 
+                  src="/smartfit-full.svg" 
                   alt="SmartFit Academy" 
                   className="h-12 w-auto"
                 />
@@ -49,7 +51,9 @@ function App() {
                 <Route path="/onboarding" element={<Onboarding />} />
                 <Route path="/sample-lesson" element={<SampleLesson />} />
                 <Route path="/lessons/:id" element={<LessonPage />} />
+                <Route path="/pricing" element={<Pricing />} />
                 <Route path="/style-guide" element={<StyleGuide />} />
+                <Route path="/modern-relevance" element={<RelevanceEngine />} />
                 
                 {/* Protected routes (will add auth check later) */}
                 <Route path="/dashboard" element={<Dashboard />} />

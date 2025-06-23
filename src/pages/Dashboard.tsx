@@ -3,7 +3,7 @@ import { useState, useRef } from 'react';
 import { Button } from '../components/ui/button';
 import BottomChatAssistant from "../components/BottomChatAssistant";
 import UserTopics, { UserTopicsRef } from "../components/UserTopics";
-import UserLessonPlans, { UserLessonPlansRef } from "../components/UserLessonPlans";
+import SavedLessonPlans, { SavedLessonPlansRef } from "../components/SavedLessonPlans";
 import GenerateTopicLessonModal from "../components/GenerateTopicLessonModal";
 import { useUser } from '@clerk/clerk-react';
 import {
@@ -21,16 +21,19 @@ function Dashboard() {
   const [isLessonModalOpen, setIsLessonModalOpen] = useState(false);
   const [selectedTopic, setSelectedTopic] = useState<string>('');
   const [hasLessonPlans, setHasLessonPlans] = useState(false);
+  const [userLatestInput, setUserLatestInput] = useState<string>('');
   const { isSignedIn } = useUser();
   const userTopicsRef = useRef<UserTopicsRef>(null);
-  const userLessonPlansRef = useRef<UserLessonPlansRef>(null);
+  const userLessonPlansRef = useRef<SavedLessonPlansRef>(null);
 
   const handleExpandAssistant = () => {
     setIsAssistantExpanded(true);
-    // Scroll to bottom to show the assistant
-    setTimeout(() => {
-      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-    }, 100);
+    // Apply blur to main content only
+    const mainContent = document.getElementById('main-dashboard-content');
+    if (mainContent) {
+      mainContent.style.filter = 'blur(8px)';
+      mainContent.style.transition = 'filter 0.3s ease-in-out';
+    }
   };
 
   const handleTopicClick = (topic: string) => {
@@ -50,7 +53,20 @@ function Dashboard() {
   };
 
   const handleToggleAssistant = () => {
-    setIsAssistantExpanded(!isAssistantExpanded);
+    const newExpandedState = !isAssistantExpanded;
+    setIsAssistantExpanded(newExpandedState);
+    
+    // Apply or remove blur based on the new state
+    const mainContent = document.getElementById('main-dashboard-content');
+    if (mainContent) {
+      if (newExpandedState) {
+        mainContent.style.filter = 'blur(8px)';
+        mainContent.style.transition = 'filter 0.3s ease-in-out';
+      } else {
+        mainContent.style.filter = 'none';
+        mainContent.style.transition = 'filter 0.3s ease-in-out';
+      }
+    }
   };
 
   const handleCloseLessonModal = () => {
@@ -58,15 +74,22 @@ function Dashboard() {
     setSelectedTopic('');
   };
 
+  const handleUserInput = (userInput: string) => {
+    setUserLatestInput(userInput);
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-background pb-48">
+      <div id="main-dashboard-content">
       {/* User's Lesson Plans - Show if user is signed in and has saved lesson plans */}
       {isSignedIn && (
-        <UserLessonPlans 
-          ref={userLessonPlansRef}
-          onLessonPlansChange={handleLessonPlansChange}
-          className="mb-8"
-        />
+        <div className="content-container my-12 w-full">
+          <SavedLessonPlans 
+            ref={userLessonPlansRef}
+            onLessonPlansChange={handleLessonPlansChange}
+            className="mb-8"
+          />
+        </div>
       )}
 
       {/* Hero/Intro Section - Only show if user is not signed in OR has no lesson plans */}
@@ -95,6 +118,7 @@ function Dashboard() {
           ref={userTopicsRef}
           onTopicClick={handleTopicClick}
           className="mb-8"
+          userInputTopic={userLatestInput}
         />
       )}
 
@@ -309,11 +333,13 @@ function Dashboard() {
           </Button>
         </div>
       </section>
+      </div>
 
       <BottomChatAssistant 
         isExpanded={isAssistantExpanded} 
         onToggleExpanded={handleToggleAssistant}
         onTopicSaved={handleTopicSaved}
+        onUserInput={handleUserInput}
       />
 
       <GenerateTopicLessonModal

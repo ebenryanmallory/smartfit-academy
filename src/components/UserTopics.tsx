@@ -16,6 +16,7 @@ interface UserTopicsProps {
   onTopicClick?: (topic: string) => void;
   className?: string;
   onTopicsChange?: (topics: UserTopic[]) => void;
+  userInputTopic?: string;
 }
 
 export interface UserTopicsRef {
@@ -23,7 +24,7 @@ export interface UserTopicsRef {
   getTopics: () => UserTopic[];
 }
 
-const UserTopics = forwardRef<UserTopicsRef, UserTopicsProps>(({ onTopicClick, className = "", onTopicsChange }, ref) => {
+const UserTopics = forwardRef<UserTopicsRef, UserTopicsProps>(({ onTopicClick, className = "", onTopicsChange, userInputTopic }, ref) => {
   const { isSignedIn } = useUser();
   const { getToken } = useAuth();
   const [topics, setTopics] = useState<UserTopic[]>([]);
@@ -163,8 +164,8 @@ const UserTopics = forwardRef<UserTopicsRef, UserTopicsProps>(({ onTopicClick, c
     );
   }
 
-  if (topics.length === 0) {
-    return null; // Don't show anything if no topics
+  if (topics.length === 0 && !userInputTopic) {
+    return null; // Don't show anything if no topics and no user input
   }
 
   return (
@@ -181,7 +182,7 @@ const UserTopics = forwardRef<UserTopicsRef, UserTopicsProps>(({ onTopicClick, c
             <div className="flex items-center justify-between mb-3">
               <h3 className="font-medium text-foreground flex items-center gap-2">
                 <BookOpen className="h-4 w-4" />
-                Your Learning Topics ({topics.length})
+                Your Learning Topics ({topics.length + (userInputTopic ? 1 : 0)})
               </h3>
               <Button
                 variant="ghost"
@@ -195,6 +196,21 @@ const UserTopics = forwardRef<UserTopicsRef, UserTopicsProps>(({ onTopicClick, c
             </div>
             
             <div className="flex flex-wrap gap-2">
+              {/* User's exact input topic - show first if provided */}
+              {userInputTopic && (
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onTopicClick?.(userInputTopic)}
+                    className="text-sm px-3 py-1 h-auto hover:bg-blue-50 hover:border-blue-300 border-blue-400 bg-blue-50 font-medium"
+                    title="Your exact topic input"
+                  >
+                    "{userInputTopic}"
+                  </Button>
+                </div>
+              )}
+              
               {topics.map((topicItem) => (
                 <div key={topicItem.id} className="flex items-center gap-1">
                   <Button

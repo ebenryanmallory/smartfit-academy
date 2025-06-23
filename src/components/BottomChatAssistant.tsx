@@ -17,9 +17,10 @@ interface BottomChatAssistantProps {
   onTopicSaved?: () => void;
   isExpanded?: boolean;
   onToggleExpanded?: () => void;
+  onUserInput?: (userInput: string) => void;
 }
 
-export default function BottomChatAssistant({ onTopicSaved, isExpanded = false, onToggleExpanded }: BottomChatAssistantProps = {}) {
+export default function BottomChatAssistant({ onTopicSaved, isExpanded = false, onToggleExpanded, onUserInput }: BottomChatAssistantProps = {}) {
   const { isSignedIn } = useUser();
   const { getToken } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
@@ -285,10 +286,14 @@ export default function BottomChatAssistant({ onTopicSaved, isExpanded = false, 
 
   const handleSend = async () => {
     if (!input.trim()) return;
-    const newMessages = [...messages, { role: 'user', content: input }];
+    const userInput = input.trim(); // Store user input before clearing
+    const newMessages = [...messages, { role: 'user', content: userInput }];
     setMessages(newMessages);
     setInput('');
     setLoading(true);
+    
+    // Call the onUserInput callback with the user's input
+    onUserInput?.(userInput);
 
     try {
       const res = await fetch('/llm/llama3', {
@@ -423,9 +428,9 @@ export default function BottomChatAssistant({ onTopicSaved, isExpanded = false, 
                 size="sm"
                 onClick={onToggleExpanded}
                 className="text-gray-500 hover:text-gray-700 hover:bg-gray-100 p-2 h-auto ml-4"
-                title="Minimize chat assistant"
+                title="Collapse chat assistant"
               >
-                <X className="h-4 w-4" />
+                <ChevronDown className="h-4 w-4" />
               </Button>
             )}
           </div>

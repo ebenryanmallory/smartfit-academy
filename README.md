@@ -126,6 +126,30 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 For support, please open an issue in the GitHub repository or contact us at [support@progressiveai.academy](mailto:support@progressiveai.academy).
 
+## New Features
+
+### Relevance Engine Preview Mode
+
+The Relevance Engine page (`/relevance-engine`) now supports a preview mode for non-authenticated users:
+
+- **Preview Mode**: Non-signed-in users can generate lesson plans to see what the platform offers
+- **Full Lesson Content**: Users can view complete lesson plans with sections and content
+- **Sign-in Prompts**: Clear calls-to-action encourage users to sign in to save their progress
+- **Seamless Transition**: Once signed in, users can save and manage their lesson plans
+
+#### How it works:
+1. Visit `/relevance-engine` without signing in
+2. Enter any trending topic (e.g., "AI replacing human jobs")
+3. Click "Explore" to generate a preview lesson plan
+4. View the complete lesson content and historical connections
+5. Sign in when ready to save and access advanced features
+
+#### Technical Implementation:
+- `GenerateTopicLessonModal` component supports `previewMode` prop
+- LLM API endpoints work without authentication for preview generation
+- Preview banner clearly indicates when users are in preview mode
+- Save buttons are replaced with sign-in prompts for non-authenticated users
+
 ---
 
 Built with ❤️ by SmartFit Academy

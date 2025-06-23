@@ -1,4 +1,4 @@
-import { type EducationLevel, getEducationLevelConfig } from './education-level-config.js';
+import { type EducationLevel, getEducationLevelConfig } from './education-level-config';
 
 export function lessonContentGeneratorInstructions(educationLevel: EducationLevel): string {
   const config = getEducationLevelConfig(educationLevel);

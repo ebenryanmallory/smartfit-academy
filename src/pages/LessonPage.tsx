@@ -3,10 +3,12 @@ import { LessonViewer } from "@/components/LessonViewer";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import ChatAssistant from "@/components/ChatAssistant";
-import { ArrowLeft, AlertTriangle } from "lucide-react";
+import { ArrowLeft, AlertTriangle, RefreshCw } from "lucide-react";
+import { LessonContentLoader } from "@/components/ui/LessonContentLoader";
 import type { LessonData, LessonSection } from "@/data/lessons/types";
 import EducationLevelSelector, { type AudienceLevel } from "@/components/EducationLevelSelector";
 import { useUser, useAuth } from '@clerk/clerk-react';
+import { toast } from 'sonner';
 import {
   Dialog,
   DialogContent,
@@ -17,8 +19,7 @@ import {
 } from "@/components/ui/dialog";
 import { 
   getLessonType, 
-  supportsEducationLevelSwitching,
-  isValidLessonId 
+  supportsEducationLevelSwitching
 } from "@/utils/lessonIdUtils";
 
 interface SavedLesson {
@@ -53,6 +54,22 @@ interface NavigationInfo {
   nextLesson?: { uuid: string; title: string };
 }
 
+// Function to get display name for education level
+const getEducationLevelDisplayName = (level: string): string => {
+  switch (level) {
+    case 'elementary':
+      return 'Elementary School';
+    case 'highschool':
+      return 'High School';
+    case 'undergrad':
+      return 'Undergraduate';
+    case 'grad':
+      return 'Graduate';
+    default:
+      return 'Undergraduate';
+  }
+};
+
 export default function LessonPage() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -60,6 +77,7 @@ export default function LessonPage() {
   const { getToken } = useAuth();
   const [lesson, setLesson] = useState<LessonData | undefined>(undefined);
   const [loading, setLoading] = useState(false);
+  const [generatingContent, setGeneratingContent] = useState(false);
   const [audienceLevel, setAudienceLevel] = useState<AudienceLevel>('undergraduate');
   const [lessonType, setLessonType] = useState<'custom' | 'generated'>('custom');
   const [, setLessonPlan] = useState<LessonPlanData | null>(null);
@@ -67,6 +85,80 @@ export default function LessonPage() {
   const [showEducationWarning, setShowEducationWarning] = useState(false);
   const [pendingEducationLevel, setPendingEducationLevel] = useState<AudienceLevel | null>(null);
   const [originalEducationLevel, setOriginalEducationLevel] = useState<AudienceLevel>('undergraduate');
+  const [userEducationLevel, setUserEducationLevel] = useState<string>('undergrad');
+
+  // Generate content for a lesson that doesn't have it yet
+  const generateLessonContent = async (savedLesson: SavedLesson, lessonPlan: any) => {
+    if (!isSignedIn) return null;
+
+    setGeneratingContent(true);
+
+    try {
+      const token = await getToken();
+      if (!token) throw new Error('Failed to get authentication token');
+
+      // Generate content using the same API as the SavedLessonPlans component
+      const response = await fetch('/llm/llama3', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          messages: [
+            {
+              role: 'user',
+              content: `Create detailed lesson content for:
+
+**Topic:** ${lessonPlan.topic}
+**Lesson Title:** ${savedLesson.title}
+**Lesson Description:** ${savedLesson.description || 'No specific description provided'}
+
+Please generate comprehensive, educational content in markdown format for this specific lesson. The content should be engaging, informative, and appropriate for ${getEducationLevelDisplayName(userEducationLevel)} students.
+
+Include practical examples, clear explanations, and interactive elements like questions or exercises where appropriate.`
+            }
+          ],
+          instructionType: 'lessonContentGenerator',
+          educationLevel: userEducationLevel
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to generate content: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const responseContent = data.result?.response || data.response || '';
+
+      // Save the generated content to the database
+      const saveResponse = await fetch(`/api/d1/user/lesson-plans/${savedLesson.lesson_plan_id}/lessons/${savedLesson.id}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          content: responseContent
+        }),
+      });
+
+      if (!saveResponse.ok) {
+        throw new Error(`Failed to save content: ${saveResponse.status}`);
+      }
+
+      return responseContent;
+
+    } catch (error) {
+      console.error('Error generating lesson content:', error);
+      toast.error(`Failed to generate content for "${savedLesson.title}". Please try again.`);
+      return null;
+    } finally {
+      setGeneratingContent(false);
+    }
+  };
 
   useEffect(() => {
     if (!id) {
@@ -107,6 +199,8 @@ export default function LessonPage() {
           if (userResponse.ok) {
             const userData = await userResponse.json();
             if (userData.user?.education_level) {
+              setUserEducationLevel(userData.user.education_level);
+              
               // Convert backend education level to audience level
               const educationToAudience = (education: string): AudienceLevel => {
                 switch (education) {
@@ -139,22 +233,7 @@ export default function LessonPage() {
           const data = await response.json();
           const savedLesson: SavedLesson = data.lesson;
           
-          // Convert saved lesson to LessonData format
-          const lessonData: LessonData = {
-            id: savedLesson.uuid || savedLesson.id.toString(),
-            title: savedLesson.title,
-            description: savedLesson.description || `Part of "${savedLesson.plan_title}" lesson plan`,
-            sections: savedLesson.content ? [
-              {
-                title: savedLesson.title,
-                content: savedLesson.content
-              }
-            ] : []
-          };
-          
-          setLesson(lessonData);
-
-          // Fetch lesson plan data for navigation
+          // Fetch lesson plan data for content generation and navigation
           const lessonPlanResponse = await fetch(`/api/d1/user/lesson-plans/${savedLesson.lesson_plan_id}`, {
             headers: {
               'Authorization': `Bearer ${token}`,
@@ -163,13 +242,15 @@ export default function LessonPage() {
             credentials: 'include',
           });
 
+          let lessonPlanData = null;
           if (lessonPlanResponse.ok) {
-            const lessonPlanData = await lessonPlanResponse.json();
+            const planData = await lessonPlanResponse.json();
+            lessonPlanData = planData.lessonPlan;
             const plan: LessonPlanData = {
-              id: lessonPlanData.lessonPlan.id,
-              title: lessonPlanData.lessonPlan.title,
-              topic: lessonPlanData.lessonPlan.topic,
-              lessons: lessonPlanData.lessonPlan.lessons.map((l: any) => ({
+              id: lessonPlanData.id,
+              title: lessonPlanData.title,
+              topic: lessonPlanData.topic,
+              lessons: lessonPlanData.lessons.map((l: any) => ({
                 id: l.id,
                 uuid: l.uuid,
                 title: l.title,
@@ -196,6 +277,27 @@ export default function LessonPage() {
               setNavigationInfo(navInfo);
             }
           }
+
+          // If lesson has no content, generate it automatically
+          let lessonContent = savedLesson.content;
+          if (!lessonContent && lessonPlanData) {
+            lessonContent = await generateLessonContent(savedLesson, lessonPlanData);
+          }
+          
+          // Convert saved lesson to LessonData format
+          const lessonData: LessonData = {
+            id: savedLesson.uuid || savedLesson.id.toString(),
+            title: savedLesson.title,
+            description: savedLesson.description || `Part of "${savedLesson.plan_title}" lesson plan`,
+            sections: lessonContent ? [
+              {
+                title: savedLesson.title,
+                content: lessonContent
+              }
+            ] : []
+          };
+          
+          setLesson(lessonData);
         } catch (error) {
           console.error('Error loading saved lesson:', error);
           setLesson(undefined);
@@ -235,10 +337,17 @@ export default function LessonPage() {
     return (
       <div className="content-container mx-auto py-12 px-4">
         <div className="mx-auto text-center">
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <RefreshCw className="h-6 w-6 animate-spin" />
+          </div>
           <h1 className="text-4xl font-bold mb-4">Loading Lesson...</h1>
         </div>
       </div>
     );
+  }
+
+  if (generatingContent) {
+    return <LessonContentLoader variant="fullscreen" />;
   }
 
   if (!lesson) {
