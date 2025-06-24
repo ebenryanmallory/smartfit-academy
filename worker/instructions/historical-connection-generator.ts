@@ -1,32 +1,7 @@
-export function historicalConnectionGeneratorInstructions(educationLevel: string = 'undergrad'): string {
-  const educationConfig = {
-    elementary: {
-      complexity: "very simple terms",
-      timeRange: "focus on major historical periods and events that are commonly taught in elementary school",
-      thinkingLevel: "concrete examples and basic cause-and-effect relationships",
-      language: "age-appropriate vocabulary and short, clear sentences"
-    },
-    highschool: {
-      complexity: "accessible but substantive language",
-      timeRange: "cover a broader range of historical periods with more detail",
-      thinkingLevel: "analytical connections and some abstract thinking",
-      language: "standard academic vocabulary with clear explanations"
-    },
-    undergrad: {
-      complexity: "sophisticated academic language",
-      timeRange: "comprehensive historical coverage including lesser-known events",
-      thinkingLevel: "complex analytical connections and abstract concepts",
-      language: "university-level vocabulary and nuanced explanations"
-    },
-    grad: {
-      complexity: "advanced scholarly discourse",
-      timeRange: "extensive historical knowledge including specialized and interdisciplinary connections",
-      thinkingLevel: "advanced theoretical frameworks and complex analytical synthesis",
-      language: "graduate-level academic terminology and sophisticated analysis"
-    }
-  };
+import { getHistoricalConnectionConfig } from './config';
 
-  const config = educationConfig[educationLevel] || educationConfig.undergrad;
+export function historicalConnectionGeneratorInstructions(educationLevel: string = 'undergrad'): string {
+  const config = getHistoricalConnectionConfig(educationLevel);
 
   return `You are a specialized Historical Connection Generator that creates insightful parallels between modern topics and historical events, patterns, and thinkers.
 

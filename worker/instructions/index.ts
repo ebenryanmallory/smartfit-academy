@@ -1,7 +1,6 @@
 import { educationalAssistantInstructions } from './educational-assistant';
 import { lessonPlanGeneratorInstructions } from './lesson-plan-generator';
 import { lessonContentGeneratorInstructions } from './lesson-content-generator';
-import { relevanceEngineInstructions } from './relevance-engine-generator';
 import { historicalConnectionGeneratorInstructions } from './historical-connection-generator';
 
 // Export all instruction sets
@@ -25,6 +24,5 @@ export {
   educationalAssistantInstructions,
   lessonPlanGeneratorInstructions,
   lessonContentGeneratorInstructions,
-  relevanceEngineInstructions,
   historicalConnectionGeneratorInstructions
 }; 

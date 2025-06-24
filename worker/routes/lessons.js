@@ -23,8 +23,8 @@ lessonRoutes.post('/lesson-plans', async (c) => {
         console.error('Failed to parse JSON body:', e);
         return c.json({ error: 'Invalid JSON body' }, 400);
     }
-    const { topic, title, totalEstimatedTime, lessons, uuid } = body;
-    console.log('Extracted fields:', { topic, title, totalEstimatedTime, lessonsCount: lessons?.length, uuid });
+    const { topic, title, totalEstimatedTime, lessons, uuid, meta_topic } = body;
+    console.log('Extracted fields:', { topic, title, totalEstimatedTime, lessonsCount: lessons?.length, uuid, meta_topic });
     if (!topic || !title || !lessons || !Array.isArray(lessons)) {
         console.error('Missing required fields:', { topic: !!topic, title: !!title, lessons: !!lessons, isArray: Array.isArray(lessons) });
         return c.json({ error: 'Missing required fields: topic, title, lessons' }, 400);
@@ -39,8 +39,8 @@ lessonRoutes.post('/lesson-plans', async (c) => {
         await db.prepare('INSERT OR IGNORE INTO users (id, email) VALUES (?, ?)').bind(userId, email).run();
         console.log('User initialization complete');
         // Insert lesson plan
-        console.log('Inserting lesson plan with data:', { userId, topic, title, totalEstimatedTime, uuid });
-        const lessonPlanResult = await db.prepare('INSERT INTO lesson_plans (user_id, topic, title, total_estimated_time, uuid) VALUES (?, ?, ?, ?, ?)').bind(userId, topic, title, totalEstimatedTime || null, uuid || null).run();
+        console.log('Inserting lesson plan with data:', { userId, topic, title, totalEstimatedTime, uuid, meta_topic });
+        const lessonPlanResult = await db.prepare('INSERT INTO lesson_plans (user_id, topic, title, total_estimated_time, uuid, meta_topic) VALUES (?, ?, ?, ?, ?, ?)').bind(userId, topic, title, totalEstimatedTime || null, uuid || null, meta_topic || null).run();
         const lessonPlanId = lessonPlanResult.meta.last_row_id;
         console.log('Lesson plan inserted with ID:', lessonPlanId);
         // Insert individual lessons
@@ -215,7 +215,7 @@ lessonRoutes.get('/lessons/:id', async (c) => {
         // Get lesson with its lesson plan (ensure it belongs to the user)
         // Try UUID lookup first, then fall back to numeric ID for backward compatibility
         let lesson = await db.prepare(`
-      SELECT l.*, lp.topic, lp.title as plan_title, lp.total_estimated_time
+      SELECT l.*, lp.topic, lp.meta_topic, lp.title as plan_title, lp.total_estimated_time
       FROM lessons l 
       JOIN lesson_plans lp ON l.lesson_plan_id = lp.id 
       WHERE l.uuid = ? AND lp.user_id = ?
@@ -223,7 +223,7 @@ lessonRoutes.get('/lessons/:id', async (c) => {
         // If UUID lookup failed, try numeric ID lookup for backward compatibility
         if (!lesson && /^\d+$/.test(lessonId)) {
             lesson = await db.prepare(`
-        SELECT l.*, lp.topic, lp.title as plan_title, lp.total_estimated_time
+        SELECT l.*, lp.topic, lp.meta_topic, lp.title as plan_title, lp.total_estimated_time
         FROM lessons l 
         JOIN lesson_plans lp ON l.lesson_plan_id = lp.id 
         WHERE l.id = ? AND lp.user_id = ?

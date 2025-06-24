@@ -43,7 +43,6 @@ app.route('/llm', llmRoutes)
 const validSpaRoutes = [
   '/',
   '/onboarding',
-  '/sample-lesson',
   '/lessons', // This covers /lessons/:id pattern
   '/pricing',
   '/style-guide',

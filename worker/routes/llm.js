@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { educationalAssistantInstructions, lessonPlanGeneratorInstructions, lessonContentGeneratorInstructions, relevanceEngineInstructions, historicalConnectionGeneratorInstructions } from '../instructions/index';
+import { educationalAssistantInstructions, lessonPlanGeneratorInstructions, lessonContentGeneratorInstructions, historicalConnectionGeneratorInstructions } from '../instructions/index';
 const llmRoutes = new Hono();
 // Llama3 LLM endpoint
 llmRoutes.post('/llama3', async (c) => {
@@ -49,8 +49,8 @@ llmRoutes.post('/llama3', async (c) => {
                     // Use education level if provided, default to 'undergrad'
                     const validEducationLevelsForRelevance = ['elementary', 'highschool', 'undergrad', 'grad'];
                     const targetEducationLevelForRelevance = validEducationLevelsForRelevance.includes(educationLevel) ? educationLevel : 'undergrad';
-                    instructionContent = relevanceEngineInstructions(targetEducationLevelForRelevance);
-                    console.log(`Using relevance engine for education level: ${targetEducationLevelForRelevance}`);
+                    instructionContent = lessonPlanGeneratorInstructions(targetEducationLevelForRelevance);
+                    console.log(`Using lesson plan generator (via relevance engine route) for education level: ${targetEducationLevelForRelevance}`);
                     break;
                 case 'historicalConnectionGenerator':
                     // Use education level if provided, default to 'undergrad'
@@ -82,17 +82,13 @@ llmRoutes.post('/llama3', async (c) => {
         // Prepare request body with appropriate max_tokens based on instruction type
         const requestBody = { messages: processedMessages };
         // Set higher token limits for lesson plan generation to prevent truncation
-        if (instructionType === 'lessonPlanGenerator') {
+        if (instructionType === 'lessonPlanGenerator' || instructionType === 'relevanceEngine') {
             requestBody.max_tokens = 4096; // Much higher limit for comprehensive lesson plans
             requestBody.temperature = 0.7; // Slightly higher creativity for educational content
         }
         else if (instructionType === 'lessonContentGenerator') {
             requestBody.max_tokens = 2048; // Higher limit for detailed lesson content
             requestBody.temperature = 0.7;
-        }
-        else if (instructionType === 'relevanceEngine') {
-            requestBody.max_tokens = 4096; // High limit for comprehensive historical connections
-            requestBody.temperature = 0.8; // Higher creativity for finding connections
         }
         else if (instructionType === 'historicalConnectionGenerator') {
             requestBody.max_tokens = 3072; // High limit for detailed historical connections
@@ -161,7 +157,7 @@ llmRoutes.post('/llama3', async (c) => {
             if (aiData.result?.usage) {
                 console.log('Token usage:', aiData.result.usage);
             }
-            // For lesson plan generation, relevance engine, and historical connection generator, validate the JSON structure
+            // For lesson plan generation, relevance engine (now using lesson plan), and historical connection generator, validate the JSON structure
             if (instructionType === 'lessonPlanGenerator' || instructionType === 'relevanceEngine' || instructionType === 'historicalConnectionGenerator') {
                 try {
                     // Check if response looks like it might be truncated
@@ -218,7 +214,7 @@ llmRoutes.post('/llama3', async (c) => {
                         }
                     }
                     // Validate structure based on instruction type
-                    if (instructionType === 'lessonPlanGenerator') {
+                    if (instructionType === 'lessonPlanGenerator' || instructionType === 'relevanceEngine') {
                         // Validate lesson plan structure
                         if (!parsedData.lessonPlan) {
                             throw new Error('Missing lessonPlan object in response');
@@ -239,32 +235,19 @@ llmRoutes.post('/llama3', async (c) => {
                                 throw new Error(`Lesson ${i + 1} is missing a valid description`);
                             }
                             // Check for truncated lessons (common issue)
-                            if (lesson.title.length < 5 || lesson.description.length < 10) {
-                                throw new Error(`Lesson ${i + 1} appears to be truncated or incomplete`);
+                            if (lesson.title.length < 10) {
+                                throw new Error(`Lesson ${i + 1} title appears to be truncated or too short (minimum 10 characters)`);
                             }
-                            // Validate sections array
-                            if (!lesson.sections || !Array.isArray(lesson.sections)) {
-                                throw new Error(`Lesson ${i + 1} is missing a valid sections array`);
+                            if (lesson.description.length < 50) {
+                                throw new Error(`Lesson ${i + 1} description appears to be truncated or too short (minimum 50 characters)`);
                             }
-                            if (lesson.sections.length === 0) {
-                                throw new Error(`Lesson ${i + 1} has no sections`);
+                            // Check for proper sentence structure in description (should end with punctuation)
+                            if (!/[.!?]$/.test(lesson.description.trim())) {
+                                throw new Error(`Lesson ${i + 1} description appears incomplete (missing ending punctuation)`);
                             }
-                            // Validate each section
-                            for (let j = 0; j < lesson.sections.length; j++) {
-                                const section = lesson.sections[j];
-                                if (!section.title || typeof section.title !== 'string') {
-                                    throw new Error(`Lesson ${i + 1}, Section ${j + 1} is missing a valid title`);
-                                }
-                                if (!section.content || typeof section.content !== 'string') {
-                                    throw new Error(`Lesson ${i + 1}, Section ${j + 1} is missing valid content`);
-                                }
-                                // Check for truncated sections
-                                if (section.title.length < 3) {
-                                    throw new Error(`Lesson ${i + 1}, Section ${j + 1} title appears truncated`);
-                                }
-                                if (section.content.length < 50) {
-                                    throw new Error(`Lesson ${i + 1}, Section ${j + 1} content appears truncated or too short`);
-                                }
+                            // Check for reasonable description length (shouldn't be excessively long either)
+                            if (lesson.description.length > 2000) {
+                                console.warn(`Lesson ${i + 1} description is very long (${lesson.description.length} characters)`);
                             }
                         }
                         // Ensure we have reasonable metadata
@@ -406,12 +389,6 @@ llmRoutes.post('/llama3', async (c) => {
                         console.log(`✓ ${summary.connections.length} connections spanning ${eras.size} different eras`);
                         console.log(`✓ Total content length: ${totalContentLength} characters`);
                         console.log(`✓ Classical thinker included: ${hasClassicalThinker}`);
-                    }
-                    else if (instructionType === 'relevanceEngine') {
-                        // Validate relevance engine structure - this varies based on specific use case
-                        // For now, perform basic JSON validation and log structure
-                        console.log('Validated relevance engine response structure');
-                        console.log('Response keys:', Object.keys(parsedData));
                     }
                     else if (instructionType === 'lessonContentGenerator') {
                         // Validate lesson content structure - basic validation for now
