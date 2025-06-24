@@ -334,7 +334,7 @@ export default function Pricing() {
                 </Button>
               )}
               <Button variant="outline" size="lg" asChild>
-                <Link to="/sample-lesson">Try a Free Lesson</Link>
+                <Link to="/lessons/c-intro-ai">Try a Free Lesson</Link>
               </Button>
             </div>
           </motion.div>

@@ -17,7 +17,6 @@ import NotificationBanner from './components/NotificationBanner';
 
 
 const Onboarding = lazy(() => import('./pages/Onboarding'));
-const SampleLesson = lazy(() => import('./pages/SampleLesson'));
 
 function App() {
   return (
@@ -49,7 +48,7 @@ function App() {
                 {/* Public routes */}
                 <Route path="/" element={<LandingPage />} />
                 <Route path="/onboarding" element={<Onboarding />} />
-                <Route path="/sample-lesson" element={<SampleLesson />} />
+
                 <Route path="/lessons/:id" element={<LessonPage />} />
                 <Route path="/pricing" element={<Pricing />} />
                 <Route path="/style-guide" element={<StyleGuide />} />

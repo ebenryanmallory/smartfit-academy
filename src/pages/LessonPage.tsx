@@ -31,6 +31,7 @@ interface SavedLesson {
   content: string | null;
   uuid: string | null;
   topic: string;
+  meta_topic?: string;
   plan_title: string;
   total_estimated_time: string | null;
 }
@@ -289,6 +290,11 @@ Include practical examples, clear explanations, and interactive elements like qu
             id: savedLesson.uuid || savedLesson.id.toString(),
             title: savedLesson.title,
             description: savedLesson.description || `Part of "${savedLesson.plan_title}" lesson plan`,
+            topic: savedLesson.topic, // Include topic from the lesson plan
+            // Only include metaTopic if it exists and is not empty
+            ...(savedLesson.meta_topic && savedLesson.meta_topic.trim() && {
+              metaTopic: savedLesson.meta_topic.trim()
+            }),
             sections: lessonContent ? [
               {
                 title: savedLesson.title,
@@ -451,6 +457,8 @@ Include practical examples, clear explanations, and interactive elements like qu
         title={lesson.title} 
         description={lesson.description} 
         content={combinedContent}
+        topic={lesson.topic}
+        metaTopic={lesson.metaTopic}
         navigationInfo={navigationInfo}
         onNavigate={(lessonUuid) => navigate(`/lessons/${lessonUuid}`)}
       />

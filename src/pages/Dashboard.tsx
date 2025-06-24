@@ -20,6 +20,8 @@ function Dashboard() {
   const [isAssistantExpanded, setIsAssistantExpanded] = useState(false);
   const [isLessonModalOpen, setIsLessonModalOpen] = useState(false);
   const [selectedTopic, setSelectedTopic] = useState<string>('');
+  const [selectedMetaTopic, setSelectedMetaTopic] = useState<string>('');
+  const [useTestPrepMode, setUseTestPrepMode] = useState(false);
   const [hasLessonPlans, setHasLessonPlans] = useState(false);
   const [userLatestInput, setUserLatestInput] = useState<string>('');
   const { isSignedIn } = useUser();
@@ -28,6 +30,7 @@ function Dashboard() {
 
   const handleExpandAssistant = () => {
     setIsAssistantExpanded(true);
+    setUseTestPrepMode(false); // Ensure test prep mode is off when using assistant
     // Apply blur to main content only
     const mainContent = document.getElementById('main-dashboard-content');
     if (mainContent) {
@@ -38,6 +41,8 @@ function Dashboard() {
 
   const handleTopicClick = (topic: string) => {
     setSelectedTopic(topic);
+    setSelectedMetaTopic(''); // Clear meta topic for regular topics
+    setUseTestPrepMode(false); // Regular topics from user's saved topics
     setIsLessonModalOpen(true);
   };
 
@@ -72,6 +77,8 @@ function Dashboard() {
   const handleCloseLessonModal = () => {
     setIsLessonModalOpen(false);
     setSelectedTopic('');
+    setSelectedMetaTopic('');
+    setUseTestPrepMode(false);
   };
 
   const handleUserInput = (userInput: string) => {
@@ -103,9 +110,9 @@ function Dashboard() {
               <Button variant="secondary" asChild className='button-padding'>
                 <Link to="/dashboard/lessons">Available lessons</Link>
               </Button>
-              <Button variant="outline" asChild className='button-padding'>
-                <Link to="/sample-lesson">Try a Sample Lesson</Link>
-              </Button>
+                              <Button variant="outline" asChild className='button-padding'>
+                  <Link to="/lessons/c-intro-ai">Try a Sample Lesson</Link>
+                </Button>
 
             </div>
           </div>
@@ -171,11 +178,11 @@ function Dashboard() {
                     Explore lessons with embedded code playgrounds and instant feedback to reinforce concepts as you learn.
                   </p>
                 </CardContent>
-                <CardFooter className="bg-muted/20 pt-0">
-                  <Button asChild variant="outline" size="sm" className="w-full button-padding">
-                    <Link to="/sample-lesson">Try a Lesson</Link>
-                  </Button>
-                </CardFooter>
+                                  <CardFooter className="bg-muted/20 pt-0">
+                    <Button asChild variant="outline" size="sm" className="w-full button-padding">
+                      <Link to="/lessons/c-intro-ai">Try a Lesson</Link>
+                    </Button>
+                  </CardFooter>
               </Card>
 
               <Card className="feature-card">
@@ -238,6 +245,8 @@ function Dashboard() {
               className="text-lg px-8 py-4 h-auto"
               onClick={() => {
                 setSelectedTopic('GED Test Preparation');
+                setSelectedMetaTopic('GED');
+                setUseTestPrepMode(true);
                 setIsLessonModalOpen(true);
               }}
             >
@@ -249,6 +258,8 @@ function Dashboard() {
               className="text-lg px-8 py-4 h-auto"
               onClick={() => {
                 setSelectedTopic('SAT Test Preparation');
+                setSelectedMetaTopic('SAT');
+                setUseTestPrepMode(true);
                 setIsLessonModalOpen(true);
               }}
             >
@@ -260,6 +271,8 @@ function Dashboard() {
               className="text-lg px-8 py-4 h-auto"
               onClick={() => {
                 setSelectedTopic('ACT Test Preparation');
+                setSelectedMetaTopic('ACT');
+                setUseTestPrepMode(true);
                 setIsLessonModalOpen(true);
               }}
             >
@@ -346,6 +359,8 @@ function Dashboard() {
         isOpen={isLessonModalOpen}
         onClose={handleCloseLessonModal}
         topic={selectedTopic}
+        useTestPrep={useTestPrepMode}
+        metaTopic={selectedMetaTopic}
       />
     </div>
   );

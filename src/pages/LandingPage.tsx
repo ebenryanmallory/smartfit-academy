@@ -97,7 +97,7 @@ export default function LandingPage() {
                   <Link to="/dashboard">Start Your Journey</Link>
                 </Button>
                 <Button variant="outline" size="lg" className="text-base px-6 py-4 border-2 border-primary/20 hover:border-primary/40 transition-all duration-300" asChild>
-                  <Link to="/sample-lesson">Try a Free Lesson</Link>
+                  <Link to="/lessons/c-intro-ai">Try a Free Lesson</Link>
                 </Button>
               </motion.div>
             </motion.div>
@@ -204,7 +204,7 @@ export default function LandingPage() {
                 <Link to="/dashboard">Get Started</Link>
               </Button>
               <Button variant="link" className="text-primary hover:text-primary/80 transition-colors duration-300" asChild>
-                <Link to="/sample-lesson">Try Sample Lesson</Link>
+                <Link to="/lessons/c-intro-ai">Try Sample Lesson</Link>
               </Button>
             </motion.div>
           </motion.div>

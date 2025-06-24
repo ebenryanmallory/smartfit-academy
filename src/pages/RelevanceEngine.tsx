@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useUser } from '@clerk/clerk-react';
+import React, { useState } from 'react';
+import { useUser, SignInButton, SignedIn, SignedOut } from '@clerk/clerk-react';
 import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
 import { Input } from '../components/ui/input';
@@ -12,7 +12,7 @@ const RelevanceEngine: React.FC = () => {
   const [topicInput, setTopicInput] = useState('');
   const [isLessonModalOpen, setIsLessonModalOpen] = useState(false);
   const [selectedTopic, setSelectedTopic] = useState<string>('');
-  const [debouncedTopic, setDebouncedTopic] = useState<string>('');
+  const [exploredTopic, setExploredTopic] = useState<string>('');
 
   // Pre-built trending topics with examples
   const trendingTopics = [
@@ -51,28 +51,12 @@ const RelevanceEngine: React.FC = () => {
   const handleTopicSubmit = (topic: string) => {
     if (!topic.trim()) return;
     
-    // If we already have a connection summary for this topic, open modal directly
-    if (debouncedTopic === topic.trim()) {
-      setSelectedTopic(topic.trim());
-      setIsLessonModalOpen(true);
-    } else {
-      // Otherwise, set the topic and let the debounce effect handle it
-      setTopicInput(topic.trim());
-      setDebouncedTopic(topic.trim());
-      
-      // Scroll to the connection summary area
-      setTimeout(() => {
-        const summaryElement = document.querySelector('[data-connection-summary]');
-        if (summaryElement) {
-          summaryElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-      }, 100);
-    }
+    setExploredTopic(topic.trim());
+    
   };
 
   const handlePrebuiltTopicClick = (topic: string) => {
     setTopicInput(topic);
-    setDebouncedTopic(topic); // Immediately trigger connection summary for pre-built topics
   };
 
   const handleCloseLessonModal = () => {
@@ -80,34 +64,19 @@ const RelevanceEngine: React.FC = () => {
     setSelectedTopic('');
   };
 
-  const handleExploreMore = () => {
-    if (debouncedTopic.trim()) {
-      setSelectedTopic(debouncedTopic.trim());
-      setIsLessonModalOpen(true);
-    }
+  const handleGenerateLesson = (lessonTopic: string) => {
+    setSelectedTopic(lessonTopic);
+    setIsLessonModalOpen(true);
   };
-
-  // Debounce effect for topic input
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (topicInput.trim() && topicInput.trim().length > 3) {
-        setDebouncedTopic(topicInput.trim());
-      } else {
-        setDebouncedTopic('');
-      }
-    }, 1000); // Wait 1 second after user stops typing
-
-    return () => clearTimeout(timer);
-  }, [topicInput]);
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
       {/* Hero Section - Topic Input Above the Fold */}
-      <section className="container-section bg-gradient-to-br from-primary/10 via-accent/5 to-secondary/10">
+      <section className="container-section bg-gradient-to-br from-primary/10 via-accent/5 to-secondary/10 py-40">
         <div className="content-container text-center">
           {/* Campaign Title */}
-          <div className="mb-8">
-            <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">
+          <div className="mb-12">
+            <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto text-center">
               Connect any trending topic to timeless wisdom. Our AI instantly bridges today's conversations 
               with classical texts and historical insights.
             </p>
@@ -140,17 +109,17 @@ const RelevanceEngine: React.FC = () => {
                   disabled={!topicInput.trim()}
                 >
                   <ArrowRight className="h-4 w-4 ml-1" />
-                  {debouncedTopic === topicInput.trim() ? 'Generate Lessons' : 'Explore'}
+                  Explore
                 </Button>
               </div>
               <p className="text-sm text-muted-foreground text-left">
                 Examples: "NFT art bubble", "TikTok dance trends", "Crypto Twitter drama", "Meme stock trading"
               </p>
-              {!isSignedIn && (
+              <SignedOut>
                 <p className="text-xs text-primary font-medium text-left bg-primary/5 p-2 rounded">
                   ✨ Try it now for free! No sign-up required to preview lessons
                 </p>
-              )}
+              </SignedOut>
             </div>
           </Card>
 
@@ -186,11 +155,11 @@ const RelevanceEngine: React.FC = () => {
           </div>
 
           {/* Historical Connection Summary */}
-          {debouncedTopic && debouncedTopic.length > 3 && (
+          {exploredTopic && (
             <div data-connection-summary>
               <HistoricalConnectionSummary
-                topic={debouncedTopic}
-                onExploreMore={handleExploreMore}
+                topic={exploredTopic}
+                onGenerateLesson={handleGenerateLesson}
                 className="mb-8"
               />
             </div>
@@ -344,7 +313,7 @@ const RelevanceEngine: React.FC = () => {
             <Button 
               size="lg" 
               variant="outline"
-              className="bg-white text-primary border-white hover:bg-white/90"
+              className="bg-white border-white hover:bg-white/90"
               onClick={() => {
                 const topicSection = document.querySelector('.container-section');
                 topicSection?.scrollIntoView({ behavior: 'smooth' });
@@ -352,16 +321,17 @@ const RelevanceEngine: React.FC = () => {
             >
               Start Exploring Now
             </Button>
-            {!isSignedIn && (
-              <Button 
-                size="lg" 
-                variant="outline"
-                className="bg-transparent text-white border-white hover:bg-white/10"
-                onClick={() => window.location.href = '/dashboard'}
-              >
-                Sign Up for Free
-              </Button>
-            )}
+            <SignedOut>
+              <SignInButton mode="modal">
+                <Button 
+                  size="lg" 
+                  variant="outline"
+                  className="bg-transparent text-white border-white hover:bg-white/10"
+                >
+                  Sign Up for Free
+                </Button>
+              </SignInButton>
+            </SignedOut>
           </div>
         </div>
       </section>
@@ -373,6 +343,7 @@ const RelevanceEngine: React.FC = () => {
         topic={selectedTopic}
         useRelevanceEngine={true}
         previewMode={!isSignedIn}
+        metaTopic={exploredTopic}
       />
     </div>
   );
