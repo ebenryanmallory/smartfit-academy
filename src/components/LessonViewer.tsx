@@ -1,11 +1,13 @@
 import ReactMarkdown from 'react-markdown';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from '@/components/ui/badge';
 import { useUser } from "@clerk/clerk-react";
 import { CodeSnippet } from './CodeSnippet';
 import { CodePlaygroundTabs } from './CodePlaygroundTabs';
 import { SaveProgressPrompt } from './SaveProgressPrompt';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, FolderOpen } from 'lucide-react';
+
 
 interface NavigationInfo {
   currentIndex: number;
@@ -18,6 +20,8 @@ interface LessonViewerProps {
   title: string;
   description: string;
   content: string;
+  topic?: string;
+  metaTopic?: string; // Optional meta topic for hierarchical organization
   navigationInfo?: NavigationInfo | null;
   onNavigate?: (lessonUuid: string) => void;
 }
@@ -47,15 +51,27 @@ function convertPythonToJS(pythonCode: string): string {
   return jsCode;
 }
 
-export function LessonViewer({ title, description, content, navigationInfo, onNavigate }: LessonViewerProps) {
+export function LessonViewer({ title, description, content, topic, metaTopic, navigationInfo, onNavigate }: LessonViewerProps) {
   const { isSignedIn } = useUser();
 
   return (
     <div className="content-container mx-auto py-8 px-4">
       <Card className="mx-auto">
         <CardHeader>
-          <CardTitle className="text-3xl font-bold">{title}</CardTitle>
-          <p className="text-muted-foreground mt-2">{description}</p>
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex-1">
+              <CardTitle className="text-3xl font-bold">{title}</CardTitle>
+              <p className="text-muted-foreground mt-2">{description}</p>
+            </div>
+            {metaTopic && metaTopic.trim() && (
+              <div className="flex flex-col gap-2 flex-shrink-0">
+                <Badge variant="meta-topic" className="flex items-center gap-1">
+                  <FolderOpen className="h-3 w-3" />
+                  {metaTopic}
+                </Badge>
+              </div>
+            )}
+          </div>
           {!isSignedIn && (
             <SaveProgressPrompt
               title="Start Your Learning Journey"

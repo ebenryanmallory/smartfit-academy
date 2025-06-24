@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useUser, useAuth } from '@clerk/clerk-react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
-import { Loader2, Clock, ArrowRight, BookOpen, User, Calendar } from 'lucide-react';
+import { Loader2, Clock, BookOpen, User, Calendar, Sparkles } from 'lucide-react';
 
 interface HistoricalConnection {
   era: string;
@@ -24,14 +24,14 @@ interface ConnectionSummary {
 
 interface HistoricalConnectionSummaryProps {
   topic: string;
-  onExploreMore: () => void;
+  onGenerateLesson: (lessonTopic: string) => void;
   className?: string;
   educationLevel?: 'elementary' | 'highschool' | 'undergrad' | 'grad';
 }
 
 const HistoricalConnectionSummary: React.FC<HistoricalConnectionSummaryProps> = ({
   topic,
-  onExploreMore,
+  onGenerateLesson,
   className = '',
   educationLevel = 'undergrad'
 }) => {
@@ -168,6 +168,11 @@ const HistoricalConnectionSummary: React.FC<HistoricalConnectionSummaryProps> = 
     }
   };
 
+  // Generate a focused lesson topic for each connection
+  const generateLessonTopic = (connection: HistoricalConnection, baseTopic: string) => {
+    return `${baseTopic}: Learning from ${connection.event} (${connection.era})`;
+  };
+
   // Don't render anything if topic is invalid or too short
   if (!topic.trim() || topic.trim().length < 4) {
     return null;
@@ -185,8 +190,6 @@ const HistoricalConnectionSummary: React.FC<HistoricalConnectionSummaryProps> = 
           </div>
         </Card>
       )}
-
-
 
       {summary && 
        summary.connections && 
@@ -229,10 +232,20 @@ const HistoricalConnectionSummary: React.FC<HistoricalConnectionSummaryProps> = 
                     
                     {/* Content */}
                     <div className="flex-1 bg-white/80 rounded-lg p-4 border border-primary/10">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Calendar className="h-4 w-4 text-primary" />
-                        <span className="text-sm font-semibold text-primary">{connection.era}</span>
-                        <span className="text-xs text-muted-foreground">({connection.year})</span>
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <Calendar className="h-4 w-4 text-primary" />
+                          <span className="text-sm font-semibold text-primary">{connection.era}</span>
+                          <span className="text-xs text-muted-foreground">({connection.year})</span>
+                        </div>
+                        <Button
+                          size="sm"
+                          onClick={() => onGenerateLesson(generateLessonTopic(connection, topic))}
+                          className="ml-2"
+                        >
+                          <Sparkles className="h-3 w-3 mr-1" />
+                          Generate Lesson
+                        </Button>
                       </div>
                       
                       <h4 className="font-medium text-foreground mb-1">{connection.event}</h4>
@@ -255,7 +268,7 @@ const HistoricalConnectionSummary: React.FC<HistoricalConnectionSummaryProps> = 
             </div>
 
             {/* Key Insight */}
-            <div className="bg-gradient-to-r from-secondary/10 to-primary/10 rounded-lg p-4 mb-4">
+            <div className="bg-gradient-to-r from-secondary/10 to-primary/10 rounded-lg p-4">
               <div className="flex items-start gap-2">
                 <BookOpen className="h-4 w-4 text-secondary mt-0.5 flex-shrink-0" />
                 <div>
@@ -263,17 +276,6 @@ const HistoricalConnectionSummary: React.FC<HistoricalConnectionSummaryProps> = 
                   <p className="text-sm text-foreground">{summary.keyInsight}</p>
                 </div>
               </div>
-            </div>
-
-            {/* Call to Action */}
-            <div className="flex justify-center">
-              <Button 
-                onClick={onExploreMore}
-                className="bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90"
-              >
-                <ArrowRight className="h-4 w-4 mr-2" />
-                Explore Full Lesson Plan
-              </Button>
             </div>
           </CardContent>
         </Card>

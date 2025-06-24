@@ -61,7 +61,9 @@ interface GenerateTopicLessonModalProps {
   onClose: () => void;
   topic: string;
   useRelevanceEngine?: boolean; // Flag to use Relevance Engine instead of regular lesson plan generator
+  useTestPrep?: boolean; // Flag to use Test Prep mode (SAT/ACT/GED)
   previewMode?: boolean; // Flag to allow non-authenticated users to preview lessons
+  metaTopic?: string; // Meta topic for categorization (e.g., 'SAT', 'ACT', 'GED', or the original topic for relevance engine)
 }
 
 
@@ -86,6 +88,7 @@ const saveTestPrepLessonPlans = async (topic: string, _user: any, getToken: any)
       title: `${planData.title} - Study Plan`,
       totalEstimatedTime: `${planData.lessons.length * 2}-${planData.lessons.length * 3} hours`,
       uuid: generateUserLessonId(),
+      meta_topic: topic, // Use the original topic (SAT/ACT/GED) as metaTopic
       lessons: planData.lessons.map((lessonTitle, lessonIndex) => ({
         title: lessonTitle,
         description: `Comprehensive lesson covering ${lessonTitle.toLowerCase()}`,
@@ -125,7 +128,9 @@ const GenerateTopicLessonModal: React.FC<GenerateTopicLessonModalProps> = ({
   onClose,
   topic,
   useRelevanceEngine = false,
+  useTestPrep = false,
   previewMode = false,
+  metaTopic,
 }) => {
   const { user } = useUser();
   const { getToken } = useAuth();
@@ -136,9 +141,9 @@ const GenerateTopicLessonModal: React.FC<GenerateTopicLessonModalProps> = ({
   const [saving, setSaving] = useState(false);
   const [userEducationLevel, setUserEducationLevel] = useState<EducationLevel>('undergrad'); // Default to undergrad
 
-  // Get pre-populated lesson plan data for test prep topics
-  const testPrepLessonPlans = getTestPrepLessonPlans(topic);
-  const isTestPrep = testPrepLessonPlans.length > 0;
+  // Get pre-populated lesson plan data for test prep topics (only when explicitly using test prep mode)
+  const testPrepLessonPlans = useTestPrep ? getTestPrepLessonPlans(topic) : [];
+  const isTestPrep = useTestPrep && testPrepLessonPlans.length > 0;
   const [showTestPrepPreview, setShowTestPrepPreview] = useState(false);
 
   // State for handling background content generation errors
@@ -325,66 +330,53 @@ const GenerateTopicLessonModal: React.FC<GenerateTopicLessonModalProps> = ({
           continue;
         }
         
-        // Validate sections array
-        if (!lesson.sections || !Array.isArray(lesson.sections)) {
-          console.warn(`Skipping lesson ${i + 1} with invalid sections:`, lesson);
-          continue;
+        // Validate sections array (optional - lessons may only have title/description)
+        let validatedSections = [];
+        if (lesson.sections && Array.isArray(lesson.sections) && lesson.sections.length > 0) {
+          // Validate and process sections if they exist
+          for (let j = 0; j < lesson.sections.length; j++) {
+            const section = lesson.sections[j];
+            
+            if (!section || typeof section !== 'object') {
+              console.warn(`Skipping invalid section ${j + 1} in lesson ${i + 1}:`, section);
+              continue;
+            }
+            
+            if (!section.title || typeof section.title !== 'string' || section.title.trim().length === 0) {
+              console.warn(`Skipping section ${j + 1} in lesson ${i + 1} with invalid title:`, section);
+              continue;
+            }
+            
+            if (!section.content || typeof section.content !== 'string' || section.content.trim().length === 0) {
+              console.warn(`Skipping section ${j + 1} in lesson ${i + 1} with invalid content:`, section);
+              continue;
+            }
+            
+            // Check for truncated sections
+            if (section.title.length < 3) {
+              console.warn(`Section ${j + 1} in lesson ${i + 1} title appears truncated:`, section.title);
+              continue;
+            }
+            
+            if (section.content.length < 20) {
+              console.warn(`Section ${j + 1} in lesson ${i + 1} content appears truncated:`, section.content);
+              continue;
+            }
+            
+            validatedSections.push({
+              title: section.title.trim(),
+              content: section.content.trim()
+            });
+          }
         }
         
-        if (lesson.sections.length === 0) {
-          console.warn(`Skipping lesson ${i + 1} with no sections:`, lesson);
-          continue;
-        }
-        
-        // Validate and process sections
-        const validatedSections = [];
-        for (let j = 0; j < lesson.sections.length; j++) {
-          const section = lesson.sections[j];
-          
-          if (!section || typeof section !== 'object') {
-            console.warn(`Skipping invalid section ${j + 1} in lesson ${i + 1}:`, section);
-            continue;
-          }
-          
-          if (!section.title || typeof section.title !== 'string' || section.title.trim().length === 0) {
-            console.warn(`Skipping section ${j + 1} in lesson ${i + 1} with invalid title:`, section);
-            continue;
-          }
-          
-          if (!section.content || typeof section.content !== 'string' || section.content.trim().length === 0) {
-            console.warn(`Skipping section ${j + 1} in lesson ${i + 1} with invalid content:`, section);
-            continue;
-          }
-          
-          // Check for truncated sections
-          if (section.title.length < 3) {
-            console.warn(`Section ${j + 1} in lesson ${i + 1} title appears truncated:`, section.title);
-            continue;
-          }
-          
-          if (section.content.length < 20) {
-            console.warn(`Section ${j + 1} in lesson ${i + 1} content appears truncated:`, section.content);
-            continue;
-          }
-          
-          validatedSections.push({
-            title: section.title.trim(),
-            content: section.content.trim()
-          });
-        }
-        
-        // Only include lesson if it has at least one valid section
-        if (validatedSections.length === 0) {
-          console.warn(`Skipping lesson ${i + 1} as it has no valid sections`);
-          continue;
-        }
-        
+        // Create lesson object - sections are optional
         validatedLessons.push({
           id: generateUserLessonId(),
           title: lesson.title.trim(),
           description: lesson.description.trim(),
-          sections: validatedSections,
-          content: undefined, // Will be generated from sections when needed
+          sections: validatedSections.length > 0 ? validatedSections : undefined,
+          content: undefined, // Will be generated when needed
           isExpanded: false,
           isLoadingContent: false,
         });
@@ -445,6 +437,7 @@ const GenerateTopicLessonModal: React.FC<GenerateTopicLessonModalProps> = ({
         title: `${topic} - Study Plan`,
         totalEstimatedTime: lessonPlan.totalEstimatedTime,
         uuid: generateUserLessonId(),
+        meta_topic: metaTopic || (useRelevanceEngine ? topic : undefined), // Use metaTopic if provided, or topic for relevance engine
         lessons: lessonPlan.lessons.map((lesson, index) => ({
           title: lesson.title,
           description: lesson.description,
@@ -692,7 +685,7 @@ const GenerateTopicLessonModal: React.FC<GenerateTopicLessonModalProps> = ({
         generateLessonPlan();
       }
     }
-  }, [isOpen, topic, isTestPrep, generateLessonPlan]);
+  }, [isOpen, topic, isTestPrep, useRelevanceEngine, useTestPrep, generateLessonPlan]);
 
   // Reset state when modal closes
   useEffect(() => {

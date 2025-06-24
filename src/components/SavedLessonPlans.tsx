@@ -3,8 +3,9 @@ import { useUser, useAuth } from '@clerk/clerk-react';
 import { toast } from 'sonner';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
+import { Badge } from './ui/badge';
 import { LessonContentLoader } from './ui/LessonContentLoader';
-import { BookOpen, RefreshCw, Clock, GraduationCap, ChevronDown, ChevronRight, Trash2, Play } from 'lucide-react';
+import { BookOpen, RefreshCw, Clock, GraduationCap, ChevronDown, ChevronRight, Trash2, Play, Tag, FolderOpen } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { Link } from 'react-router-dom';
 
@@ -42,6 +43,7 @@ interface SavedLessonPlan {
   id: number;
   user_id: string;
   topic: string;
+  meta_topic?: string; // Optional meta topic field
   title: string;
   total_estimated_time: string | null;
   uuid: string | null; // UUID for user-facing URLs
@@ -412,7 +414,17 @@ Include practical examples, clear explanations, and interactive elements like qu
                   )}
                 </Button>
                 <div className="flex-1">
-                  <CardTitle className="text-lg">{plan.title}</CardTitle>
+                  <div className="flex items-center gap-2 mb-1">
+                    <CardTitle className="text-lg">{plan.title}</CardTitle>
+                    <div className="flex gap-1">
+                      {plan.meta_topic && plan.meta_topic.trim() && (
+                        <Badge variant="meta-topic" className="flex-shrink-0 flex items-center gap-1">
+                          <FolderOpen className="h-3 w-3" />
+                          {plan.meta_topic}
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
                   <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
                     <span className="flex items-center gap-1">
                       <BookOpen className="h-3 w-3" />

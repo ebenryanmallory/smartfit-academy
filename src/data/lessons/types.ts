@@ -7,5 +7,7 @@ export interface LessonData {
   id: string;
   title: string;
   description: string;
+  topic?: string;
+  metaTopic?: string;
   sections: LessonSection[];
 } 
