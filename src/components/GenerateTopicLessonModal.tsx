@@ -133,7 +133,7 @@ const GenerateTopicLessonModal: React.FC<GenerateTopicLessonModalProps> = ({
   metaTopic,
 }) => {
   const { user } = useUser();
-  const { getToken } = useAuth();
+  const { getToken, has } = useAuth();
   const [lessonPlan, setLessonPlan] = useState<LessonPlan | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -241,46 +241,85 @@ const GenerateTopicLessonModal: React.FC<GenerateTopicLessonModalProps> = ({
         headers['Authorization'] = `Bearer ${token}`;
       }
 
-      const response = await fetch('/llm/llama3', {
-        method: 'POST',
-        headers,
-        credentials: token ? 'include' : 'omit',
-        body: JSON.stringify({
-          messages: [
-            {
-              role: 'user',
-              content: useRelevanceEngine 
-                ? `Create a Time Machine lesson plan for the topic: "${topic}"`
-                : `Create a lesson plan for the topic: "${topic}"`
-            }
-          ],
-          instructionType: useRelevanceEngine ? 'relevanceEngine' : 'lessonPlanGenerator',
-          educationLevel: userEducationLevel
-        }),
-      });
+      // Check if user has monthly plan subscription
+      const hasMonthlyPlan = has?.({ plan: 'monthly' }) ?? false;
+      let response, responseData, planData;
 
-      if (!response.ok) {
-        throw new Error(`Failed to generate lesson plan: ${response.status}`);
-      }
+      if (hasMonthlyPlan) {
+        // Use Claude endpoint for monthly users
+        response = await fetch('/claude/opus', {
+          method: 'POST',
+          headers,
+          credentials: token ? 'include' : 'omit',
+          body: JSON.stringify({
+            messages: [
+              {
+                role: 'user',
+                content: useRelevanceEngine 
+                  ? `Create a Time Machine lesson plan for the topic: "${topic}"`
+                  : `Create a lesson plan for the topic: "${topic}"`
+              }
+            ],
+            instructionType: useRelevanceEngine ? 'relevanceEngine' : 'lessonPlanGenerator',
+            educationLevel: userEducationLevel
+          }),
+        });
 
-      // Handle the response - check if it's streaming or regular JSON
-      const responseData = await response.json();
-      
-      // Extract the actual lesson plan data from the response
-      let planDataString = '';
-      if (responseData.result && responseData.result.response) {
-        // Server returned {result: {response: "..."}} format
-        planDataString = responseData.result.response;
-      } else if (responseData.response) {
-        // Server returned {response: "..."} format
-        planDataString = responseData.response;
+        if (!response.ok) {
+          throw new Error(`Failed to generate lesson plan: ${response.status}`);
+        }
+
+        responseData = await response.json();
+        
+        // Claude returns structured data in data.lessonPlan format
+        if (responseData.success && responseData.data?.lessonPlan) {
+          planData = { lessonPlan: responseData.data.lessonPlan };
+        } else {
+          throw new Error('Invalid response format from Claude');
+        }
       } else {
-        // Direct response format
-        planDataString = JSON.stringify(responseData);
-      }
+        // Use llama3 endpoint for non-monthly users
+        response = await fetch('/llm/llama3', {
+          method: 'POST',
+          headers,
+          credentials: token ? 'include' : 'omit',
+          body: JSON.stringify({
+            messages: [
+              {
+                role: 'user',
+                content: useRelevanceEngine 
+                  ? `Create a Time Machine lesson plan for the topic: "${topic}"`
+                  : `Create a lesson plan for the topic: "${topic}"`
+              }
+            ],
+            instructionType: useRelevanceEngine ? 'relevanceEngine' : 'lessonPlanGenerator',
+            educationLevel: userEducationLevel
+          }),
+        });
 
-      // Parse the lesson plan JSON
-      const planData = JSON.parse(planDataString);
+        if (!response.ok) {
+          throw new Error(`Failed to generate lesson plan: ${response.status}`);
+        }
+
+        // Handle the response - check if it's streaming or regular JSON
+        responseData = await response.json();
+        
+        // Extract the actual lesson plan data from the response
+        let planDataString = '';
+        if (responseData.result && responseData.result.response) {
+          // Server returned {result: {response: "..."}} format
+          planDataString = responseData.result.response;
+        } else if (responseData.response) {
+          // Server returned {response: "..."} format
+          planDataString = responseData.response;
+        } else {
+          // Direct response format
+          planDataString = JSON.stringify(responseData);
+        }
+
+        // Parse the lesson plan JSON
+        planData = JSON.parse(planDataString);
+      }
       
       // Comprehensive validation of the parsed data
       if (!planData || typeof planData !== 'object') {

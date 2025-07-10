@@ -8,6 +8,7 @@ import Dashboard from './pages/Dashboard';
 import Lessons from './pages/Lessons';
 import LessonPage from './pages/LessonPage';
 import RelevanceEngine from './pages/RelevanceEngine';
+import NetflixAndNietzsche from './pages/NetflixAndNietzsche';
 import Pricing from './pages/Pricing';
 import Navigation from './components/Navigation';
 import Footer from './components/Footer';
@@ -53,6 +54,7 @@ function App() {
                 <Route path="/pricing" element={<Pricing />} />
                 <Route path="/style-guide" element={<StyleGuide />} />
                 <Route path="/modern-relevance" element={<RelevanceEngine />} />
+                <Route path="/netflix-and-nietzsche" element={<NetflixAndNietzsche />} />
                 
                 {/* Protected routes (will add auth check later) */}
                 <Route path="/dashboard" element={<Dashboard />} />

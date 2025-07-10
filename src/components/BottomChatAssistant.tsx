@@ -22,7 +22,7 @@ interface BottomChatAssistantProps {
 
 export default function BottomChatAssistant({ onTopicSaved, isExpanded = false, onToggleExpanded, onUserInput }: BottomChatAssistantProps = {}) {
   const { isSignedIn } = useUser();
-  const { getToken } = useAuth();
+  const { getToken, has } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -296,32 +296,63 @@ export default function BottomChatAssistant({ onTopicSaved, isExpanded = false, 
     onUserInput?.(userInput);
 
     try {
-      const res = await fetch('/llm/llama3', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          messages: newMessages.map(msg => ({ role: msg.role, content: msg.content })),
-          useCustomInstructions: true 
-        }),
-      });
-      const data = await res.json();
-      if (data.error) {
-        setMessages([...newMessages, { role: 'assistant', content: `Error: ${data.error}` }]);
-      } else if (data.result?.response) {
-        const { cleanResponse, topics, hasFormatError } = parseTopicsFromResponse(data.result.response);
+      const hasMonthlyPlan = has?.({ plan: 'monthly' }) ?? false;
+      let res, data;
+      
+      if (hasMonthlyPlan) {
+        // Use Claude endpoint for monthly users
+        res = await fetch('/claude/opus', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            messages: newMessages.map(msg => ({ role: msg.role, content: msg.content })),
+            instructionType: 'educationalAssistant'
+          }),
+        });
+        data = await res.json();
         
-        // Debug logging removed for production
-        
-        // Format errors handled silently in production
-        
-        setMessages([...newMessages, { 
-          role: 'assistant', 
-          content: cleanResponse || 'I\'d be happy to help you explore educational topics!',
-          topics: topics,
-          hasFormatError: hasFormatError
-        }]);
+        if (data.error) {
+          setMessages([...newMessages, { role: 'assistant', content: `Error: ${data.error}` }]);
+        } else if (data.success && data.data?.response) {
+          // Claude returns structured data with topics_covered that we can use for topic suggestions
+          const response = data.data.response;
+          const topics = data.data.topics_covered || [];
+          
+          setMessages([...newMessages, { 
+            role: 'assistant', 
+            content: response,
+            topics: topics.slice(0, 6), // Limit to 6 topics
+            hasFormatError: false
+          }]);
+        } else {
+          setMessages([...newMessages, { role: 'assistant', content: 'Sorry, no response.' }]);
+        }
       } else {
-        setMessages([...newMessages, { role: 'assistant', content: 'Sorry, no response.' }]);
+        // Use llama3 endpoint for non-monthly users
+        res = await fetch('/llm/llama3', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            messages: newMessages.map(msg => ({ role: msg.role, content: msg.content })),
+            useCustomInstructions: true 
+          }),
+        });
+        data = await res.json();
+        
+        if (data.error) {
+          setMessages([...newMessages, { role: 'assistant', content: `Error: ${data.error}` }]);
+        } else if (data.result?.response) {
+          const { cleanResponse, topics, hasFormatError } = parseTopicsFromResponse(data.result.response);
+          
+          setMessages([...newMessages, { 
+            role: 'assistant', 
+            content: cleanResponse || 'I\'d be happy to help you explore educational topics!',
+            topics: topics,
+            hasFormatError: hasFormatError
+          }]);
+        } else {
+          setMessages([...newMessages, { role: 'assistant', content: 'Sorry, no response.' }]);
+        }
       }
     } catch (err) {
       setMessages([...newMessages, { role: 'assistant', content: 'Error contacting assistant.' }]);
@@ -331,6 +362,7 @@ export default function BottomChatAssistant({ onTopicSaved, isExpanded = false, 
   };
 
   const latestAssistantMessage = messages.filter(msg => msg.role === 'assistant').slice(-1)[0];
+  const hasMonthlyPlan = has?.({ plan: 'monthly' }) ?? false;
 
   return (
     <>
@@ -421,6 +453,11 @@ export default function BottomChatAssistant({ onTopicSaved, isExpanded = false, 
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xl font-semibold text-center flex-1 text-foreground">
               What topics would you like to explore?
+              {hasMonthlyPlan && (
+                <div className="text-sm text-blue-600 font-normal mt-1">
+                  🎯 Powered by Claude Opus
+                </div>
+              )}
             </h3>
             {isExpanded && onToggleExpanded && (
               <Button
@@ -462,7 +499,7 @@ export default function BottomChatAssistant({ onTopicSaved, isExpanded = false, 
                 {loading && (
                   <div className="flex justify-start">
                     <div className="bg-secondary text-secondary-foreground px-4 py-3 rounded-lg text-base italic leading-relaxed">
-                      Assistant is thinking...
+                      {hasMonthlyPlan ? 'Claude is thinking...' : 'Assistant is thinking...'}
                     </div>
                   </div>
                 )}
@@ -485,7 +522,7 @@ export default function BottomChatAssistant({ onTopicSaved, isExpanded = false, 
               disabled={loading || !input.trim()}
               className="h-12 px-6"
             >
-              {loading ? 'Sending...' : 'Explore Topics'}
+              {hasMonthlyPlan ? 'Ask Claude' : 'Explore Topics'}
             </Button>
           </div>
         </div>

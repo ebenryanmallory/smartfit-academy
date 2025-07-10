@@ -90,12 +90,11 @@ const StyleGuide = () => {
             {radiusTokens.map((r) => (
               <div key={r.name} className="flex flex-col items-center">
                 <div 
-                  className="w-16 h-16 p-2 bg-background border border-border rounded-md flex flex-col"
+                  className="w-16 h-16 bg-background border border-border rounded-md"
                   style={{ borderRadius: r.val }}
                 >
-                  {r.desc}
-                  <span className="text-xs text-muted-foreground mt-2">{r.name}</span>
                 </div>
+                <span className="text-xs text-muted-foreground mt-2">{r.name}</span>
               </div>
             ))}
           </div>
@@ -107,12 +106,11 @@ const StyleGuide = () => {
             {shadowTokens.map((s) => (
               <div key={s.name} className="flex flex-col items-center">
                 <div 
-                  className="w-16 h-16 p-2 bg-background border border-border rounded-md flex flex-col"
+                  className="w-16 h-16 bg-background border border-border rounded-md"
                   style={{ boxShadow: s.val }}
                 >
-                  <span className="text-xs">{s.desc}</span>
-                  <span className="text-xs text-muted-foreground mt-2">{s.name}</span>
                 </div>
+                <span className="text-xs text-muted-foreground mt-2">{s.name}</span>
               </div>
             ))}
           </div>

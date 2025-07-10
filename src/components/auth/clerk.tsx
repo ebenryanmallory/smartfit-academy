@@ -1,17 +1,10 @@
 import { ClerkProvider } from '@clerk/clerk-react';
 import { ReactNode } from 'react';
 
-// Production version - always uses production key
-const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
-
-if (!clerkPubKey) {
-  throw new Error('Missing Clerk Production Publishable Key: VITE_CLERK_PUBLISHABLE_KEY');
-}
-
 export const ClerkProviderWrapper = ({ children }: { children: ReactNode }) => {
   return (
     <ClerkProvider 
-      publishableKey={clerkPubKey}
+      publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY_TEST}
       appearance={{
         elements: {
           // Make the modal more friendly and less intimidating

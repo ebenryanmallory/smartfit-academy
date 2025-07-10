@@ -36,7 +36,7 @@ const HistoricalConnectionSummary: React.FC<HistoricalConnectionSummaryProps> = 
   educationLevel = 'undergrad'
 }) => {
   const { user } = useUser();
-  const { getToken } = useAuth();
+  const { getToken, has } = useAuth();
   const [summary, setSummary] = useState<ConnectionSummary | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -90,28 +90,64 @@ const HistoricalConnectionSummary: React.FC<HistoricalConnectionSummaryProps> = 
         headers['Authorization'] = `Bearer ${token}`;
       }
 
-      const response = await fetch('/llm/llama3', {
-        method: 'POST',
-        headers,
-        credentials: token ? 'include' : 'omit',
-        body: JSON.stringify({
-          messages: [
-            {
-              role: 'user',
-              content: `Create a brief historical connection summary for the modern topic: "${topic}"`
-            }
-          ],
-          instructionType: 'historicalConnectionGenerator',
-          educationLevel: educationLevel
-        }),
-      });
+      // Check if user has monthly plan subscription
+      const hasMonthlyPlan = has?.({ plan: 'monthly' }) ?? false;
+      let response, data, responseContent;
 
-      if (!response.ok) {
-        throw new Error(`Failed to generate summary: ${response.status}`);
+      if (hasMonthlyPlan) {
+        // Use Claude endpoint for monthly users
+        response = await fetch('/claude/opus', {
+          method: 'POST',
+          headers,
+          credentials: token ? 'include' : 'omit',
+          body: JSON.stringify({
+            messages: [
+              {
+                role: 'user',
+                content: `Create a brief historical connection summary for the modern topic: "${topic}"`
+              }
+            ],
+            instructionType: 'historicalConnectionGenerator',
+            educationLevel: educationLevel
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`Failed to generate summary: ${response.status}`);
+        }
+
+        data = await response.json();
+        // Claude returns structured data in data.connectionSummary format
+        if (data.success && data.data?.connectionSummary) {
+          responseContent = JSON.stringify({ connectionSummary: data.data.connectionSummary });
+        } else {
+          responseContent = '';
+        }
+      } else {
+        // Use llama3 endpoint for non-monthly users
+        response = await fetch('/llm/llama3', {
+          method: 'POST',
+          headers,
+          credentials: token ? 'include' : 'omit',
+          body: JSON.stringify({
+            messages: [
+              {
+                role: 'user',
+                content: `Create a brief historical connection summary for the modern topic: "${topic}"`
+              }
+            ],
+            instructionType: 'historicalConnectionGenerator',
+            educationLevel: educationLevel
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`Failed to generate summary: ${response.status}`);
+        }
+
+        data = await response.json();
+        responseContent = data.result?.response || data.response || '';
       }
-
-      const data = await response.json();
-      const responseContent = data.result?.response || data.response || '';
       
       if (!responseContent || typeof responseContent !== 'string') {
         console.warn('Invalid response content, not displaying component');

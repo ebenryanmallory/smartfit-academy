@@ -1,13 +1,18 @@
 import React, { useState } from 'react';
+import { useAuth } from '@clerk/clerk-react';
 import { Card } from './ui/card';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 
 export default function ChatAssistant() {
+  const { has } = useAuth();
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<{ role: string; content: string }[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Check if user has monthly plan subscription
+  const hasMonthlyPlan = has?.({ plan: 'monthly' }) ?? false;
 
   const handleSend = async () => {
     if (!input.trim()) return;
@@ -17,18 +22,43 @@ export default function ChatAssistant() {
     setLoading(true);
 
     try {
-      const res = await fetch('/llm/llama3', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: newMessages }),
-      });
-      const data = await res.json();
-      if (data.error) {
-        setMessages([...newMessages, { role: 'assistant', content: `Error: ${data.error}` }]);
-      } else if (data.result?.response) {
-        setMessages([...newMessages, { role: 'assistant', content: data.result.response }]);
+      let res, data;
+      
+      if (hasMonthlyPlan) {
+        // Use Claude endpoint for monthly users
+        res = await fetch('/claude/opus', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            messages: newMessages,
+            instructionType: 'educationalAssistant'
+          }),
+        });
+        data = await res.json();
+        
+        if (data.error) {
+          setMessages([...newMessages, { role: 'assistant', content: `Error: ${data.error}` }]);
+        } else if (data.success && data.data?.response) {
+          setMessages([...newMessages, { role: 'assistant', content: data.data.response }]);
+        } else {
+          setMessages([...newMessages, { role: 'assistant', content: 'Sorry, no response.' }]);
+        }
       } else {
-        setMessages([...newMessages, { role: 'assistant', content: 'Sorry, no response.' }]);
+        // Use llama3 endpoint for non-monthly users
+        res = await fetch('/llm/llama3', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ messages: newMessages }),
+        });
+        data = await res.json();
+        
+        if (data.error) {
+          setMessages([...newMessages, { role: 'assistant', content: `Error: ${data.error}` }]);
+        } else if (data.result?.response) {
+          setMessages([...newMessages, { role: 'assistant', content: data.result.response }]);
+        } else {
+          setMessages([...newMessages, { role: 'assistant', content: 'Sorry, no response.' }]);
+        }
       }
     } catch (err) {
       setMessages([...newMessages, { role: 'assistant', content: 'Error contacting assistant.' }]);
@@ -96,12 +126,12 @@ export default function ChatAssistant() {
               letterSpacing: '0.05em',
               userSelect: 'none',
             }}>
-              Ask the AI Assistant
+              {hasMonthlyPlan ? 'Ask Claude AI Assistant' : 'Ask the AI Assistant'}
             </span>
           )}
           {open && (
             <span style={{ fontWeight: 600, fontSize: 18, color: '#222' }}>
-              AI Assistant
+              {hasMonthlyPlan ? 'Claude AI Assistant' : 'AI Assistant'}
             </span>
           )}
         </div>
@@ -111,6 +141,11 @@ export default function ChatAssistant() {
               {messages.length === 0 && (
                 <div style={{ color: '#888', padding: 16, textAlign: 'center' }}>
                   Ask anything about the lesson!
+                  {hasMonthlyPlan && (
+                    <div style={{ fontSize: 12, color: '#666', marginTop: 4 }}>
+                      🎯 Powered by Claude Opus
+                    </div>
+                  )}
                 </div>
               )}
               {messages.map((msg, idx) => (
@@ -133,7 +168,7 @@ export default function ChatAssistant() {
               ))}
               {loading && (
                 <div style={{ color: '#aaa', fontStyle: 'italic', padding: 8 }}>
-                  Assistant is typing...
+                  {hasMonthlyPlan ? 'Claude is thinking...' : 'Assistant is typing...'}
                 </div>
               )}
             </Card>
@@ -146,7 +181,9 @@ export default function ChatAssistant() {
                 disabled={loading}
                 style={{ flex: 1 }}
               />
-              <Button onClick={handleSend} disabled={loading || !input.trim()}>Send</Button>
+              <Button onClick={handleSend} disabled={loading || !input.trim()}>
+                {hasMonthlyPlan ? 'Ask Claude' : 'Send'}
+              </Button>
             </div>
           </div>
         )}

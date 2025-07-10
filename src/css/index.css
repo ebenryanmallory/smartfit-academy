@@ -127,7 +127,7 @@
   /* Color Tokens */
   --color-palette-1: #c7522a; /* Burnt orange/red */
   --color-palette-2: #e5c185; /* Warm sand/tan */
-  --color-palette-3: #fbf2c4; /* Pale yellow */
+  --color-palette-3: #f3f1e2; /* Pale yellow */
   --color-palette-4: #74a892; /* Sage/green */
   --color-palette-5: #008585; /* Teal/blue-green */
 
@@ -144,10 +144,27 @@
   --color-card-bold: #e5c185; /* tan from palette */
   --color-code-border: #008585; /* palette-5, teal/blue-green */
 
+  /* Tailwind-friendly color names (for direct class usage) */
+  --orange: var(--color-palette-1); /* .bg-orange, .from-orange, etc. - Burnt orange/red */
+  --tan: var(--color-palette-2); /* .bg-tan, .from-tan, etc. - Warm sand/tan */
+  --cream: var(--color-palette-3); /* .bg-cream, .from-cream, etc. - Pale yellow */
+  --sage: var(--color-palette-4); /* .bg-sage, .from-sage, etc. - Sage/green */
+  --teal: var(--color-palette-5); /* .bg-teal, .from-teal, etc. - Teal/blue-green */
+
   /* Typography Tokens */
 
 h1, h2, h3, h4, h5, h6, .headline {
   font-family: var(--font-headline);
+}
+
+/* Only apply default font-weight if no Tailwind font-weight class is present */
+h1:not([class*="font-"]), 
+h2:not([class*="font-"]), 
+h3:not([class*="font-"]), 
+h4:not([class*="font-"]), 
+h5:not([class*="font-"]), 
+h6:not([class*="font-"]), 
+.headline:not([class*="font-"]) {
   font-weight: var(--font-weight-headline);
 }
 
@@ -306,6 +323,7 @@ body, .body-text {
 .bg-secondary { background: var(--color-secondary); color: #fff; }
 .bg-accent { background: var(--color-accent); color: #fff; }
 .bg-card { background: var(--color-card); }
+
 .text-primary { color: var(--color-primary); }
 .text-secondary { color: var(--color-secondary); }
 .text-accent { color: var(--color-accent); }
@@ -418,15 +436,30 @@ body, .body-text {
 
 :root {
 
-  --primary: var(--color-primary); /* teal/blue-green */
-  --primary-foreground: #fffdf9; /* off-white */
-  --secondary: #f7f3e7;
-  --secondary-foreground: #000;
-  --muted: #f7f3e7;
+  /* Tailwind-recognized semantic colors using our palette */
+  --primary: var(--teal); /* teal/blue-green from palette-5 */
+  --primary-foreground: #fff;
+  --secondary: var(--orange); /* burnt orange/red from palette-1 */
+  --secondary-foreground: #fff;
+  --accent: var(--tan); /* sage/green from palette-4 */
+  --accent-foreground: #fff;
+  --muted: var(--sage); /* sage/green from palette-4 */
   --muted-foreground: #4d4d4d;
-  --accent: #f7f3e7;
-  --accent-foreground: var(--color-accent-foreground);
-  --destructive: var(--color-danger);
+  --destructive: var(--orange); /* burnt orange/red from palette-1 */
+  --destructive-foreground: #fff;
+  --success: var(--sage); /* sage/green from palette-4 */
+  --success-foreground: #fff;
+  --warning: var(--tan); /* warm sand/tan from palette-2 */
+  --warning-foreground: #000;
+  --info: var(--teal); /* teal/blue-green from palette-5 */
+  --info-foreground: #fff;
+  --popover: var(--cream); /* pale yellow from palette-3 */
+  --popover-foreground: var(--orange);
+  --card: var(--cream); /* pale yellow from palette-3 */
+  --card-foreground: var(--orange);
+  --border: var(--sage); /* sage/green from palette-4 */
+  --input: var(--cream); /* pale yellow from palette-3 */
+  --ring: var(--teal); /* teal/blue-green from palette-5 */
 
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);

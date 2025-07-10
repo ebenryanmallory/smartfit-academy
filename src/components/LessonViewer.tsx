@@ -2,11 +2,14 @@ import ReactMarkdown from 'react-markdown';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from '@/components/ui/badge';
-import { useUser } from "@clerk/clerk-react";
+import { useUser, useAuth } from "@clerk/clerk-react";
 import { CodeSnippet } from './CodeSnippet';
 import { CodePlaygroundTabs } from './CodePlaygroundTabs';
 import { SaveProgressPrompt } from './SaveProgressPrompt';
-import { ChevronLeft, ChevronRight, FolderOpen } from 'lucide-react';
+import { LessonQuizModal } from './LessonQuizModal';
+import { ChevronLeft, ChevronRight, FolderOpen, CheckCircle, Circle, Brain } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 
 
 interface NavigationInfo {
@@ -24,6 +27,7 @@ interface LessonViewerProps {
   metaTopic?: string; // Optional meta topic for hierarchical organization
   navigationInfo?: NavigationInfo | null;
   onNavigate?: (lessonUuid: string) => void;
+  lessonId?: string; // Add lesson ID prop for progress tracking
 }
 
 // Python to JavaScript code conversion helper
@@ -51,8 +55,102 @@ function convertPythonToJS(pythonCode: string): string {
   return jsCode;
 }
 
-export function LessonViewer({ title, description, content, topic, metaTopic, navigationInfo, onNavigate }: LessonViewerProps) {
-  const { isSignedIn } = useUser();
+export function LessonViewer({ title, description, content, topic, metaTopic, navigationInfo, onNavigate, lessonId }: LessonViewerProps) {
+  const { isSignedIn, user } = useUser();
+  const { getToken } = useAuth();
+  const [isCompleted, setIsCompleted] = useState(false);
+  const [isMarkingComplete, setIsMarkingComplete] = useState(false);
+  const [progressLoading, setProgressLoading] = useState(false);
+  const [showQuizModal, setShowQuizModal] = useState(false);
+  const [quizScore, setQuizScore] = useState<number | null>(null);
+
+  // Check lesson completion status
+  useEffect(() => {
+    const checkProgress = async () => {
+      if (!isSignedIn || !lessonId) return;
+
+      setProgressLoading(true);
+      try {
+        const token = await getToken();
+        if (!token) return;
+
+        const response = await fetch(`/api/d1/user/progress?lessonId=${encodeURIComponent(lessonId)}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const progress = data.progress;
+          setIsCompleted(progress?.completed === 1);
+          setQuizScore(progress?.score || null);
+        }
+      } catch (error) {
+        console.error('Error checking lesson progress:', error);
+      } finally {
+        setProgressLoading(false);
+      }
+    };
+
+    checkProgress();
+  }, [isSignedIn, lessonId, getToken]);
+
+  // Mark lesson as complete
+  const markAsComplete = async () => {
+    if (!isSignedIn || !lessonId) {
+      toast.error('Please sign in to track your progress');
+      return;
+    }
+
+    setIsMarkingComplete(true);
+    try {
+      const token = await getToken();
+      if (!token) {
+        throw new Error('Failed to get authentication token');
+      }
+
+      const response = await fetch('/api/d1/user/progress', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          lessonId: lessonId,
+          completed: true,
+          additionalData: {
+            completedAt: new Date().toISOString(),
+            title: title
+          }
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to mark lesson as complete: ${response.status}`);
+      }
+
+      setIsCompleted(true);
+      toast.success('Lesson marked as complete!', {
+        description: 'Great job! Your progress has been saved.',
+      });
+    } catch (error) {
+      console.error('Error marking lesson as complete:', error);
+      toast.error('Failed to mark lesson as complete. Please try again.');
+    } finally {
+      setIsMarkingComplete(false);
+    }
+  };
+
+  const handleQuizScoreSaved = (score: number) => {
+    setQuizScore(score);
+    if (score >= 70) {
+      setIsCompleted(true);
+    }
+  };
 
   return (
     <div className="content-container mx-auto py-8 px-4">
@@ -60,7 +158,29 @@ export function LessonViewer({ title, description, content, topic, metaTopic, na
         <CardHeader>
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
-              <CardTitle className="text-3xl font-bold">{title}</CardTitle>
+              <div className="flex items-center gap-3 mb-2">
+                <CardTitle className="text-3xl font-bold">{title}</CardTitle>
+                {isSignedIn && lessonId && !progressLoading && (
+                  <div className="flex items-center gap-2">
+                    {isCompleted ? (
+                      <Badge variant="success" className="flex items-center gap-1">
+                        <CheckCircle className="h-3 w-3" />
+                        Completed
+                      </Badge>
+                    ) : (
+                      <Badge variant="secondary" className="flex items-center gap-1">
+                        <Circle className="h-3 w-3" />
+                        In Progress
+                      </Badge>
+                    )}
+                    {quizScore !== null && (
+                      <Badge variant={quizScore >= 70 ? "success" : "secondary"} className="ml-2">
+                        Quiz: {quizScore}%
+                      </Badge>
+                    )}
+                  </div>
+                )}
+              </div>
               <p className="text-muted-foreground mt-2">{description}</p>
             </div>
             {metaTopic && metaTopic.trim() && (
@@ -162,6 +282,65 @@ export function LessonViewer({ title, description, content, topic, metaTopic, na
               {content}
             </ReactMarkdown>
             
+            {/* Quiz and Completion Section */}
+            {isSignedIn && lessonId && (
+              <div className="mt-12 space-y-4">
+                {/* Quiz Section */}
+                <div className="p-6 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-lg font-semibold text-blue-800 dark:text-blue-200 mb-1">
+                        Test Your Knowledge
+                      </h3>
+                      <p className="text-blue-700 dark:text-blue-300 text-sm">
+                        Take a quiz to test your understanding of this lesson and earn a score.
+                      </p>
+                    </div>
+                    <Button
+                      onClick={() => setShowQuizModal(true)}
+                      className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
+                    >
+                      <Brain className="h-4 w-4" />
+                      {quizScore !== null ? 'Retake Quiz' : 'Take Quiz'}
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Completion Section - Only show if not completed yet */}
+                {!isCompleted && (
+                  <div className="p-6 bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="text-lg font-semibold text-green-800 dark:text-green-200 mb-1">
+                          Ready to Complete This Lesson?
+                        </h3>
+                        <p className="text-green-700 dark:text-green-300 text-sm">
+                          Mark this lesson as complete to track your progress and continue your learning journey.
+                        </p>
+                      </div>
+                      <Button
+                        onClick={markAsComplete}
+                        disabled={isMarkingComplete}
+                        className="bg-green-600 hover:bg-green-700 text-white"
+                      >
+                        {isMarkingComplete ? (
+                          <>
+                            <Circle className="h-4 w-4 mr-2 animate-spin" />
+                            Completing...
+                          </>
+                        ) : (
+                          <>
+                            <CheckCircle className="h-4 w-4 mr-2" />
+                            Mark as Complete
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Navigation buttons for lesson plans */}
             {navigationInfo && onNavigate && (
               <div className="flex items-center justify-between mt-12 pt-8 border-t border-gray-200">
@@ -226,6 +405,15 @@ export function LessonViewer({ title, description, content, topic, metaTopic, na
           </div>
         </CardContent>
       </Card>
+
+      {/* Quiz Modal */}
+      <LessonQuizModal
+        isOpen={showQuizModal}
+        onClose={() => setShowQuizModal(false)}
+        lessonTitle={title}
+        lessonId={lessonId}
+        onScoreSaved={handleQuizScoreSaved}
+      />
     </div>
   );
 } 

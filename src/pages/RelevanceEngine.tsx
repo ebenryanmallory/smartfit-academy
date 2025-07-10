@@ -5,6 +5,7 @@ import { Card } from '../components/ui/card';
 import { Input } from '../components/ui/input';
 import GenerateTopicLessonModal from '../components/GenerateTopicLessonModal';
 import HistoricalConnectionSummary from '../components/HistoricalConnectionSummary';
+import TaglineComponent from '../components/ui/TaglineComponent';
 import { Sparkles, History, TrendingUp, Brain, Zap, BookOpen, Users, ArrowRight } from 'lucide-react';
 
 const RelevanceEngine: React.FC = () => {
@@ -153,6 +154,9 @@ const RelevanceEngine: React.FC = () => {
                 })}
               </div>
           </div>
+
+          {/* Tagline */}
+          <TaglineComponent className="mt-8 mx-auto" />
 
           {/* Historical Connection Summary */}
           {exploredTopic && (

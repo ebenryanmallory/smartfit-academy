@@ -64,7 +64,7 @@ export interface SavedLessonPlansRef {
 
 const SavedLessonPlans = forwardRef<SavedLessonPlansRef, SavedLessonPlansProps>(({ className = "", onLessonPlansChange }, ref) => {
   const { isSignedIn } = useUser();
-  const { getToken } = useAuth();
+  const { getToken, has } = useAuth();
   const [lessonPlans, setLessonPlans] = useState<SavedLessonPlan[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -228,19 +228,24 @@ const SavedLessonPlans = forwardRef<SavedLessonPlansRef, SavedLessonPlansProps>(
       const token = await getToken();
       if (!token) throw new Error('Failed to get authentication token');
 
-      // Generate content using the same API as the modal
-      const response = await fetch('/llm/llama3', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          messages: [
-            {
-              role: 'user',
-              content: `Create detailed lesson content for:
+      // Check if user has monthly plan subscription
+      const hasMonthlyPlan = has?.({ plan: 'monthly' }) ?? false;
+      let response, data, responseContent;
+
+      if (hasMonthlyPlan) {
+        // Use Claude endpoint for monthly users
+        response = await fetch('/claude/opus', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify({
+            messages: [
+              {
+                role: 'user',
+                content: `Create detailed lesson content for:
 
 **Topic:** ${lessonPlan.topic}
 **Lesson Title:** ${lesson.title}
@@ -249,19 +254,55 @@ const SavedLessonPlans = forwardRef<SavedLessonPlansRef, SavedLessonPlansProps>(
 Please generate comprehensive, educational content in markdown format for this specific lesson. The content should be engaging, informative, and appropriate for ${getEducationLevelDisplayName(userEducationLevel)} students.
 
 Include practical examples, clear explanations, and interactive elements like questions or exercises where appropriate.`
-            }
-          ],
-          instructionType: 'lessonContentGenerator',
-          educationLevel: userEducationLevel
-        }),
-      });
+              }
+            ],
+            instructionType: 'lessonContentGenerator',
+            educationLevel: userEducationLevel
+          }),
+        });
 
-      if (!response.ok) {
-        throw new Error(`Failed to generate content: ${response.status}`);
+        if (!response.ok) {
+          throw new Error(`Failed to generate content: ${response.status}`);
+        }
+
+        data = await response.json();
+        responseContent = data.success && data.data?.content ? JSON.stringify(data.data.content) : '';
+      } else {
+        // Use llama3 endpoint for non-monthly users
+        response = await fetch('/llm/llama3', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify({
+            messages: [
+              {
+                role: 'user',
+                content: `Create detailed lesson content for:
+
+**Topic:** ${lessonPlan.topic}
+**Lesson Title:** ${lesson.title}
+**Lesson Description:** ${lesson.description || 'No specific description provided'}
+
+Please generate comprehensive, educational content in markdown format for this specific lesson. The content should be engaging, informative, and appropriate for ${getEducationLevelDisplayName(userEducationLevel)} students.
+
+Include practical examples, clear explanations, and interactive elements like questions or exercises where appropriate.`
+              }
+            ],
+            instructionType: 'lessonContentGenerator',
+            educationLevel: userEducationLevel
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`Failed to generate content: ${response.status}`);
+        }
+
+        data = await response.json();
+        responseContent = data.result?.response || data.response || '';
       }
-
-      const data = await response.json();
-      const responseContent = data.result?.response || data.response || '';
 
       // Save the generated content to the database
       const saveResponse = await fetch(`/api/d1/user/lesson-plans/${lessonPlan.id}/lessons/${lessonId}`, {

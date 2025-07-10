@@ -86,7 +86,7 @@ function Dashboard() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-background pb-48">
+    <div className="flex flex-col min-h-screen bg-background">
       <div id="main-dashboard-content">
       {/* User's Lesson Plans - Show if user is signed in and has saved lesson plans */}
       {isSignedIn && (
