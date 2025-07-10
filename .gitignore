@@ -25,7 +25,3 @@ worker/*.js
 *.njsproj
 *.sln
 *.sw?
-
-# Environment-specific auth configs
-src/components/auth/clerk.dev.tsx
-src/components/auth/clerk.prod.tsx
