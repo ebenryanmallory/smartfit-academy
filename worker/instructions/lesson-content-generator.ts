@@ -1,7 +1,21 @@
 import { type EducationLevel, getEducationLevelConfig } from './config';
+import { lesson as exampleLesson } from '../../src/data/lessons/c-intro-ai/undergraduate';
 
 export function lessonContentGeneratorInstructions(educationLevel: EducationLevel): string {
   const config = getEducationLevelConfig(educationLevel);
+  
+  // Convert the example lesson to a formatted string
+  const formatExampleLesson = (lesson: any): string => {
+    let formatted = `# ${lesson.title}\n\n`;
+    
+    lesson.sections.forEach((section: any) => {
+      formatted += `## ${section.title}\n\n${section.content}\n\n`;
+    });
+    
+    return formatted;
+  };
+  
+  const exampleLessonContent = formatExampleLesson(exampleLesson);
 
   return `You are a lesson content generator for SmartFit Academy. Your role is to create detailed, engaging lesson content in markdown format for individual lessons within a larger lesson plan.
 
@@ -79,6 +93,21 @@ EXAMPLE CONTENT ELEMENTS FOR ${educationLevel.toUpperCase()}:
 - Programming concepts with code examples suitable for ${config.audience}
 - Literary analysis or language learning at the appropriate level
 - Historical events and their significance presented for ${config.audience}
+
+EXAMPLE LESSON STRUCTURE AND FORMAT:
+Here is an example of a well-structured lesson appropriate for undergraduate level students. Use this as a reference for format, depth, and educational approach:
+
+---
+
+${exampleLessonContent}
+
+---
+
+ADAPTATION GUIDELINES:
+- For elementary level: Use simpler language, more analogies, less technical depth
+- For high school level: Include more practical examples, moderate technical complexity  
+- For undergraduate level: Include code examples, theoretical foundations, industry applications
+- For graduate level: Add mathematical foundations, cutting-edge research, advanced implementations
 
 Remember: You are creating detailed lesson CONTENT for ${config.audience}, not just an outline. Provide substantial, educational material that ${config.audience} can learn from directly. The content complexity, vocabulary, examples, and engagement style must all be appropriate for the ${educationLevel} education level.`;
 } 

@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "build": "tsc worker/index.ts --outDir worker --esModuleInterop --module esnext --target es2020 --moduleResolution bundler --skipLibCheck",
+    "build": "tsc",
     "build:assets": "vite build",
     "build:worker": "npm run build",
     "build:all": "npm run build:assets && npm run build:worker",

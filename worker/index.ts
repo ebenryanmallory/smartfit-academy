@@ -5,6 +5,7 @@ import {
   userRoutes,
   lessonRoutes,
   llmRoutes,
+  claudeRoutes,
   type AppContext
 } from './routes'
 
@@ -16,7 +17,7 @@ app.use('*', async (c, next) => {
   await next()
 })
 
-// Apply Clerk middleware to all API routes
+// Apply Clerk middleware to all API routes and Claude routes
 app.use('/api/*', async (c, next) => {
   try {
     console.log(`[CLERK] Processing ${c.req.method} ${c.req.path}`)
@@ -33,11 +34,29 @@ app.use('/api/*', async (c, next) => {
   }
 })
 
+// Apply Clerk middleware to Claude routes (premium features)
+app.use('/claude/*', async (c, next) => {
+  try {
+    console.log(`[CLERK] Processing Claude ${c.req.method} ${c.req.path}`)
+    await clerkMiddleware()(c, next)
+  } catch (error) {
+    console.error('[CLERK] Claude authentication middleware failed:', error)
+    console.error('[CLERK] Error details:', JSON.stringify(error, null, 2))
+    console.error('[CLERK] Request headers:', JSON.stringify(c.req.header(), null, 2))
+    return c.json({ 
+      error: 'Authentication failed', 
+      details: 'Clerk middleware error - check server logs',
+      timestamp: new Date().toISOString()
+    }, 500)
+  }
+})
+
 // Mount route modules
 app.route('/api', authRoutes)
 app.route('/api/d1', userRoutes)
 app.route('/api/d1/user', lessonRoutes)
 app.route('/llm', llmRoutes)
+app.route('/claude', claudeRoutes)
 
 // Define valid SPA routes based on App.tsx routes
 const validSpaRoutes = [

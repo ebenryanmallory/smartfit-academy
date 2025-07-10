@@ -1,5 +1,0 @@
-export { default as authRoutes } from './auth';
-export { default as userRoutes } from './user';
-export { default as lessonRoutes } from './lessons';
-export { default as llmRoutes } from './llm';
-export * from './types';

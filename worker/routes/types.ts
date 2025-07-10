@@ -18,6 +18,7 @@ export type Bindings = {
   DB: D1Database;
   WORKERS_AI_TOKEN: string;
   WORKERS_AI_ACCOUNT_ID: string;
+  CLAUDE_API_KEY: string;
 }
 
 // Combined context type for Hono
