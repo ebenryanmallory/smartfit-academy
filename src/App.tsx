@@ -1,5 +1,5 @@
-import React, { Suspense, lazy } from 'react';
-import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
+import React, { Suspense, lazy, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { Toaster } from "sonner";
 import { ClerkProviderWrapper } from './components/auth/clerk.tsx';
 import { EnsureUserInD1 } from './components/auth/EnsureUserInD1';
@@ -13,18 +13,27 @@ import Pricing from './pages/Pricing';
 import Navigation from './components/Navigation';
 import Footer from './components/Footer';
 import StyleGuide from './pages/StyleGuide';
-import ScrollToTop from './components/ScrollToTop';
 import NotificationBanner from './components/NotificationBanner';
 
 
 const Onboarding = lazy(() => import('./pages/Onboarding'));
+
+function ScrollToTopHandler() {
+  const { pathname } = useLocation();
+  
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  
+  return null;
+}
 
 function App() {
   return (
     <ClerkProviderWrapper>
       <EnsureUserInD1 />
       <BrowserRouter>
-        <ScrollToTop />
+        <ScrollToTopHandler />
         <div className="min-h-screen flex flex-col">
           <Toaster />
           <header className="border-b">

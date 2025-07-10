@@ -318,6 +318,9 @@ body, .body-text {
 .button-padding { padding: var(--button-padding); }
 .input-padding { padding: var(--input-padding); }
 
+/* Bottom spacing for fixed elements */
+.pb-chat-assistant { padding-bottom: 470px; } /* Compensate for BottomChatAssistant height */
+
 /* Atomic Utility Classes */
 .bg-primary { background: var(--color-primary); color: #fff; }
 .bg-secondary { background: var(--color-secondary); color: #fff; }

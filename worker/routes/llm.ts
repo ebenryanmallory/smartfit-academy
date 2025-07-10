@@ -442,7 +442,7 @@ llmRoutes.post('/llama3', async (c) => {
             
             // Check for reasonable total content length
             const totalContentLength = summary.modernContext.length + summary.historicalPattern.length + 
-              summary.keyInsight.length + summary.connections.reduce((sum, conn) => 
+              summary.keyInsight.length + summary.connections.reduce((sum: number, conn: any) => 
                 sum + conn.connection.length + conn.relevance.length, 0);
             
             if (totalContentLength < 300) {
@@ -485,7 +485,7 @@ llmRoutes.post('/llama3', async (c) => {
           // Return a structured error that the frontend can handle
           return c.json({
             error: `Invalid ${instructionType} format`,
-            details: validationError.message,
+            details: validationError instanceof Error ? validationError.message : 'Unknown validation error',
             rawResponse: responseContent.substring(0, 500), // First 500 chars for debugging
             validationFailed: true
           }, 422); // Unprocessable Entity
@@ -500,7 +500,7 @@ llmRoutes.post('/llama3', async (c) => {
     console.error('LLM endpoint error:', error);
     return c.json({ 
       error: 'Failed to process AI request', 
-      details: error.message 
+      details: error instanceof Error ? error.message : 'Unknown error'
     }, 500);
   }
 });

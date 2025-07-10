@@ -98,9 +98,9 @@ lessonRoutes.post('/lesson-plans', async (c) => {
     });
   } catch (error) {
     console.error('Error saving lesson plan - Full error details:', error);
-    console.error('Error name:', error.name);
-    console.error('Error message:', error.message);
-    console.error('Error stack:', error.stack);
+    console.error('Error name:', error instanceof Error ? error.name : 'Unknown');
+    console.error('Error message:', error instanceof Error ? error.message : 'Unknown error');
+    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
     
     // Log the specific data that caused the error
     console.error('Request data that caused error:', {
@@ -115,8 +115,8 @@ lessonRoutes.post('/lesson-plans', async (c) => {
     
     return c.json({ 
       error: 'Failed to save lesson plan', 
-      details: error.message,
-      errorType: error.name,
+      details: error instanceof Error ? error.message : 'Unknown error',
+      errorType: error instanceof Error ? error.name : 'Unknown',
       timestamp: new Date().toISOString()
     }, 500);
   }

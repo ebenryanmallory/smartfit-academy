@@ -5,10 +5,11 @@ import { Play, RefreshCw, Bug } from "lucide-react";
 import { toast } from "sonner";
 import Editor from "@monaco-editor/react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { convertPythonToJS } from "@/utils/codeConversion";
 
 interface CodePlaygroundTabsProps {
   pythonCode: string;
-  javascriptCode: string;
+  javascriptCode?: string;
   title?: string;
 }
 
@@ -23,6 +24,11 @@ export function CodePlaygroundTabs({ pythonCode, javascriptCode, title }: CodePl
   const [activeTab, setActiveTab] = React.useState("python");
   const [output, setOutput] = React.useState<string[]>([]);
   const [isRunning, setIsRunning] = React.useState(false);
+  
+  // Auto-generate JavaScript code if not provided
+  const generatedJavaScriptCode = React.useMemo(() => {
+    return javascriptCode || convertPythonToJS(pythonCode);
+  }, [pythonCode, javascriptCode]);
 
   // Expose debug function to window
   React.useEffect(() => {
@@ -54,7 +60,7 @@ export function CodePlaygroundTabs({ pythonCode, javascriptCode, title }: CodePl
         // Create a safe evaluation environment
         const safeEval = new Function(`
           "use strict";
-          ${javascriptCode}
+          ${generatedJavaScriptCode}
         `);
 
         // Run the code
@@ -159,7 +165,7 @@ export function CodePlaygroundTabs({ pythonCode, javascriptCode, title }: CodePl
                 <Editor
                   height="100%"
                   defaultLanguage="javascript"
-                  value={javascriptCode}
+                  value={generatedJavaScriptCode}
                   theme="vs-dark"
                   options={{
                     minimap: { enabled: false },

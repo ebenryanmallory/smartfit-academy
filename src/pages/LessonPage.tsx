@@ -1,8 +1,11 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { LessonViewer } from "@/components/LessonViewer";
 import { Button } from "@/components/ui/button";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import ChatAssistant from "@/components/ChatAssistant";
+import UserTopics, { UserTopicsRef } from "@/components/UserTopics";
+import GenerateTopicLessonModal from "@/components/GenerateTopicLessonModal";
+import BottomChatAssistant from "@/components/BottomChatAssistant";
 import { ArrowLeft, AlertTriangle, RefreshCw } from "lucide-react";
 import { LessonContentLoader } from "@/components/ui/LessonContentLoader";
 import type { LessonData, LessonSection } from "@/data/lessons/types";
@@ -87,6 +90,18 @@ export default function LessonPage() {
   const [pendingEducationLevel, setPendingEducationLevel] = useState<AudienceLevel | null>(null);
   const [originalEducationLevel, setOriginalEducationLevel] = useState<AudienceLevel>('undergraduate');
   const [userEducationLevel, setUserEducationLevel] = useState<string>('undergrad');
+  const [isLessonModalOpen, setIsLessonModalOpen] = useState(false);
+  const [selectedTopicForModal, setSelectedTopicForModal] = useState<string>('');
+  const [selectedMetaTopic, setSelectedMetaTopic] = useState<string>('');
+  const [useTestPrepMode, setUseTestPrepMode] = useState(false);
+  const [bottomChatExpanded, setBottomChatExpanded] = useState(false);
+  const [topicExplorationInitiated, setTopicExplorationInitiated] = useState(false);
+  const [lessonGenerationStarted, setLessonGenerationStarted] = useState(false);
+  const [selectedTopicText, setSelectedTopicText] = useState<string>('');
+  
+  // Ref for UserTopics component to scroll to it
+  const userTopicsRef = useRef<HTMLDivElement>(null);
+  const userTopicsComponentRef = useRef<UserTopicsRef>(null);
 
   // Generate content for a lesson that doesn't have it yet
   const generateLessonContent = async (savedLesson: SavedLesson, lessonPlan: any) => {
@@ -422,9 +437,9 @@ Include practical examples, clear explanations, and interactive elements like qu
     );
   }
 
-  // Combine all section content into a single markdown string with section headings
+  // Combine all section content into a single markdown string without duplicate titles
   const combinedContent = lesson.sections.map(
-    (section: LessonSection) => `## ${section.title}\n\n${section.content}`
+    (section: LessonSection) => section.content
   ).join('\n\n');
 
   const handleEducationLevelChange = (newLevel: AudienceLevel) => {
@@ -458,6 +473,84 @@ Include practical examples, clear explanations, and interactive elements like qu
     setShowEducationWarning(false);
     setPendingEducationLevel(null);
   };
+
+  // Handle topic exploration click - now uses BottomChatAssistant
+  const handleTopicExploration = (topicText: string, context?: { lessonTitle?: string; listTitle?: string }) => {
+    
+    // Only proceed if user is signed in
+    if (!isSignedIn) {
+      // Could show a sign-in prompt here
+      return;
+    }
+    
+    // Combine all context into a formatted string
+    let formattedTopicText = '';
+    const parts: string[] = [];
+    
+    if (context?.lessonTitle) {
+      parts.push(context.lessonTitle);
+    }
+    
+    if (context?.listTitle) {
+      parts.push(context.listTitle);
+    }
+    
+    parts.push(topicText);
+    
+    formattedTopicText = parts.join(': ');
+    
+    // Store the formatted topic text
+    setSelectedTopicText(formattedTopicText);
+    
+    // Mark topic exploration as initiated
+    setTopicExplorationInitiated(true);
+    
+    // Expand the bottom chat assistant
+    setBottomChatExpanded(true);
+    
+    // Scroll to bottom to show the chat assistant
+    setTimeout(() => {
+      window.scrollTo({ 
+        top: document.body.scrollHeight,
+        behavior: 'smooth'
+      });
+    }, 200);
+  };
+
+  // Handle topic click from UserTopics component (same logic as Dashboard)
+  const handleTopicClick = (topic: string) => {
+    setSelectedTopicForModal(topic);
+    setSelectedMetaTopic(''); // Clear meta topic for regular topics
+    setUseTestPrepMode(false); // Regular topics from user's saved topics
+    setIsLessonModalOpen(true);
+  };
+
+  // Handle user input from BottomChatAssistant - this starts the lesson generation process
+  const handleUserInput = (userInput: string) => {
+    // The user input is handled by the BottomChatAssistant itself
+    // Mark that lesson generation process has started
+    setLessonGenerationStarted(true);
+  };
+
+  // Handle topics being saved from BottomChatAssistant
+  const handleTopicSaved = () => {
+    // Mark that lesson generation process has started (user is saving topics)
+    setLessonGenerationStarted(true);
+    
+    // Refresh UserTopics component if it exists
+    if (userTopicsComponentRef.current) {
+      userTopicsComponentRef.current.refreshTopics();
+    }
+  };
+
+  // Handle closing the lesson modal
+  const handleCloseLessonModal = () => {
+    setIsLessonModalOpen(false);
+    setSelectedTopicForModal('');
+    setSelectedMetaTopic('');
+    setUseTestPrepMode(false);
+  };
+
 
   return (
     <>
@@ -503,6 +596,7 @@ Include practical examples, clear explanations, and interactive elements like qu
         navigationInfo={navigationInfo}
         onNavigate={(lessonUuid) => navigate(`/lessons/${lessonUuid}`)}
         lessonId={id}
+        onTopicExploration={handleTopicExploration}
       />
 
       {/* Education Level Change Warning Modal */}
@@ -547,6 +641,40 @@ Include practical examples, clear explanations, and interactive elements like qu
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* User Topics Section - Only show if user has started lesson generation process */}
+      {isSignedIn && lessonGenerationStarted && (
+        <div ref={userTopicsRef} className="mt-8">
+          <UserTopics
+            ref={userTopicsComponentRef}
+            onTopicClick={handleTopicClick}
+            className="border-t pt-8"
+          />
+        </div>
+      )}
+
+      {/* Bottom Chat Assistant - Only show if user is signed in and has clicked a topic */}
+      {isSignedIn && topicExplorationInitiated && (
+        <BottomChatAssistant
+          isExpanded={bottomChatExpanded}
+          onToggleExpanded={() => setBottomChatExpanded(!bottomChatExpanded)}
+          onUserInput={handleUserInput}
+          onTopicSaved={handleTopicSaved}
+          initialInput={selectedTopicText}
+        />
+      )}
+
+
+
+      {/* Generate Topic Lesson Modal */}
+      <GenerateTopicLessonModal
+        isOpen={isLessonModalOpen}
+        onClose={handleCloseLessonModal}
+        topic={selectedTopicForModal}
+        useTestPrep={useTestPrepMode}
+        metaTopic={selectedMetaTopic}
+      />
+
     </>
   );
 }

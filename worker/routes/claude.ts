@@ -442,7 +442,7 @@ claudeRoutes.post('/opus', async (c) => {
     console.error('Claude Opus endpoint error:', error)
     return c.json({ 
       error: 'Failed to process Claude request', 
-      details: error.message 
+      details: error instanceof Error ? error.message : 'Unknown error'
     }, 500)
   }
 })

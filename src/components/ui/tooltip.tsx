@@ -28,7 +28,7 @@ export function TooltipWithContent({
         <TooltipContent
           side={side}
           align={align}
-          className="bg-popover text-popover-foreground"
+          className="bg-popover text-popover-foreground px-3 py-2 rounded-md shadow-md border text-xs"
         >
           {content}
         </TooltipContent>

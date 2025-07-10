@@ -5,6 +5,7 @@ import BottomChatAssistant from "../components/BottomChatAssistant";
 import UserTopics, { UserTopicsRef } from "../components/UserTopics";
 import SavedLessonPlans, { SavedLessonPlansRef } from "../components/SavedLessonPlans";
 import GenerateTopicLessonModal from "../components/GenerateTopicLessonModal";
+import CreateYourJourney from "../components/CreateYourJourney";
 import { useUser } from '@clerk/clerk-react';
 import {
   Card,
@@ -87,7 +88,7 @@ function Dashboard() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <div id="main-dashboard-content">
+      <div id="main-dashboard-content" className="pb-chat-assistant">
       {/* User's Lesson Plans - Show if user is signed in and has saved lesson plans */}
       {isSignedIn && (
         <div className="content-container my-12 w-full">
@@ -210,23 +211,7 @@ function Dashboard() {
       )}
 
       {/* Create Your Journey Section */}
-      <section className="container-section bg-gradient-to-r from-primary/10 to-accent/10">
-        <div className="content-container text-center">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">
-            Create Your Educational Journey
-          </h2>
-          <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto">
-            Start exploring topics that interest you. Our AI assistant will help you discover new areas of learning and build a personalized curriculum just for you.
-          </p>
-          <Button 
-            size="lg" 
-            className="text-lg px-8 py-4 h-auto"
-            onClick={handleExpandAssistant}
-          >
-            Start Exploring Topics
-          </Button>
-        </div>
-      </section>
+      <CreateYourJourney onExpandAssistant={handleExpandAssistant} />
 
       {/* Create Topics by Goal Section */}
       <section className="container-section">

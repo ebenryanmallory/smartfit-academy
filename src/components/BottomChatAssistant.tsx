@@ -18,9 +18,10 @@ interface BottomChatAssistantProps {
   isExpanded?: boolean;
   onToggleExpanded?: () => void;
   onUserInput?: (userInput: string) => void;
+  initialInput?: string;
 }
 
-export default function BottomChatAssistant({ onTopicSaved, isExpanded = false, onToggleExpanded, onUserInput }: BottomChatAssistantProps = {}) {
+export default function BottomChatAssistant({ onTopicSaved, isExpanded = false, onToggleExpanded, onUserInput, initialInput }: BottomChatAssistantProps = {}) {
   const { isSignedIn } = useUser();
   const { getToken, has } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
@@ -70,6 +71,13 @@ export default function BottomChatAssistant({ onTopicSaved, isExpanded = false, 
       }
     }
   }, [isExpanded, messages.length]);
+
+  // Set initial input when provided
+  useEffect(() => {
+    if (initialInput && initialInput.trim()) {
+      setInput(initialInput);
+    }
+  }, [initialInput]);
 
   // Function to refresh saved topics (can be called after saving)
   const refreshSavedTopics = async () => {

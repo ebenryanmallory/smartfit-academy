@@ -7,8 +7,9 @@ import { CodeSnippet } from './CodeSnippet';
 import { CodePlaygroundTabs } from './CodePlaygroundTabs';
 import { SaveProgressPrompt } from './SaveProgressPrompt';
 import { LessonQuizModal } from './LessonQuizModal';
+import { TooltipWithContent } from './ui/tooltip';
 import { ChevronLeft, ChevronRight, FolderOpen, CheckCircle, Circle, Brain } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 
@@ -28,41 +29,49 @@ interface LessonViewerProps {
   navigationInfo?: NavigationInfo | null;
   onNavigate?: (lessonUuid: string) => void;
   lessonId?: string; // Add lesson ID prop for progress tracking
+  onTopicExploration?: (topicText: string, context?: { lessonTitle?: string; listTitle?: string }) => void; // Callback for topic exploration
 }
 
-// Python to JavaScript code conversion helper
-function convertPythonToJS(pythonCode: string): string {
-  // Basic conversions
-  let jsCode = pythonCode
-    .replace(/print\((.*?)\)/g, 'console.log($1)') // print() -> console.log()
-    .replace(/def /g, 'function ') // def -> function
-    .replace(/:$/gm, ' {') // : -> {
-    .replace(/^(\s*)(?=\S)/gm, '$1  ') // Indentation
-    .replace(/\n/g, '\n  ') // Add indentation
-    .replace(/\n\s*\n/g, '\n}\n\n') // Add closing braces
-    .replace(/True/g, 'true') // True -> true
-    .replace(/False/g, 'false') // False -> false
-    .replace(/None/g, 'null') // None -> null
-    .replace(/f"(.*?)"/g, '`$1`') // f-strings -> template literals
-    .replace(/\{([^}]+)\}/g, '${$1}') // {var} -> ${var}
-    .replace(/#/g, '//'); // Comments
-
-  // Add closing brace for the last function
-  if (jsCode.includes('function ')) {
-    jsCode += '\n}';
+// Helper function to extract text content from React children
+function extractTextContent(children: React.ReactNode): string {
+  if (typeof children === 'string') {
+    return children;
   }
-
-  return jsCode;
+  if (typeof children === 'number') {
+    return String(children);
+  }
+  if (React.isValidElement(children)) {
+    return extractTextContent(children.props.children);
+  }
+  if (Array.isArray(children)) {
+    return children.map(child => extractTextContent(child)).join('');
+  }
+  return '';
 }
 
-export function LessonViewer({ title, description, content, topic, metaTopic, navigationInfo, onNavigate, lessonId }: LessonViewerProps) {
-  const { isSignedIn, user } = useUser();
+
+export function LessonViewer({ title, description, content, metaTopic, navigationInfo, onNavigate, lessonId, onTopicExploration }: LessonViewerProps) {
+  const { isSignedIn } = useUser();
   const { getToken } = useAuth();
   const [isCompleted, setIsCompleted] = useState(false);
   const [isMarkingComplete, setIsMarkingComplete] = useState(false);
   const [progressLoading, setProgressLoading] = useState(false);
   const [showQuizModal, setShowQuizModal] = useState(false);
   const [quizScore, setQuizScore] = useState<number | null>(null);
+  
+  // Track the last paragraph text for list title extraction
+  const lastParagraphRef = React.useRef<string | null>(null);
+  // Track current list title for all li elements in the current list
+  const currentListTitleRef = React.useRef<string | null>(null);
+
+  // Handle topic exploration click
+  const handleTopicExploration = (topicText: string, listTitle?: string) => {
+    const context = {
+      lessonTitle: title,
+      listTitle: listTitle
+    };
+    onTopicExploration?.(topicText, context);
+  };
 
   // Check lesson completion status
   useEffect(() => {
@@ -204,13 +213,241 @@ export function LessonViewer({ title, description, content, topic, metaTopic, na
           <div className="prose prose-slate dark:prose-invert max-w-none">
             <ReactMarkdown
               components={{
+                h1({ node, children, ...props }) {
+                  return (
+                    <h1 className="text-2xl font-bold mb-4 mt-8 text-gray-900 dark:text-white" {...props}>
+                      {children}
+                    </h1>
+                  );
+                },
+                h2({ node, children, ...props }) {
+                  return (
+                    <>
+                      <h2 className="text-xl font-semibold mb-3 mt-6 text-gray-900 dark:text-white" {...props}>
+                        {children}
+                      </h2>
+                      {!isSignedIn && String(children).includes("Try It Yourself") && (
+                        <SaveProgressPrompt
+                          title="Track Your Learning"
+                          description="Sign in to track your progress and get personalized learning paths."
+                          className="mt-4 mb-8"
+                        />
+                      )}
+                    </>
+                  );
+                },
+                h3({ node, children, ...props }) {
+                  return (
+                    <h3 className="text-lg font-semibold mb-3 mt-5 text-gray-900 dark:text-white" {...props}>
+                      {children}
+                    </h3>
+                  );
+                },
+                h4({ node, children, ...props }) {
+                  return (
+                    <h4 className="text-base font-semibold mb-2 mt-4 text-gray-900 dark:text-white" {...props}>
+                      {children}
+                    </h4>
+                  );
+                },
+                h5({ node, children, ...props }) {
+                  return (
+                    <h5 className="text-sm font-semibold mb-2 mt-3 text-gray-900 dark:text-white" {...props}>
+                      {children}
+                    </h5>
+                  );
+                },
+                h6({ node, children, ...props }) {
+                  return (
+                    <h6 className="text-sm font-medium mb-2 mt-3 text-gray-700 dark:text-gray-300" {...props}>
+                      {children}
+                    </h6>
+                  );
+                },
+                ul({ node, children, ...props }) {
+                  // Store the current last paragraph as this list's title
+                  const currentListTitle = lastParagraphRef.current;
+                  console.log('List starting with potential title:', currentListTitle);
+                  
+                  // Set the current list title for all li elements in this list
+                  currentListTitleRef.current = currentListTitle;
+                  
+                  // Clear the last paragraph ref so it doesn't get reused for subsequent lists
+                  lastParagraphRef.current = null;
+                  
+                  return (
+                    <ul 
+                      className="list-disc list-inside mb-4 space-y-2 text-gray-700 dark:text-gray-300" 
+                      {...props}
+                    >
+                      {children}
+                    </ul>
+                  );
+                },
+                ol({ node, children, ...props }) {
+                  // Store the current last paragraph as this list's title
+                  const currentListTitle = lastParagraphRef.current;
+                  console.log('Ordered list starting with potential title:', currentListTitle);
+                  
+                  // Set the current list title for all li elements in this list
+                  currentListTitleRef.current = currentListTitle;
+                  
+                  // Clear the last paragraph ref so it doesn't get reused for subsequent lists
+                  lastParagraphRef.current = null;
+                  
+                  return (
+                    <ol 
+                      className="list-decimal list-inside mb-4 space-y-2 text-gray-700 dark:text-gray-300" 
+                      {...props}
+                    >
+                      {children}
+                    </ol>
+                  );
+                },
+                li({ node, children, ...props }) {
+                  // Get the text content of the li to check for separators
+                  const liTextContent = extractTextContent(children);
+                  
+                  // Get the list title from the current list title ref
+                  const listTitle = currentListTitleRef.current || undefined;
+                  
+                  console.log('Processing li item:', {
+                    itemText: liTextContent,
+                    listTitle: listTitle
+                  });
+                  
+                  // Check if this li contains a strong element that could be a title
+                  let hasStrongTitle = false;
+                  
+                  // Process children to handle complex list items with bold titles
+                  const processedChildren = React.Children.map(children, (child) => {
+                    if (React.isValidElement(child) && child.type === 'strong') {
+                      const strongChild = child as React.ReactElement<{ children: React.ReactNode }>;
+                      const textContent = extractTextContent(strongChild.props.children);
+                      // Check if this strong element is likely a list item title
+                      const isListItemTitle = textContent.length > 3 && textContent.includes(' ');
+                      
+                      if (isListItemTitle) {
+                        hasStrongTitle = true;
+                        return (
+                          <TooltipWithContent
+                            content="Click to explore this topic in depth"
+                            side="top"
+                            delayDuration={300}
+                          >
+                            <button
+                              onClick={() => handleTopicExploration(textContent, listTitle)}
+                              className="font-semibold text-foreground hover:text-primary cursor-pointer transition-colors duration-200 underline-offset-2 hover:underline"
+                              type="button"
+                            >
+                              {strongChild.props.children}
+                            </button>
+                          </TooltipWithContent>
+                        );
+                      }
+                    }
+                    return child;
+                  });
+
+                  // Check if li contains a colon separator and no strong title
+                  const colonIndex = liTextContent.indexOf(':');
+                  if (!hasStrongTitle && colonIndex > 0 && colonIndex < liTextContent.length - 1) {
+                    const titlePart = liTextContent.substring(0, colonIndex).trim();
+                    const descriptionPart = liTextContent.substring(colonIndex + 1).trim();
+                    
+                    if (titlePart.length > 0 && descriptionPart.length > 0) {
+                      return (
+                        <li className="mb-1 text-gray-700 dark:text-gray-300" {...props}>
+                          <TooltipWithContent
+                            content="Click to explore this topic in depth"
+                            side="top"
+                            delayDuration={300}
+                          >
+                            <button
+                              onClick={() => handleTopicExploration(titlePart, listTitle)}
+                              className="font-semibold text-foreground hover:text-primary cursor-pointer transition-colors duration-200 underline-offset-2 hover:underline"
+                              type="button"
+                            >
+                              {titlePart}
+                            </button>
+                          </TooltipWithContent>
+                          : {descriptionPart}
+                        </li>
+                      );
+                    }
+                  }
+
+                  // If no strong title or colon separator found, make the entire li clickable
+                  if (!hasStrongTitle && colonIndex === -1) {
+                    return (
+                      <TooltipWithContent
+                        content="Click to explore this topic in depth"
+                        side="top"
+                        align="start"
+                        delayDuration={300}
+                      >
+                        <li 
+                          className="mb-1 text-foreground hover:text-primary cursor-pointer transition-colors duration-200 underline-offset-2 hover:underline"
+                          onClick={() => handleTopicExploration(liTextContent, listTitle)}
+                          {...props}
+                        >
+                          {children}
+                        </li>
+                      </TooltipWithContent>
+                    );
+                  }
+
+                  return (
+                    <li className="mb-1 text-gray-700 dark:text-gray-300" {...props}>
+                      {processedChildren}
+                    </li>
+                  );
+                },
+                p({ node, children, ...props }) {
+                  // Extract text content and store it for potential list title use
+                  const paragraphText = extractTextContent(children);
+                  
+                  // Store this paragraph text for potential use by the next list
+                  // Only store if it's not empty and looks like it could be a list title
+                  if (paragraphText && paragraphText.trim().length > 0) {
+                    lastParagraphRef.current = paragraphText.trim();
+                    console.log('Captured paragraph text for potential list title:', paragraphText.trim());
+                  }
+                  
+                  return (
+                    <p className="mb-4 text-gray-700 dark:text-gray-300 leading-relaxed" {...props}>
+                      {children}
+                    </p>
+                  );
+                },
+                blockquote({ node, children, ...props }) {
+                  return (
+                    <blockquote className="border-l-4 border-blue-500 pl-4 mb-4 italic text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 py-2 pr-4 rounded-r" {...props}>
+                      {children}
+                    </blockquote>
+                  );
+                },
+                strong({ node, children, ...props }) {
+                  return (
+                    <strong className="font-semibold text-gray-900 dark:text-white" {...props}>
+                      {children}
+                    </strong>
+                  );
+                },
+                em({ node, children, ...props }) {
+                  return (
+                    <em className="italic text-gray-700 dark:text-gray-300" {...props}>
+                      {children}
+                    </em>
+                  );
+                },
                 a({ href, children, ...props }) {
                   const isExternal = href && /^https?:\/\//.test(href);
                   return (
                     <Button
                       asChild
                       variant="link"
-                      className="p-0 h-auto align-baseline"
+                      className="p-0 h-auto align-baseline text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
                     >
                       <a
                         href={href}
@@ -231,12 +468,10 @@ export function LessonViewer({ title, description, content, topic, metaTopic, na
                   if (language) {
                     if (isInteractive) {
                       const pythonCode = String(children).replace(/\n$/, '');
-                      const javascriptCode = convertPythonToJS(pythonCode);
                       return (
                         <>
                           <CodePlaygroundTabs
                             pythonCode={pythonCode}
-                            javascriptCode={javascriptCode}
                             title={`Interactive ${language.toUpperCase()} Playground`}
                           />
                           {!isSignedIn && (
@@ -261,20 +496,6 @@ export function LessonViewer({ title, description, content, topic, metaTopic, na
                     <code className={className} {...props}>
                       {children}
                     </code>
-                  );
-                },
-                h2({ node, children, ...props }) {
-                  return (
-                    <>
-                      <h2 {...props}>{children}</h2>
-                      {!isSignedIn && String(children).includes("Try It Yourself") && (
-                        <SaveProgressPrompt
-                          title="Track Your Learning"
-                          description="Sign in to track your progress and get personalized learning paths."
-                          className="mt-4 mb-8"
-                        />
-                      )}
-                    </>
                   );
                 }
               }}
