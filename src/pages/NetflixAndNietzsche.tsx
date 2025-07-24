@@ -3,14 +3,17 @@ import { useUser, SignInButton, SignedOut } from '@clerk/clerk-react';
 import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
 import GenerateTopicLessonModal from '../components/GenerateTopicLessonModal';
+import VideoModal from '../components/VideoModal';
 import TaglineComponent from '../components/ui/TaglineComponent';
-import { Sparkles, Brain, Users, ArrowRight, Crown, Tv, ScrollText, ChevronLeft, ChevronRight, Clock } from 'lucide-react';
+import { Brain, Users, ArrowRight, Crown, Tv, ScrollText, ChevronLeft, ChevronRight, Clock, BookOpen, Play, ExternalLink } from 'lucide-react';
 
 const NetflixAndNietzsche: React.FC = () => {
   const { isSignedIn } = useUser();
   const [isLessonModalOpen, setIsLessonModalOpen] = useState(false);
   const [selectedPairing, setSelectedPairing] = useState<{topic: string, metaTopic: string}>({topic: '', metaTopic: ''});
   const [featuredIndex, setFeaturedIndex] = useState(0);
+  const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
+  const [currentVideoSrc, setCurrentVideoSrc] = useState('');
 
   const showPairings = [
     {
@@ -24,46 +27,52 @@ const NetflixAndNietzsche: React.FC = () => {
       icon: Crown,
       color: "from-amber-500/20 to-orange-500/20",
       textColor: "text-amber-600",
-      status: "available"
+      status: "available",
+      bookUrl: "/books/The%20Prince/",
+      promoVideoUrl: "/promos/Succession.mov",
+      seriesUrl: "https://www.youtube.com/show/SCjHhCKi82bnxvt_vbvIUZiA"
     },
     {
-      show: "The Good Place",
-      text: "Multiple Philosophy Texts",
-      description: "The show literally teaches moral philosophy through comedy",
-      connection: "Features actual discussions of Aristotle's virtue ethics, Kant's categorical imperative, and utilitarian calculations.",
-      featuredTitle: "Philosophy Made Fun and Accessible",
-      featuredDescription: "Eleanor's journey from selfish to selfless demonstrates virtue ethics in practice. The show makes Aristotle's complex ideas about moral character accessible through comedy and relatable characters.",
-      featuredNote: "",
-      icon: Sparkles,
-      color: "from-green-500/20 to-emerald-500/20",
-      textColor: "text-green-600",
-      status: "coming-soon"
-    },
-    {
-      show: "Squid Game",
-      text: "Rousseau's Social Contract & Marx's Communist Manifesto",
-      description: "A hyperbolic representation of capitalism's inequalities",
-      connection: "Players literally sign away their rights, the wealthy watch the poor fight for entertainment.",
-      featuredTitle: "Capitalism's Dark Mirror Revealed",
-      featuredDescription: "The games are a hyperbolic representation of economic inequality. Players sign away their rights, the wealthy watch the poor fight for entertainment - a perfect allegory for class struggle.",
-      featuredNote: "",
-      icon: Users,
-      color: "from-red-500/20 to-pink-500/20",
-      textColor: "text-red-600",
-      status: "coming-soon"
-    },
-    {
-      show: "Black Mirror",
-      text: "Plato's Allegory of the Cave",
-      description: "Explores the nature of reality and technology as the new cave wall",
-      connection: "Episodes consistently question what's real and what's simulation.",
-      featuredTitle: "Technology as the New Cave Wall",
-      featuredDescription: "Each episode is essentially a philosophical thought experiment. 'San Junipero,' 'USS Callister,' and 'Bandersnatch' directly question what's real and what's simulation.",
+      show: "Stranger Things",
+      text: "Jung's Shadow Psychology",
+      description: "Every journey into the Upside Down is actually a trip into what Jung called 'the shadow'",
+      connection: "The monsters aren't invading our world. They're emerging from it - the dark unconscious where our deepest fears take physical form.",
+      featuredTitle: "Your Shadow Self Has Been Waiting",
+      featuredDescription: "Carl Jung said we all have a shadow self. A dark reflection of everything we refuse to acknowledge about human nature. The Upside Down isn't a place - it's a psychological state.",
       featuredNote: "",
       icon: Brain,
       color: "from-purple-500/20 to-indigo-500/20",
       textColor: "text-purple-600",
-      status: "coming-soon"
+      status: "coming-soon",
+      seriesUrl: "https://www.netflix.com/title/80057281"
+    },
+    {
+      show: "Squid Game",
+      text: "Hobbes' Leviathan",
+      description: "When 456 players signed away their human rights for a chance at money, they recreated the exact social contract Thomas Hobbes warned about",
+      connection: "Thomas Hobbes said without government, life becomes 'nasty, brutish, and short.' But what happens when you sign your rights away to play the game?",
+      featuredTitle: "The Childhood Game That Proves Hobbes Right",
+      featuredDescription: "Welcome to the state of nature - now with better production values. Every game recreates Hobbes' warning about what happens when we abandon our humanity for survival.",
+      featuredNote: "",
+      icon: Users,
+      color: "from-red-500/20 to-pink-500/20",
+      textColor: "text-red-600",
+      status: "coming-soon",
+      seriesUrl: "https://www.netflix.com/title/81040344"
+    },
+    {
+      show: "The Crown",
+      text: "Sun Tzu's Art of War",
+      description: "Every calculated pause, every strategic marriage, every perfectly timed public appearance - the Royal Family has been following Sun Tzu's 2,500-year-old playbook",
+      connection: "Sun Tzu wrote that the supreme art of war is to subdue your enemy without fighting. Every royal smile, every calculated silence, every strategic marriage follows this principle.",
+      featuredTitle: "The Royal Family's Secret War Manual",
+      featuredDescription: "The crown jewels aren't just ceremonial. They're trophies from a war won through strategy, not violence. Every royal gesture follows ancient principles of winning without fighting.",
+      featuredNote: "",
+      icon: Crown,
+      color: "from-amber-500/20 to-orange-500/20",
+      textColor: "text-amber-600",
+      status: "coming-soon",
+      seriesUrl: "https://www.netflix.com/title/80025678"
     }
   ];
 
@@ -82,6 +91,16 @@ const NetflixAndNietzsche: React.FC = () => {
   const handleCloseLessonModal = () => {
     setIsLessonModalOpen(false);
     setSelectedPairing({topic: '', metaTopic: ''});
+  };
+
+  const handleVideoClick = (videoSrc: string) => {
+    setCurrentVideoSrc(videoSrc);
+    setIsVideoModalOpen(true);
+  };
+
+  const handleCloseVideoModal = () => {
+    setIsVideoModalOpen(false);
+    setCurrentVideoSrc('');
   };
 
   const nextFeatured = () => {
@@ -162,12 +181,48 @@ const NetflixAndNietzsche: React.FC = () => {
               
               <div className="text-center">
                 <h3 className={`text-xl font-semibold mb-3 ${currentPairing.status === 'available' ? 'text-foreground' : 'text-gray-500'}`}>
-                  "{currentPairing.featuredTitle}"
+                  {currentPairing.featuredTitle}
                 </h3>
                 <p className={`mb-4 max-w-2xl mx-auto ${currentPairing.status === 'available' ? 'text-muted-foreground' : 'text-gray-400'}`}>
                   {currentPairing.featuredDescription}
                 </p>
 
+                {/* Additional links - show for all pairings but disable for coming soon */}
+                <div className="flex flex-wrap justify-center gap-3 mb-4">
+                  {currentPairing.show === 'Succession' && currentPairing.status === 'available' && (
+                    <a 
+                      href={currentPairing.bookUrl} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-amber-50 hover:bg-amber-100 text-amber-700 rounded-lg text-sm font-medium transition-colors"
+                    >
+                      <BookOpen className="h-4 w-4" />
+                      Read The Prince
+                    </a>
+                  )}
+                  
+                  {currentPairing.show === 'Succession' && currentPairing.status === 'available' && (
+                    <button 
+                      onClick={() => handleVideoClick(currentPairing.promoVideoUrl || '')}
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-sm font-medium transition-colors"
+                    >
+                      <Play className="h-4 w-4" />
+                      15s Promo
+                    </button>
+                  )}
+                  
+                  {currentPairing.seriesUrl && (
+                    <a 
+                      href={currentPairing.seriesUrl} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-red-50 hover:bg-red-100 text-red-700 rounded-lg text-sm font-medium transition-colors"
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                      Watch Full Series
+                    </a>
+                  )}
+                </div>
               </div>
               
               <Button 
@@ -426,6 +481,14 @@ const NetflixAndNietzsche: React.FC = () => {
         useRelevanceEngine={true}
         previewMode={!isSignedIn}
         metaTopic={selectedPairing.metaTopic}
+      />
+
+      {/* Video Modal */}
+      <VideoModal
+        isOpen={isVideoModalOpen}
+        onClose={handleCloseVideoModal}
+        videoSrc={currentVideoSrc}
+        title="Succession Promo"
       />
     </div>
   );
