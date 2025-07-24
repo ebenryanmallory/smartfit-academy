@@ -151,10 +151,23 @@
   --sage: var(--color-palette-4); /* .bg-sage, .from-sage, etc. - Sage/green */
   --teal: var(--color-palette-5); /* .bg-teal, .from-teal, etc. - Teal/blue-green */
 
+  /* Font Face Declarations */
+  @font-face {
+    font-family: 'brockmannmedium';
+    src: url('/fonts/brockmann-medium-webfont.eot');
+    src: url('/fonts/brockmann-medium-webfont.eot?#iefix') format('embedded-opentype'),
+         url('/fonts/brockmann-medium-webfont.woff2') format('woff2'),
+         url('/fonts/brockmann-medium-webfont.woff') format('woff'),
+         url('/fonts/brockmann-medium-webfont.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+  }
+
   /* Typography Tokens */
+  --font-brockman: 'brockmannmedium', var(--font-headline);
 
 h1, h2, h3, h4, h5, h6, .headline {
-  font-family: var(--font-headline);
+  font-family: var(--font-brockman);
 }
 
 /* Only apply default font-weight if no Tailwind font-weight class is present */
@@ -172,7 +185,7 @@ body, .body-text {
   font-family: var(--font-sans);
 }
 
-  --font-headline: 'Geist Variable', 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
+  --font-headline: 'brockmannmedium', 'Geist Variable', 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
   --font-sans: 'Inter', 'Geist Variable', system-ui, Avenir, Helvetica, Arial, sans-serif;
   --font-mono: 'Fira Mono', 'Menlo', 'Monaco', 'Consolas', monospace;
   --font-size-xs: 0.75rem;
@@ -334,6 +347,7 @@ body, .body-text {
 .text-headline { font-size: var(--font-size-2xl); font-weight: var(--font-weight-bold); }
 .text-title { font-size: var(--font-size-xl); font-weight: var(--font-weight-bold); }
 .text-body { font-size: var(--font-size-base); font-weight: var(--font-weight-normal); }
+.font-brockman { font-family: var(--font-brockman); }
 .rounded { border-radius: var(--radius-md); }
 
 /* Color Palette Background Utilities */
@@ -381,7 +395,7 @@ body, .body-text {
   font-weight: var(--font-weight-bold);
   color: var(--color-primary);
   margin-bottom: var(--space-md);
-  font-family: var(--font-sans);
+  font-family: var(--font-brockman);
 }
 
 .code-block {
