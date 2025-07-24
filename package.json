@@ -4,10 +4,11 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "clean": "find . -name '._*' -type f -delete",
     "build": "tsc",
     "build:assets": "vite build",
     "build:worker": "npm run build",
-    "build:all": "npm run build:assets && npm run build:worker",
+    "build:all": "npm run build:assets && npm run build:worker && npm run clean",
     "build:dev": "cp src/components/auth/clerk.dev.tsx src/components/auth/clerk.tsx && npm run build:all",
     "build:prod": "cp src/components/auth/clerk.prod.tsx src/components/auth/clerk.tsx && npm run build:all",
     "vite": "npx vite",
