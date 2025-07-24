@@ -7,7 +7,7 @@ interface NotificationBannerProps {
 }
 
 const NotificationBanner: React.FC<NotificationBannerProps> = ({
-  message = "🚧 We're under heavy construction! Check back soon - good things are on the way! 🚀",
+  message = "🚧 Pardon our dust - we hope all is working but expect some glitches! We are on it! 🚀",
   type = 'info',
   dismissible = true
 }) => {
