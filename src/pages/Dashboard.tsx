@@ -6,6 +6,7 @@ import UserTopics, { UserTopicsRef } from "../components/UserTopics";
 import SavedLessonPlans, { SavedLessonPlansRef } from "../components/SavedLessonPlans";
 import GenerateTopicLessonModal from "../components/GenerateTopicLessonModal";
 import CreateYourJourney from "../components/CreateYourJourney";
+import CreateTopicsByGoal from "../components/dashboard/CreateTopicsByGoal";
 import { useUser } from '@clerk/clerk-react';
 import {
   Card,
@@ -22,6 +23,7 @@ function Dashboard() {
   const [isLessonModalOpen, setIsLessonModalOpen] = useState(false);
   const [selectedTopic, setSelectedTopic] = useState<string>('');
   const [selectedMetaTopic, setSelectedMetaTopic] = useState<string>('');
+  const [selectedSubject, setSelectedSubject] = useState<string | undefined>(undefined);
   const [useTestPrepMode, setUseTestPrepMode] = useState(false);
   const [hasLessonPlans, setHasLessonPlans] = useState(false);
   const [userLatestInput, setUserLatestInput] = useState<string>('');
@@ -43,6 +45,7 @@ function Dashboard() {
   const handleTopicClick = (topic: string) => {
     setSelectedTopic(topic);
     setSelectedMetaTopic(''); // Clear meta topic for regular topics
+    setSelectedSubject(undefined); // Clear subject for regular topics
     setUseTestPrepMode(false); // Regular topics from user's saved topics
     setIsLessonModalOpen(true);
   };
@@ -79,11 +82,20 @@ function Dashboard() {
     setIsLessonModalOpen(false);
     setSelectedTopic('');
     setSelectedMetaTopic('');
+    setSelectedSubject(undefined);
     setUseTestPrepMode(false);
   };
 
   const handleUserInput = (userInput: string) => {
     setUserLatestInput(userInput);
+  };
+
+  const handleGoalSelect = (topic: string, metaTopic: string, subject?: string) => {
+    setSelectedTopic(topic);
+    setSelectedMetaTopic(metaTopic);
+    setSelectedSubject(subject);
+    setUseTestPrepMode(true);
+    setIsLessonModalOpen(true);
   };
 
   return (
@@ -214,58 +226,7 @@ function Dashboard() {
       <CreateYourJourney onExpandAssistant={handleExpandAssistant} />
 
       {/* Create Topics by Goal Section */}
-      <section className="container-section">
-        <div className="content-container text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6 text-foreground">
-            Create Topics by Goal
-          </h2>
-          <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto">
-            Preparing for a standardized test? Let our AI create a comprehensive study plan tailored to your target exam. 
-            Get structured topics, practice materials, and a personalized timeline to help you achieve your best score.
-          </p>
-          <div className="flex flex-wrap justify-center gap-4">
-            <Button 
-              size="lg" 
-              variant="outline"
-              className="text-lg px-8 py-4 h-auto"
-              onClick={() => {
-                setSelectedTopic('GED Test Preparation');
-                setSelectedMetaTopic('GED');
-                setUseTestPrepMode(true);
-                setIsLessonModalOpen(true);
-              }}
-            >
-              GED Prep
-            </Button>
-            <Button 
-              size="lg" 
-              variant="outline"
-              className="text-lg px-8 py-4 h-auto"
-              onClick={() => {
-                setSelectedTopic('SAT Test Preparation');
-                setSelectedMetaTopic('SAT');
-                setUseTestPrepMode(true);
-                setIsLessonModalOpen(true);
-              }}
-            >
-              SAT Prep
-            </Button>
-            <Button 
-              size="lg" 
-              variant="outline"
-              className="text-lg px-8 py-4 h-auto"
-              onClick={() => {
-                setSelectedTopic('ACT Test Preparation');
-                setSelectedMetaTopic('ACT');
-                setUseTestPrepMode(true);
-                setIsLessonModalOpen(true);
-              }}
-            >
-              ACT Prep
-            </Button>
-          </div>
-        </div>
-      </section>
+      <CreateTopicsByGoal onGoalSelect={handleGoalSelect} />
       
       {/* Value Proposition & How It Works */}
       <section className="container-section bg-secondary">
@@ -346,6 +307,7 @@ function Dashboard() {
         topic={selectedTopic}
         useTestPrep={useTestPrepMode}
         metaTopic={selectedMetaTopic}
+        subject={selectedSubject}
       />
     </div>
   );

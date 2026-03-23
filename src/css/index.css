@@ -4,6 +4,137 @@
   width: 100vw;
 }
 
+/* --- Design System: Tokens & Atomic Classes --- */
+
+/* Font Face Declarations */
+@font-face {
+  font-family: 'brockmannmedium';
+  src: url('/fonts/brockmann-medium-webfont.eot');
+  src: url('/fonts/brockmann-medium-webfont.eot?#iefix') format('embedded-opentype'),
+       url('/fonts/brockmann-medium-webfont.woff2') format('woff2'),
+       url('/fonts/brockmann-medium-webfont.woff') format('woff'),
+       url('/fonts/brockmann-medium-webfont.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+:root {
+  /* Color Tokens */
+  --color-palette-1: #c7522a; /* Burnt orange/red */
+  --color-palette-2: #e5c185; /* Warm sand/tan */
+  --color-palette-3: #f3f1e2; /* Pale yellow */
+  --color-palette-4: #74a892; /* Sage/green */
+  --color-palette-5: #008585; /* Teal/blue-green */
+
+  --color-primary: #008585; /* Teal/blue-green (from palette) */
+  --color-secondary: #c7522a; /* Burnt orange/red (from palette) */
+  --color-accent: #74a892; /* Sage/green from palette */
+  --color-success: #74a892; /* palette-4, sage/green */
+  --color-warning: #e5c185; /* palette-2, warm sand/tan */
+  --color-danger: #c7522a; /* palette-1, burnt orange/red */
+  --color-background: #fbf2c4; /* palette-3, pale yellow */
+  --color-border: #74a892; /* palette-4, sage/green */
+  --color-muted: #74a892; /* palette-4, sage/green */
+  --color-card: #f3f4f6;
+  --color-card-bold: #e5c185; /* tan from palette */
+  --color-code-border: #008585; /* palette-5, teal/blue-green */
+
+  /* Tailwind-friendly color names (for direct class usage) */
+  --orange: var(--color-palette-1); /* .bg-orange, .from-orange, etc. - Burnt orange/red */
+  --tan: var(--color-palette-2); /* .bg-tan, .from-tan, etc. - Warm sand/tan */
+  --cream: var(--color-palette-3); /* .bg-cream, .from-cream, etc. - Pale yellow */
+  --sage: var(--color-palette-4); /* .bg-sage, .from-sage, etc. - Sage/green */
+  --teal: var(--color-palette-5); /* .bg-teal, .from-teal, etc. - Teal/blue-green */
+
+  /* Typography Tokens */
+  --font-brockman: 'brockmannmedium', var(--font-headline);
+  --font-headline: 'brockmannmedium', 'Geist Variable', 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
+  --font-sans: 'Inter', 'Geist Variable', system-ui, Avenir, Helvetica, Arial, sans-serif;
+  --font-mono: 'Fira Mono', 'Menlo', 'Monaco', 'Consolas', monospace;
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.25rem;
+  --font-size-xl: 1.5rem;
+  --font-size-2xl: 2rem;
+  --font-size-3xl: 2.5rem;
+  --font-weight-headline: 300;
+  --font-weight-bold: 700;
+
+  /* Spacing Scale */
+  --space-0: 0rem;     /* 0px */
+  --space-1: 0.25rem;  /* 4px */
+  --space-2: 0.5rem;   /* 8px */
+  --space-3: 0.75rem;  /* 12px */
+  --space-4: 1rem;     /* 16px */
+  --space-5: 1.25rem;  /* 20px */
+  --space-6: 1.5rem;   /* 24px */
+  --space-8: 2rem;     /* 32px */
+  --space-10: 2.5rem;  /* 40px */
+  --space-12: 3rem;    /* 48px */
+  --space-16: 4rem;    /* 64px */
+  --space-20: 5rem;    /* 80px */
+  --space-24: 6rem;    /* 96px */
+  --space-32: 8rem;    /* 128px */
+  --space-40: 10rem;   /* 160px */
+  --space-48: 12rem;   /* 192px */
+  --space-56: 14rem;   /* 224px */
+  --space-64: 16rem;   /* 256px */
+
+  /* Aliases for semantic use */
+  --space-xs: var(--space-1);
+  --space-sm: var(--space-2);
+  --space-md: var(--space-4);
+  --space-lg: var(--space-8);
+  --space-xl: var(--space-12);
+
+  /* Component Spacing */
+  --component-padding: var(--space-4);
+  --component-margin: var(--space-4);
+  --component-gap: var(--space-4);
+  --container-padding: var(--space-6);
+  --section-gap: var(--space-12);
+  --card-padding: var(--space-6);
+  --button-padding: var(--space-2) var(--space-4);
+  --input-padding: var(--space-2) var(--space-3);
+
+  /* Border Radius Tokens */
+  --radius-xs: 0.25rem;
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+
+  /* Shadow Tokens */
+  --shadow-xs: 0 1px 2px 0 rgba(0,0,0,0.03);
+  --shadow-sm: 0 1px 3px 0 rgba(0,0,0,0.07);
+  --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
+  --shadow-card: var(--shadow-sm);
+  --shadow-button: var(--shadow-sm);
+  --shadow-hover: var(--shadow-md);
+}
+
+/* Typography Rules */
+h1, h2, h3, h4, h5, h6, .headline {
+  font-family: var(--font-brockman);
+}
+
+/* Only apply default font-weight if no Tailwind font-weight class is present */
+h1:not([class*="font-"]), 
+h2:not([class*="font-"]), 
+h3:not([class*="font-"]), 
+h4:not([class*="font-"]), 
+h5:not([class*="font-"]), 
+h6:not([class*="font-"]), 
+.headline:not([class*="font-"]) {
+  font-weight: var(--font-weight-headline);
+}
+
+body, .body-text {
+  font-family: var(--font-sans);
+}
+
 /* --- Combined Components --- */
 @layer components {
   /* Layout Components */
@@ -119,137 +250,6 @@
     border-radius: var(--radius-md);
     font-weight: var(--font-weight-bold);
   }
-}
-
-/* --- Design System: Tokens & Atomic Classes --- */
-
-:root {
-  /* Color Tokens */
-  --color-palette-1: #c7522a; /* Burnt orange/red */
-  --color-palette-2: #e5c185; /* Warm sand/tan */
-  --color-palette-3: #f3f1e2; /* Pale yellow */
-  --color-palette-4: #74a892; /* Sage/green */
-  --color-palette-5: #008585; /* Teal/blue-green */
-
-  --color-primary: #008585; /* Teal/blue-green (from palette) */
-  --color-secondary: #c7522a; /* Burnt orange/red (from palette) */
-  --color-accent: #74a892; /* Sage/green from palette */
-  --color-success: #74a892; /* palette-4, sage/green */
-  --color-warning: #e5c185; /* palette-2, warm sand/tan */
-  --color-danger: #c7522a; /* palette-1, burnt orange/red */
-  --color-background: #fbf2c4; /* palette-3, pale yellow */
-  --color-border: #74a892; /* palette-4, sage/green */
-  --color-muted: #74a892; /* palette-4, sage/green */
-  --color-card: #f3f4f6;
-  --color-card-bold: #e5c185; /* tan from palette */
-  --color-code-border: #008585; /* palette-5, teal/blue-green */
-
-  /* Tailwind-friendly color names (for direct class usage) */
-  --orange: var(--color-palette-1); /* .bg-orange, .from-orange, etc. - Burnt orange/red */
-  --tan: var(--color-palette-2); /* .bg-tan, .from-tan, etc. - Warm sand/tan */
-  --cream: var(--color-palette-3); /* .bg-cream, .from-cream, etc. - Pale yellow */
-  --sage: var(--color-palette-4); /* .bg-sage, .from-sage, etc. - Sage/green */
-  --teal: var(--color-palette-5); /* .bg-teal, .from-teal, etc. - Teal/blue-green */
-
-  /* Font Face Declarations */
-  @font-face {
-    font-family: 'brockmannmedium';
-    src: url('/fonts/brockmann-medium-webfont.eot');
-    src: url('/fonts/brockmann-medium-webfont.eot?#iefix') format('embedded-opentype'),
-         url('/fonts/brockmann-medium-webfont.woff2') format('woff2'),
-         url('/fonts/brockmann-medium-webfont.woff') format('woff'),
-         url('/fonts/brockmann-medium-webfont.ttf') format('truetype');
-    font-weight: normal;
-    font-style: normal;
-  }
-
-  /* Typography Tokens */
-  --font-brockman: 'brockmannmedium', var(--font-headline);
-
-h1, h2, h3, h4, h5, h6, .headline {
-  font-family: var(--font-brockman);
-}
-
-/* Only apply default font-weight if no Tailwind font-weight class is present */
-h1:not([class*="font-"]), 
-h2:not([class*="font-"]), 
-h3:not([class*="font-"]), 
-h4:not([class*="font-"]), 
-h5:not([class*="font-"]), 
-h6:not([class*="font-"]), 
-.headline:not([class*="font-"]) {
-  font-weight: var(--font-weight-headline);
-}
-
-body, .body-text {
-  font-family: var(--font-sans);
-}
-
-  --font-headline: 'brockmannmedium', 'Geist Variable', 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
-  --font-sans: 'Inter', 'Geist Variable', system-ui, Avenir, Helvetica, Arial, sans-serif;
-  --font-mono: 'Fira Mono', 'Menlo', 'Monaco', 'Consolas', monospace;
-  --font-size-xs: 0.75rem;
-  --font-size-sm: 0.875rem;
-  --font-size-base: 1rem;
-  --font-size-lg: 1.25rem;
-  --font-size-xl: 1.5rem;
-  --font-size-2xl: 2rem;
-  --font-size-3xl: 2.5rem;
-  --font-weight-headline: 300;
-  --font-weight-bold: 700;
-
-  /* Spacing Scale */
-  --space-0: 0rem;     /* 0px */
-  --space-1: 0.25rem;  /* 4px */
-  --space-2: 0.5rem;   /* 8px */
-  --space-3: 0.75rem;  /* 12px */
-  --space-4: 1rem;     /* 16px */
-  --space-5: 1.25rem;  /* 20px */
-  --space-6: 1.5rem;   /* 24px */
-  --space-8: 2rem;     /* 32px */
-  --space-10: 2.5rem;  /* 40px */
-  --space-12: 3rem;    /* 48px */
-  --space-16: 4rem;    /* 64px */
-  --space-20: 5rem;    /* 80px */
-  --space-24: 6rem;    /* 96px */
-  --space-32: 8rem;    /* 128px */
-  --space-40: 10rem;   /* 160px */
-  --space-48: 12rem;   /* 192px */
-  --space-56: 14rem;   /* 224px */
-  --space-64: 16rem;   /* 256px */
-
-  /* Aliases for semantic use */
-  --space-xs: var(--space-1);
-  --space-sm: var(--space-2);
-  --space-md: var(--space-4);
-  --space-lg: var(--space-8);
-  --space-xl: var(--space-12);
-
-  /* Component Spacing */
-  --component-padding: var(--space-4);
-  --component-margin: var(--space-4);
-  --component-gap: var(--space-4);
-  --container-padding: var(--space-6);
-  --section-gap: var(--space-12);
-  --card-padding: var(--space-6);
-  --button-padding: var(--space-2) var(--space-4);
-  --input-padding: var(--space-2) var(--space-3);
-
-  /* Border Radius Tokens */
-  --radius-xs: 0.25rem;
-  --radius-sm: 0.5rem;
-  --radius-md: 0.75rem;
-  --radius-lg: 1rem;
-  --radius-xl: 1.5rem;
-
-  /* Shadow Tokens */
-  --shadow-xs: 0 1px 2px 0 rgba(0,0,0,0.03);
-  --shadow-sm: 0 1px 3px 0 rgba(0,0,0,0.07);
-  --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
-  --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
-  --shadow-card: var(--shadow-sm);
-  --shadow-button: var(--shadow-sm);
-  --shadow-hover: var(--shadow-md);
 }
 
 /* Spacing Utilities */

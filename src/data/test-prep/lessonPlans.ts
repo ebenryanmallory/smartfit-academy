@@ -210,7 +210,7 @@ export const gedLessonPlans: TestPrepLessonPlan[] = [
   }
 ];
 
-export const satLessonPlans: TestPrepLessonPlan[] = [
+export const satMathLessonPlans: TestPrepLessonPlan[] = [
   {
     title: 'Heart of Algebra',
     description: 'Linear equations, inequalities and systems—the backbone of SAT Math.',
@@ -255,6 +255,56 @@ export const satLessonPlans: TestPrepLessonPlan[] = [
       'Complex Numbers & Operations'
     ]
   },
+  {
+    title: 'Statistics, Probability & Data Modeling',
+    description: 'All statistics and probability the SAT may test—now in one dedicated plan.',
+    lessons: [
+      'Center, Spread & Shape of Distributions',
+      'Sampling Methods & Bias Detection',
+      'Two-Way Tables & Conditional Probability',
+      'Least-Squares Regression & Residuals',
+      'Expected Value & Decision Making',
+      'Designing Experiments & Surveys'
+    ]
+  },
+  {
+    title: 'Geometry & Trigonometry Deep Dive',
+    description: 'Comprehensive review of plane and solid geometry plus trigonometric relationships required for SAT success.',
+    lessons: [
+      'Geometric Theorems & Proofs',
+      'Circle Properties & Arc Length',
+      'Volume & Surface Area of Solids',
+      'Trigonometric Ratios & Unit Circle',
+      'Modeling with Trigonometric Functions',
+      'Geometric Transformations & Symmetry'
+    ]
+  },
+  {
+    title: 'Test Strategy, Timing & Pacing',
+    description: 'Optimize section order, guessing strategy and mental stamina.',
+    lessons: [
+      'Setting Section-by-Section Time Benchmarks',
+      'Grid-In and Multiple-Choice Best Practices',
+      'Calculator vs. No-Calculator Section Tips',
+      'Bubble-Sheet & Answer-Changing Strategy',
+      'Mindset, Stress-Management & Sleep Hygiene'
+    ]
+  },
+  {
+    title: 'Mindset & Test-Day Readiness',
+    description: 'Build the psychological resilience and logistical plan required to perform at your best on test day.',
+    lessons: [
+      'Growth Mindset & Motivation',
+      'Stress-Reduction & Focus Techniques',
+      'Sleep, Nutrition & Exercise Guidelines',
+      'Creating a Personal Timing Strategy',
+      'Strategic Guessing & Answer-Changing',
+      'Post-Test Reflection & Next Steps'
+    ]
+  }
+];
+
+export const satReadingWritingLessonPlans: TestPrepLessonPlan[] = [
   {
     title: 'Command of Evidence',
     description: 'Locate and use textual evidence to support answers and arguments.',
@@ -311,41 +361,6 @@ export const satLessonPlans: TestPrepLessonPlan[] = [
     ]
   },
   {
-    title: 'Test Strategy, Timing & Pacing',
-    description: 'Optimize section order, guessing strategy and mental stamina.',
-    lessons: [
-      'Setting Section-by-Section Time Benchmarks',
-      'Grid-In and Multiple-Choice Best Practices',
-      'Calculator vs. No-Calculator Section Tips',
-      'Bubble-Sheet & Answer-Changing Strategy',
-      'Mindset, Stress-Management & Sleep Hygiene'
-    ]
-  },
-  {
-    title: 'Statistics, Probability & Data Modeling',
-    description: 'All statistics and probability the SAT may test—now in one dedicated plan.',
-    lessons: [
-      'Center, Spread & Shape of Distributions',
-      'Sampling Methods & Bias Detection',
-      'Two-Way Tables & Conditional Probability',
-      'Least-Squares Regression & Residuals',
-      'Expected Value & Decision Making',
-      'Designing Experiments & Surveys'
-    ]
-  },
-  {
-    title: 'Geometry & Trigonometry Deep Dive',
-    description: 'Comprehensive review of plane and solid geometry plus trigonometric relationships required for SAT success.',
-    lessons: [
-      'Geometric Theorems & Proofs',
-      'Circle Properties & Arc Length',
-      'Volume & Surface Area of Solids',
-      'Trigonometric Ratios & Unit Circle',
-      'Modeling with Trigonometric Functions',
-      'Geometric Transformations & Symmetry'
-    ]
-  },
-  {
     title: 'Reading Passage Types & Annotation Strategies',
     description: 'Tailor approach for Literature, History/Social Science and Science passages through effective mapping and annotation.',
     lessons: [
@@ -379,18 +394,6 @@ export const satLessonPlans: TestPrepLessonPlan[] = [
       'Paraphrasing & Quoting Accurately',
       'Avoiding Plagiarism',
       'MLA & APA Citation Basics'
-    ]
-  },
-  {
-    title: 'Mindset & Test-Day Readiness',
-    description: 'Build the psychological resilience and logistical plan required to perform at your best on test day.',
-    lessons: [
-      'Growth Mindset & Motivation',
-      'Stress-Reduction & Focus Techniques',
-      'Sleep, Nutrition & Exercise Guidelines',
-      'Creating a Personal Timing Strategy',
-      'Strategic Guessing & Answer-Changing',
-      'Post-Test Reflection & Next Steps'
     ]
   }
 ];
@@ -555,14 +558,21 @@ export const actLessonPlans: TestPrepLessonPlan[] = [
   }
 ];
 
-// Main function to get test prep lesson plans by topic
-export const getTestPrepLessonPlans = (topic: string): TestPrepLessonPlan[] => {
+// Main function to get test prep lesson plans by topic and optional subject
+export const getTestPrepLessonPlans = (topic: string, subject?: string): TestPrepLessonPlan[] => {
   const topicLower = topic.toLowerCase();
+  const subjectLower = subject?.toLowerCase();
   
   if (topicLower.includes('ged')) {
     return gedLessonPlans;
   } else if (topicLower.includes('sat')) {
-    return satLessonPlans;
+    if (subjectLower === 'math') {
+      return satMathLessonPlans;
+    } else if (subjectLower === 'reading' || subjectLower === 'writing') {
+      return satReadingWritingLessonPlans;
+    }
+    // Default to all SAT plans if no subject specified (backward compatibility)
+    return [...satMathLessonPlans, ...satReadingWritingLessonPlans];
   } else if (topicLower.includes('act')) {
     return actLessonPlans;
   }

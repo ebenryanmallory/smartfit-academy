@@ -3,7 +3,7 @@ compatibility_date = "2025-01-01"
 main = "worker/index.ts"
 minify = true
 
-assets = { directory = "dist" }
+assets = { directory = "dist", binding = "ASSETS" }
 
 # [build]
 # command = "npm run build:prod"

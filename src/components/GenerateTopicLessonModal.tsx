@@ -64,13 +64,14 @@ interface GenerateTopicLessonModalProps {
   useTestPrep?: boolean; // Flag to use Test Prep mode (SAT/ACT/GED)
   previewMode?: boolean; // Flag to allow non-authenticated users to preview lessons
   metaTopic?: string; // Meta topic for categorization (e.g., 'SAT', 'ACT', 'GED', or the original topic for relevance engine)
+  subject?: string; // Optional subject for test prep (e.g., 'math', 'reading', 'writing')
 }
 
 
 
 // Function to save multiple lesson plans directly to user data
-const saveTestPrepLessonPlans = async (topic: string, _user: any, getToken: any) => {
-  const lessonPlansData = getTestPrepLessonPlans(topic);
+const saveTestPrepLessonPlans = async (topic: string, _user: any, getToken: any, subject?: string) => {
+  const lessonPlansData = getTestPrepLessonPlans(topic, subject);
   
   if (lessonPlansData.length === 0) {
     throw new Error('No lesson plans found for this topic');
@@ -131,6 +132,7 @@ const GenerateTopicLessonModal: React.FC<GenerateTopicLessonModalProps> = ({
   useTestPrep = false,
   previewMode = false,
   metaTopic,
+  subject,
 }) => {
   const { user } = useUser();
   const { getToken, has } = useAuth();
@@ -142,7 +144,7 @@ const GenerateTopicLessonModal: React.FC<GenerateTopicLessonModalProps> = ({
   const [userEducationLevel, setUserEducationLevel] = useState<EducationLevel>('undergrad'); // Default to undergrad
 
   // Get pre-populated lesson plan data for test prep topics (only when explicitly using test prep mode)
-  const testPrepLessonPlans = useTestPrep ? getTestPrepLessonPlans(topic) : [];
+  const testPrepLessonPlans = useTestPrep ? getTestPrepLessonPlans(topic, subject) : [];
   const isTestPrep = useTestPrep && testPrepLessonPlans.length > 0;
   const [showTestPrepPreview, setShowTestPrepPreview] = useState(false);
 
@@ -161,7 +163,7 @@ const GenerateTopicLessonModal: React.FC<GenerateTopicLessonModalProps> = ({
     setSaving(true);
 
     try {
-      const savedCount = await saveTestPrepLessonPlans(topic, user, getToken);
+      const savedCount = await saveTestPrepLessonPlans(topic, user, getToken, subject);
       
       toast.success(`Successfully created ${savedCount} lesson plans!`, {
         description: 'Your comprehensive study plans are now available in your dashboard.',

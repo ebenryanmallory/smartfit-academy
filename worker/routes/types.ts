@@ -1,4 +1,4 @@
-import type { D1Database } from '@cloudflare/workers-types'
+import type { D1Database, Fetcher } from '@cloudflare/workers-types'
 
 // Define the user type
 export interface User {
@@ -16,6 +16,7 @@ export type Variables = {
 // Define the bindings type
 export type Bindings = {
   DB: D1Database;
+  ASSETS: Fetcher;
   WORKERS_AI_TOKEN: string;
   WORKERS_AI_ACCOUNT_ID: string;
   CLAUDE_API_KEY: string;
