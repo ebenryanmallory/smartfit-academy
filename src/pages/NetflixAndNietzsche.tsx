@@ -5,82 +5,21 @@ import { Card } from '../components/ui/card';
 import GenerateTopicLessonModal from '../components/GenerateTopicLessonModal';
 import VideoModal from '../components/VideoModal';
 import TaglineComponent from '../components/ui/TaglineComponent';
-import { Brain, Users, ArrowRight, Crown, Tv, ScrollText, ChevronLeft, ChevronRight, Clock, BookOpen, Play, ExternalLink } from 'lucide-react';
+import ShowPairingCarousel from '../components/ShowPairingCarousel';
+import { showPairings, ShowPairing } from '../data/showPairings';
+import { Brain, Clock, Tv, ScrollText } from 'lucide-react';
 
 const NetflixAndNietzsche: React.FC = () => {
   const { isSignedIn } = useUser();
   const [isLessonModalOpen, setIsLessonModalOpen] = useState(false);
   const [selectedPairing, setSelectedPairing] = useState<{topic: string, metaTopic: string}>({topic: '', metaTopic: ''});
-  const [featuredIndex, setFeaturedIndex] = useState(0);
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
   const [currentVideoSrc, setCurrentVideoSrc] = useState('');
 
-  const showPairings = [
-    {
-      show: "Succession",
-      text: "Machiavelli's The Prince",
-      description: "The Roy family's brutal power dynamics are a masterclass in Machiavellian strategy",
-      connection: "Every episode features characters wrestling with whether it's better to be feared or loved, how to maintain power through strategic cruelty, and the art of political manipulation.",
-      featuredTitle: "The Roy Playbook Was Written 500 Years Ago",
-      featuredDescription: "Every \"Boar on the Floor\" moment. Every calculated betrayal. Every speech about being a killer. The Roy family didn't invent these moves - they perfected what Machiavelli documented centuries ago.",
-      featuredNote: "",
-      icon: Crown,
-      color: "from-amber-500/20 to-orange-500/20",
-      textColor: "text-amber-600",
-      status: "available",
-      bookUrl: "/books/The%20Prince/",
-      promoVideoUrl: "/promos/Succession.mov",
-      seriesUrl: "https://www.youtube.com/show/SCjHhCKi82bnxvt_vbvIUZiA"
-    },
-    {
-      show: "Stranger Things",
-      text: "Jung's Shadow Psychology",
-      description: "Every journey into the Upside Down is actually a trip into what Jung called 'the shadow'",
-      connection: "The monsters aren't invading our world. They're emerging from it - the dark unconscious where our deepest fears take physical form.",
-      featuredTitle: "Your Shadow Self Has Been Waiting",
-      featuredDescription: "Carl Jung said we all have a shadow self. A dark reflection of everything we refuse to acknowledge about human nature. The Upside Down isn't a place - it's a psychological state.",
-      featuredNote: "",
-      icon: Brain,
-      color: "from-purple-500/20 to-indigo-500/20",
-      textColor: "text-purple-600",
-      status: "coming-soon",
-      seriesUrl: "https://www.netflix.com/title/80057281"
-    },
-    {
-      show: "Squid Game",
-      text: "Hobbes' Leviathan",
-      description: "When 456 players signed away their human rights for a chance at money, they recreated the exact social contract Thomas Hobbes warned about",
-      connection: "Thomas Hobbes said without government, life becomes 'nasty, brutish, and short.' But what happens when you sign your rights away to play the game?",
-      featuredTitle: "The Childhood Game That Proves Hobbes Right",
-      featuredDescription: "Welcome to the state of nature - now with better production values. Every game recreates Hobbes' warning about what happens when we abandon our humanity for survival.",
-      featuredNote: "",
-      icon: Users,
-      color: "from-red-500/20 to-pink-500/20",
-      textColor: "text-red-600",
-      status: "coming-soon",
-      seriesUrl: "https://www.netflix.com/title/81040344"
-    },
-    {
-      show: "The Crown",
-      text: "Sun Tzu's Art of War",
-      description: "Every calculated pause, every strategic marriage, every perfectly timed public appearance - the Royal Family has been following Sun Tzu's 2,500-year-old playbook",
-      connection: "Sun Tzu wrote that the supreme art of war is to subdue your enemy without fighting. Every royal smile, every calculated silence, every strategic marriage follows this principle.",
-      featuredTitle: "The Royal Family's Secret War Manual",
-      featuredDescription: "The crown jewels aren't just ceremonial. They're trophies from a war won through strategy, not violence. Every royal gesture follows ancient principles of winning without fighting.",
-      featuredNote: "",
-      icon: Crown,
-      color: "from-amber-500/20 to-orange-500/20",
-      textColor: "text-amber-600",
-      status: "coming-soon",
-      seriesUrl: "https://www.netflix.com/title/80025678"
-    }
-  ];
-
-  const handlePairingClick = (pairing: typeof showPairings[0]) => {
+  const handlePairingClick = (pairing: ShowPairing) => {
     if (pairing.status !== 'available') {
       return;
     }
-    
     setSelectedPairing({
       topic: `${pairing.show} × ${pairing.text}`,
       metaTopic: `Netflix & Nietzsche: ${pairing.show}`
@@ -103,18 +42,6 @@ const NetflixAndNietzsche: React.FC = () => {
     setCurrentVideoSrc('');
   };
 
-  const nextFeatured = () => {
-    setFeaturedIndex((prev) => (prev + 1) % showPairings.length);
-  };
-
-  const prevFeatured = () => {
-    setFeaturedIndex((prev) => (prev - 1 + showPairings.length) % showPairings.length);
-  };
-
-  const currentPairing = showPairings[featuredIndex];
-
-
-
   return (
     <div className="flex flex-col min-h-screen bg-background">
       {/* Hero Section */}
@@ -125,152 +52,19 @@ const NetflixAndNietzsche: React.FC = () => {
               Netflix & Nietzsche
             </h1>
             <p className="text-xl md:text-2xl text-muted-foreground mx-auto text-center">
-              Your favorite shows aren't just entertainment—they're masterclasses in timeless human nature. 
-              From Succession's boardroom betrayals to The Good Place's moral dilemmas, every great story 
+              Your favorite shows aren't just entertainment—they're masterclasses in timeless human nature.
+              From Succession's boardroom betrayals to The Good Place's moral dilemmas, every great story
               echoes wisdom that philosophers have been teaching for centuries.
             </p>
           </div>
 
           {/* Featured Pairing Carousel */}
-          <Card className={`p-8 backdrop-blur-sm shadow-lg border-2 mx-auto relative ${
-            currentPairing.status === 'available' 
-              ? 'bg-white/80 border-primary/20' 
-              : 'bg-gray-50/80 border-gray-300/30'
-          }`}>
-            {/* Navigation Arrows */}
-            <button
-              onClick={prevFeatured}
-              className="absolute left-4 top-1/2 transform -translate-y-1/2 p-2 rounded-full bg-white/80 hover:bg-white shadow-md transition-all duration-200 z-10"
-              aria-label="Previous pairing"
-            >
-              <ChevronLeft className="h-5 w-5 text-gray-600" />
-            </button>
-            <button
-              onClick={nextFeatured}
-              className="absolute right-4 top-1/2 transform -translate-y-1/2 p-2 rounded-full bg-white/80 hover:bg-white shadow-md transition-all duration-200 z-10"
-              aria-label="Next pairing"
-            >
-              <ChevronRight className="h-5 w-5 text-gray-600" />
-            </button>
-
-            <div className="flex flex-col gap-6">
-              {currentPairing.status !== 'available' && (
-                <div className="text-center">
-                  <div className="inline-flex items-center gap-2 bg-gray-500/10 text-gray-600 px-4 py-2 rounded-full text-sm font-medium">
-                    <Clock className="h-4 w-4" />
-                    Coming Soon
-                  </div>
-                </div>
-              )}
-              
-              <div className="flex items-center gap-4 justify-center">
-                <div className="flex items-center gap-2">
-                  <Tv className={`h-8 w-8 ${currentPairing.status === 'available' ? 'text-primary' : 'text-gray-400'}`} />
-                  <span className={`text-2xl font-bold ${currentPairing.status === 'available' ? 'text-foreground' : 'text-gray-500'}`}>
-                    {currentPairing.show}
-                  </span>
-                </div>
-                <span className={`text-2xl ${currentPairing.status === 'available' ? 'text-muted-foreground' : 'text-gray-400'}`}>×</span>
-                <div className="flex items-center gap-2">
-                  <ScrollText className={`h-8 w-8 ${currentPairing.status === 'available' ? 'text-accent' : 'text-gray-400'}`} />
-                  <span className={`text-2xl font-bold ${currentPairing.status === 'available' ? 'text-foreground' : 'text-gray-500'}`}>
-                    {currentPairing.text}
-                  </span>
-                </div>
-              </div>
-              
-              <div className="text-center">
-                <h3 className={`text-xl font-semibold mb-3 ${currentPairing.status === 'available' ? 'text-foreground' : 'text-gray-500'}`}>
-                  {currentPairing.featuredTitle}
-                </h3>
-                <p className={`mb-4 max-w-2xl mx-auto ${currentPairing.status === 'available' ? 'text-muted-foreground' : 'text-gray-400'}`}>
-                  {currentPairing.featuredDescription}
-                </p>
-
-                {/* Additional links - show for all pairings but disable for coming soon */}
-                <div className="flex flex-wrap justify-center gap-3 mb-4">
-                  {currentPairing.show === 'Succession' && currentPairing.status === 'available' && (
-                    <a 
-                      href={currentPairing.bookUrl} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 px-4 py-2 bg-amber-50 hover:bg-amber-100 text-amber-700 rounded-lg text-sm font-medium transition-colors"
-                    >
-                      <BookOpen className="h-4 w-4" />
-                      Read The Prince
-                    </a>
-                  )}
-                  
-                  {currentPairing.show === 'Succession' && currentPairing.status === 'available' && (
-                    <button 
-                      onClick={() => handleVideoClick(currentPairing.promoVideoUrl || '')}
-                      className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-sm font-medium transition-colors"
-                    >
-                      <Play className="h-4 w-4" />
-                      15s Promo
-                    </button>
-                  )}
-                  
-                  {currentPairing.seriesUrl && (
-                    <a 
-                      href={currentPairing.seriesUrl} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 px-4 py-2 bg-red-50 hover:bg-red-100 text-red-700 rounded-lg text-sm font-medium transition-colors"
-                    >
-                      <ExternalLink className="h-4 w-4" />
-                      Watch Full Series
-                    </a>
-                  )}
-                </div>
-              </div>
-              
-              <Button 
-                onClick={() => handlePairingClick(currentPairing)}
-                size="lg"
-                className="px-8 mx-auto"
-                disabled={currentPairing.status !== 'available'}
-              >
-                {currentPairing.status === 'available' ? (
-                  <>
-                    <ArrowRight className="h-4 w-4 mr-2" />
-                    Start With Episode 1 × Chapter 1
-                  </>
-                ) : (
-                  <>
-                    <Clock className="h-4 w-4 mr-2" />
-                    Coming Soon
-                  </>
-                )}
-              </Button>
-
-              {/* Pagination Dots */}
-              <div className="flex justify-center gap-2 mt-2">
-                {showPairings.map((pairing, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setFeaturedIndex(index)}
-                    className={`w-2 h-2 rounded-full transition-all duration-200 ${
-                      index === featuredIndex 
-                        ? pairing.status === 'available' 
-                          ? 'bg-primary w-8' 
-                          : 'bg-gray-400 w-8'
-                        : pairing.status === 'available'
-                          ? 'bg-gray-300 hover:bg-gray-400'
-                          : 'bg-gray-200 hover:bg-gray-300'
-                    }`}
-                    aria-label={`Go to ${showPairings[index].show} pairing${pairing.status !== 'available' ? ' (Coming Soon)' : ''}`}
-                  />
-                ))}
-              </div>
-              
-              <SignedOut>
-                <p className="text-xs text-primary font-medium text-center bg-primary/5 p-3 rounded">
-                  ✨ Preview lessons for free! Sign up to save your progress and unlock all pairings
-                </p>
-              </SignedOut>
-            </div>
-          </Card>
+          <ShowPairingCarousel
+            pairings={showPairings}
+            onPairingClick={handlePairingClick}
+            onVideoClick={handleVideoClick}
+            showSignedOutPrompt={true}
+          />
 
           {/* Tagline */}
           <TaglineComponent className="mt-8 mx-auto" />
@@ -284,21 +78,21 @@ const NetflixAndNietzsche: React.FC = () => {
             Philosophy in Action
           </h2>
           <p className="text-lg text-muted-foreground mb-12 mx-auto">
-            See how your favorite characters navigate the same moral challenges that have fascinated thinkers for millennia. 
+            See how your favorite characters navigate the same moral challenges that have fascinated thinkers for millennia.
             Each connection reveals the philosophical foundations behind compelling storytelling.
           </p>
-          
+
           <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-6 mx-auto">
             {showPairings.map((pairing, index) => {
               const IconComponent = pairing.icon;
               const isComingSoon = pairing.status !== 'available';
-              
+
               return (
-                <Card 
-                  key={index} 
+                <Card
+                  key={index}
                   className={`p-6 transition-all duration-300 border backdrop-blur-sm relative
-                    ${isComingSoon 
-                      ? 'opacity-60 cursor-not-allowed bg-gradient-to-br from-gray-100/50 to-gray-200/50 hover:opacity-70' 
+                    ${isComingSoon
+                      ? 'opacity-60 cursor-not-allowed bg-gradient-to-br from-gray-100/50 to-gray-200/50 hover:opacity-70'
                       : `hover:shadow-lg cursor-pointer hover:border-primary/50 bg-palette-3`
                     }`}
                   onClick={() => handlePairingClick(pairing)}
@@ -309,7 +103,7 @@ const NetflixAndNietzsche: React.FC = () => {
                       Coming Soon
                     </div>
                   )}
-                  
+
                   <div className="flex flex-col h-full">
                     <div className="flex items-center gap-3 mb-4">
                       <div className={`p-2 rounded-lg ${isComingSoon ? 'bg-gray-200/80 text-gray-400' : `bg-white/80 ${pairing.textColor}`}`}>
@@ -324,21 +118,21 @@ const NetflixAndNietzsche: React.FC = () => {
                         </p>
                       </div>
                     </div>
-                    
+
                     <p className={`text-sm font-medium mb-2 ${isComingSoon ? 'text-gray-500' : 'text-foreground'}`}>
                       {pairing.description}
                     </p>
-                    
+
                     <p className={`text-xs mb-4 flex-1 ${isComingSoon ? 'text-gray-400' : 'text-muted-foreground'}`}>
                       {pairing.connection}
                     </p>
-                    
+
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-1">
                       </div>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
+                      <Button
+                        variant="ghost"
+                        size="sm"
                         className={`text-xs ${isComingSoon ? 'text-gray-400 cursor-not-allowed' : ''}`}
                         disabled={isComingSoon}
                       >
@@ -375,7 +169,7 @@ const NetflixAndNietzsche: React.FC = () => {
               Your Cozy Challenge Awaits
             </h2>
             <p className="text-lg text-muted-foreground mx-auto">
-              Transform your next movie night into something special. Snuggle up with your favorite show 
+              Transform your next movie night into something special. Snuggle up with your favorite show
               and discover the timeless wisdom hidden in every scene.
             </p>
           </div>
@@ -388,7 +182,7 @@ const NetflixAndNietzsche: React.FC = () => {
                 </div>
                 <h3 className="text-xl font-semibold mb-3 text-foreground">Pick Your Show</h3>
                 <p className="text-muted-foreground text-sm">
-                  Choose from our curated pairings or suggest your own favorite series. 
+                  Choose from our curated pairings or suggest your own favorite series.
                   Each show comes with a custom lesson plan designed just for cozy exploration.
                 </p>
               </div>
@@ -401,7 +195,7 @@ const NetflixAndNietzsche: React.FC = () => {
                 </div>
                 <h3 className="text-xl font-semibold mb-3 text-foreground">Follow Your Lesson</h3>
                 <p className="text-muted-foreground text-sm">
-                  Start shallow with quick parallels to classic thinking, or dive deep into the original texts. 
+                  Start shallow with quick parallels to classic thinking, or dive deep into the original texts.
                   Your lesson plan adapts to how curious you're feeling tonight.
                 </p>
               </div>
@@ -414,7 +208,7 @@ const NetflixAndNietzsche: React.FC = () => {
                 </div>
                 <h3 className="text-xl font-semibold mb-3 text-foreground">Discover & Connect</h3>
                 <p className="text-muted-foreground text-sm">
-                  Watch familiar characters make choices that echo through centuries of human thought. 
+                  Watch familiar characters make choices that echo through centuries of human thought.
                   See how every great story connects to timeless wisdom.
                 </p>
               </div>
@@ -425,9 +219,9 @@ const NetflixAndNietzsche: React.FC = () => {
             <div className="text-center">
               <h3 className="text-2xl font-semibold mb-4 text-foreground">Your Challenge</h3>
               <p className="text-lg text-muted-foreground max-w-4xl mx-auto leading-relaxed">
-                Next time you're settling in for a cozy evening with your favorite show, grab a warm drink 
-                and open your lesson plan. Whether you want to spend just 5 minutes connecting the dots 
-                or an hour diving into the philosophical depths, you'll never watch the same way again. 
+                Next time you're settling in for a cozy evening with your favorite show, grab a warm drink
+                and open your lesson plan. Whether you want to spend just 5 minutes connecting the dots
+                or an hour diving into the philosophical depths, you'll never watch the same way again.
                 Every episode becomes a window into the great conversations humanity has been having for centuries.
               </p>
             </div>
@@ -440,13 +234,13 @@ const NetflixAndNietzsche: React.FC = () => {
         <div className="container-section content-container text-center">
           <h2 className="text-3xl font-bold mb-6">Ready to See Your Shows Differently?</h2>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Transform your binge-watching into genuine wisdom. Every great story has been told before - 
+            Transform your binge-watching into genuine wisdom. Every great story has been told before -
             learn from the masters who told it first.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button 
+            <Button
               className="bg-primary text-white hover:bg-primary/90"
-              size="lg" 
+              size="lg"
               onClick={() => {
                 const pairingsSection = document.querySelector('[data-pairings-section]');
                 if (pairingsSection) {
@@ -460,8 +254,8 @@ const NetflixAndNietzsche: React.FC = () => {
             </Button>
             <SignedOut>
               <SignInButton mode="modal">
-                <Button 
-                  size="lg" 
+                <Button
+                  size="lg"
                   variant="outline"
                   className="border-primary text-primary hover:bg-primary/10"
                 >
@@ -494,4 +288,4 @@ const NetflixAndNietzsche: React.FC = () => {
   );
 };
 
-export default NetflixAndNietzsche; 
+export default NetflixAndNietzsche;

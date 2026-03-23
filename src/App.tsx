@@ -10,6 +10,8 @@ import LessonPage from './pages/LessonPage';
 import RelevanceEngine from './pages/RelevanceEngine';
 import NetflixAndNietzsche from './pages/NetflixAndNietzsche';
 import Pricing from './pages/Pricing';
+import Privacy from './pages/Privacy';
+import Terms from './pages/Terms';
 import Navigation from './components/Navigation';
 import Footer from './components/Footer';
 import StyleGuide from './pages/StyleGuide';
@@ -61,6 +63,8 @@ function App() {
 
                 <Route path="/lessons/:id" element={<LessonPage />} />
                 <Route path="/pricing" element={<Pricing />} />
+                <Route path="/privacy" element={<Privacy />} />
+                <Route path="/terms" element={<Terms />} />
                 <Route path="/style-guide" element={<StyleGuide />} />
                 <Route path="/modern-relevance" element={<RelevanceEngine />} />
                 <Route path="/netflix-and-nietzsche" element={<NetflixAndNietzsche />} />

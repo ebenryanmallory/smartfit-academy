@@ -1,8 +1,16 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import CallToAction from "../components/CallToAction";
+import HowItWorks from "../components/HowItWorks";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "react-router-dom";
-import { GraduationCap, Zap, Users, CheckCircle, BookOpen, Code, Brain, Rocket, Target, Clock, Award, Heart, TrendingUp } from "lucide-react";
+import { GraduationCap, Users, CheckCircle, BookOpen, Code, Brain, Rocket, Target, Clock, Award, Heart, TrendingUp, ArrowRight } from "lucide-react";
 import { motion } from "motion/react";
+import ShowPairingCarousel from "../components/ShowPairingCarousel";
+import { showPairings, ShowPairing } from "../data/showPairings";
+import GenerateTopicLessonModal from "../components/GenerateTopicLessonModal";
+import VideoModal from "../components/VideoModal";
+import { useUser } from "@clerk/clerk-react";
 
 const features = [
   {
@@ -49,6 +57,26 @@ const fadeInScale = {
 };
 
 export default function LandingPage() {
+  const { isSignedIn } = useUser();
+  const [isLessonModalOpen, setIsLessonModalOpen] = useState(false);
+  const [selectedPairing, setSelectedPairing] = useState<{topic: string, metaTopic: string}>({topic: '', metaTopic: ''});
+  const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
+  const [currentVideoSrc, setCurrentVideoSrc] = useState('');
+
+  const handlePairingClick = (pairing: ShowPairing) => {
+    if (pairing.status !== 'available') return;
+    setSelectedPairing({
+      topic: `${pairing.show} × ${pairing.text}`,
+      metaTopic: `Netflix & Nietzsche: ${pairing.show}`
+    });
+    setIsLessonModalOpen(true);
+  };
+
+  const handleVideoClick = (videoSrc: string) => {
+    setCurrentVideoSrc(videoSrc);
+    setIsVideoModalOpen(true);
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-background">
       {/* Hero Section */}
@@ -211,10 +239,76 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Netflix & Nietzsche Teaser */}
+      <section className="bg-gradient-to-br from-primary/10 via-accent/5 to-secondary/10">
+        <div className="container-section content-container">
+          <motion.div
+            className="text-center mb-10 space-y-4"
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6 }}
+          >
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground">
+              Netflix & Nietzsche
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Your favorite shows are masterclasses in timeless human nature. Discover the philosophy hidden in every scene.
+            </p>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-50px" }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
+            <ShowPairingCarousel
+              pairings={showPairings}
+              onPairingClick={handlePairingClick}
+              onVideoClick={handleVideoClick}
+              showSignedOutPrompt={false}
+            />
+          </motion.div>
+
+          <motion.div
+            className="text-center mt-8"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+          >
+            <Button variant="outline" asChild className="border-primary/30 hover:border-primary/60">
+              <Link to="/netflix-and-nietzsche">
+                <ArrowRight className="h-4 w-4 mr-2" />
+                Explore All Pairings
+              </Link>
+            </Button>
+          </motion.div>
+        </div>
+      </section>
+
+      <GenerateTopicLessonModal
+        isOpen={isLessonModalOpen}
+        onClose={() => setIsLessonModalOpen(false)}
+        topic={selectedPairing.topic}
+        useRelevanceEngine={true}
+        previewMode={!isSignedIn}
+        metaTopic={selectedPairing.metaTopic}
+      />
+      <VideoModal
+        isOpen={isVideoModalOpen}
+        onClose={() => setIsVideoModalOpen(false)}
+        videoSrc={currentVideoSrc}
+        title="Succession Promo"
+      />
+
+      <HowItWorks heading="How The Relevance Engine Works" />
+
       {/* Learning Path Overview */}
       <section className="bg-secondary">
         <div className="container-section content-container">
-          <motion.h2 
+          <motion.h2
             className="text-3xl font-bold text-center mb-12"
             initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -417,32 +511,12 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Sign Up CTA */}
-      <section className="bg-palette-2">
-        <div className="container-section content-container text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.6 }}
-          >
-            <h2 className="text-3xl font-bold mb-6">Ready to Start Learning?</h2>
-            <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-              Join thousands of learners who are already advancing their education with AI-powered personalized learning.
-            </p>
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-            >
-              <Button className="btn-primary" asChild>
-                <Link to="/dashboard">Start Here</Link>
-              </Button>
-            </motion.div>
-          </motion.div>
-        </div>
-      </section>
+      <CallToAction
+        heading="Ready to Start Learning?"
+        body="Experience the future of education with AI-powered personalized learning."
+        primaryLabel="Start Here"
+        primaryHref="/dashboard"
+      />
 
     </div>
   );

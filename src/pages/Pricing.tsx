@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import CallToAction from "../components/CallToAction";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { SignInButton } from "@/components/auth/SignInButton";
 import { Link } from "react-router-dom";
@@ -309,37 +310,16 @@ export default function Pricing() {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="bg-gradient-to-br from-primary/5 to-accent/5">
-        <div className="container-section content-container-sm text-center">
-          <motion.div 
-            className="space-y-6"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-          >
-            <h2 className="text-2xl md:text-3xl font-semibold text-foreground">
-              Ready to Transform Your Learning?
-            </h2>
-            <p className="text-muted-foreground">
-              Join thousands of learners who are already experiencing the future of education with AI-powered personalized learning.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              {!isSignedIn ? (
-                <SignInButton />
-              ) : (
-                <Button size="lg" className="btn-primary" asChild>
-                  <Link to="/dashboard">Start Learning Now</Link>
-                </Button>
-              )}
-              <Button variant="outline" size="lg" asChild>
-                <Link to="/lessons/c-intro-ai">Try a Free Lesson</Link>
-              </Button>
-            </div>
-          </motion.div>
-        </div>
-      </section>
+      <CallToAction
+        heading="Ready to Transform Your Learning?"
+        body="Experience the future of education with AI-powered personalized learning."
+        primaryLabel="Start Learning Now"
+        primaryHref="/dashboard"
+        primaryReplacement={!isSignedIn ? <SignInButton /> : undefined}
+        secondaryLabel="Try a Free Lesson"
+        secondaryHref="/lessons/c-intro-ai"
+        background="bg-gradient-to-br from-primary/5 to-accent/5"
+      />
     </div>
   );
 } 

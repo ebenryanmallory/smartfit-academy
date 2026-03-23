@@ -7,6 +7,7 @@ import SavedLessonPlans, { SavedLessonPlansRef } from "../components/SavedLesson
 import GenerateTopicLessonModal from "../components/GenerateTopicLessonModal";
 import CreateYourJourney from "../components/CreateYourJourney";
 import CreateTopicsByGoal from "../components/dashboard/CreateTopicsByGoal";
+import CallToAction from "../components/CallToAction";
 import { useUser } from '@clerk/clerk-react';
 import {
   Card,
@@ -280,18 +281,12 @@ function Dashboard() {
         </div>
       </section>
 
-      {/* Call to Action */}
-      <section className="container-section bg-palette-2">
-        <div className="content-container text-center">
-          <h2 className="text-3xl font-bold mb-6 text-foreground">Ready to Transform Your Learning?</h2>
-          <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Join thousands of learners who are already advancing their education with AI-powered personalized learning.
-          </p>
-          <Button className="btn-primary" asChild>
-            <Link to="/onboarding">Start Your Journey</Link>
-          </Button>
-        </div>
-      </section>
+      <CallToAction
+        heading="Ready to Transform Your Learning?"
+        body="Experience the future of education with AI-powered personalized learning."
+        primaryLabel="Start Your Journey"
+        primaryHref="/onboarding"
+      />
       </div>
 
       <BottomChatAssistant 

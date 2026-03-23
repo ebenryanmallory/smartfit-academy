@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useUser, SignInButton, SignedIn, SignedOut } from '@clerk/clerk-react';
+import { useUser, SignInButton, SignedOut } from '@clerk/clerk-react';
 import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
 import { Input } from '../components/ui/input';
@@ -7,6 +7,7 @@ import GenerateTopicLessonModal from '../components/GenerateTopicLessonModal';
 import HistoricalConnectionSummary from '../components/HistoricalConnectionSummary';
 import TaglineComponent from '../components/ui/TaglineComponent';
 import { Sparkles, History, TrendingUp, Brain, Zap, BookOpen, Users, ArrowRight } from 'lucide-react';
+import HowItWorks from '../components/HowItWorks';
 
 const RelevanceEngine: React.FC = () => {
   const { isSignedIn } = useUser();
@@ -223,46 +224,7 @@ const RelevanceEngine: React.FC = () => {
         </div>
       </section>
 
-      {/* How It Works */}
-      <section className="container-section bg-gradient-to-r from-accent/10 to-primary/10">
-        <div className="content-container">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-10 text-foreground">
-            How The Relevance Engine Works
-          </h2>
-          
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl font-bold text-primary">1</span>
-              </div>
-              <h3 className="text-xl font-semibold mb-3">You Share What's Trending</h3>
-              <p className="text-muted-foreground">
-                Input any current topic, trend, or controversy you've seen online or in the news.
-              </p>
-            </div>
-            
-            <div className="text-center">
-              <div className="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl font-bold text-accent">2</span>
-              </div>
-              <h3 className="text-xl font-semibold mb-3">AI Finds Historical Parallels</h3>
-              <p className="text-muted-foreground">
-                Our engine analyzes the topic and identifies relevant historical events, thinkers, and texts.
-              </p>
-            </div>
-            
-            <div className="text-center">
-              <div className="w-16 h-16 bg-secondary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl font-bold text-secondary">3</span>
-              </div>
-              <h3 className="text-xl font-semibold mb-3">You Get Custom Lessons</h3>
-              <p className="text-muted-foreground">
-                Receive personalized learning paths that connect modern issues to timeless wisdom.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
+      <HowItWorks />
 
       {/* Examples Section */}
       <section className="container-section">

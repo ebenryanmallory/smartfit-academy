@@ -1,5 +1,5 @@
 name = "smartfit-academy"
-compatibility_date = "2025-01-01"
+compatibility_date = "2026-03-23"
 main = "worker/index.ts"
 minify = true
 

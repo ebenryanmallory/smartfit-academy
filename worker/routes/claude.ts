@@ -27,7 +27,7 @@
  *   success: true,
  *   instructionType: 'lessonPlanGenerator',
  *   data: { lessonPlan: { ... } }, // Structured data matching the tool schema
- *   model: 'claude-3-opus-20240229',
+ *   model: 'claude-opus-4-6',
  *   usage: { input_tokens: 123, output_tokens: 456 },
  *   toolName: 'generate_lesson_plan'
  * }
@@ -383,7 +383,7 @@ claudeRoutes.post('/opus', async (c) => {
 
     // Prepare Claude API request
     const claudeRequest = {
-      model: "claude-3-opus-20240229",
+      model: "claude-opus-4-6",
       max_tokens: 4096,
       temperature: instructionType === 'historicalConnectionGenerator' ? 0.8 : 0.7,
       system: systemInstruction,
@@ -433,7 +433,7 @@ claudeRoutes.post('/opus', async (c) => {
       success: true,
       instructionType,
       data: toolUseContent.input,
-      model: 'claude-3-opus-20240229',
+      model: 'claude-opus-4-6',
       usage: claudeData.usage,
       toolName: toolUseContent.name
     })
