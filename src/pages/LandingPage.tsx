@@ -10,7 +10,7 @@ import ShowPairingCarousel from "../components/ShowPairingCarousel";
 import { showPairings, ShowPairing } from "../data/showPairings";
 import GenerateTopicLessonModal from "../components/GenerateTopicLessonModal";
 import VideoModal from "../components/VideoModal";
-import { useUser } from "@clerk/clerk-react";
+import { useUser } from "@clerk/react";
 
 const features = [
   {

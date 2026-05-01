@@ -9,7 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useAuth } from '@clerk/clerk-react';
+import { useAuth } from '@clerk/react';
 import { toast } from 'sonner';
 import { CheckCircle, XCircle, Brain, Trophy, RotateCcw } from 'lucide-react';
 

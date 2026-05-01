@@ -1,4 +1,4 @@
-import { UserButton as ClerkUserButton } from '@clerk/clerk-react';
+import { UserButton as ClerkUserButton } from '@clerk/react';
 
 export const UserButton = () => {
   return (

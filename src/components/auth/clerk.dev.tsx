@@ -1,4 +1,4 @@
-import { ClerkProvider } from '@clerk/clerk-react';
+import { ClerkProvider } from '@clerk/react';
 import { ReactNode } from 'react';
 
 export const ClerkProviderWrapper = ({ children }: { children: ReactNode }) => {

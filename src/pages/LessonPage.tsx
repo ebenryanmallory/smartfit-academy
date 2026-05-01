@@ -10,7 +10,7 @@ import { ArrowLeft, AlertTriangle, RefreshCw } from "lucide-react";
 import { LessonContentLoader } from "@/components/ui/LessonContentLoader";
 import type { LessonData, LessonSection } from "@/data/lessons/types";
 import EducationLevelSelector, { type AudienceLevel } from "@/components/EducationLevelSelector";
-import { useUser, useAuth } from '@clerk/clerk-react';
+import { useUser, useAuth } from '@clerk/react';
 import { toast } from 'sonner';
 import {
   Dialog,

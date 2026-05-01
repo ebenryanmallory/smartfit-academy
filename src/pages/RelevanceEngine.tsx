@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useUser, SignInButton, SignedOut } from '@clerk/clerk-react';
+import { useUser, SignInButton, SignedOut } from '@clerk/react';
 import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
 import { Input } from '../components/ui/input';

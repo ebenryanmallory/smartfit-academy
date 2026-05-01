@@ -8,7 +8,7 @@ import GenerateTopicLessonModal from "../components/GenerateTopicLessonModal";
 import CreateYourJourney from "../components/CreateYourJourney";
 import CreateTopicsByGoal from "../components/dashboard/CreateTopicsByGoal";
 import CallToAction from "../components/CallToAction";
-import { useUser } from '@clerk/clerk-react';
+import { useUser } from '@clerk/react';
 import {
   Card,
   CardContent,

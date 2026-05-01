@@ -5,7 +5,7 @@ import { SignInButton } from "@/components/auth/SignInButton";
 import { Link } from "react-router-dom";
 import { Check, Zap, Users, Crown, MessageCircle, Brain, Rocket, Star, Shield, Clock } from "lucide-react";
 import { motion } from "motion/react";
-import { useUser, PricingTable } from "@clerk/clerk-react";
+import { useUser, PricingTable } from "@clerk/react";
 
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },

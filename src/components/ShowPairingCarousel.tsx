@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { SignedOut } from '@clerk/clerk-react';
+import { SignedOut } from '@clerk/react';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
 import { ArrowRight, Tv, ScrollText, ChevronLeft, ChevronRight, Clock, BookOpen, Play, ExternalLink } from 'lucide-react';

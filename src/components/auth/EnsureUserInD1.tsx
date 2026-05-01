@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { useUser, useAuth } from "@clerk/clerk-react";
+import { useUser, useAuth } from "@clerk/react";
 
 /**
  * Ensures that the current Clerk-authenticated user exists in D1 DB by calling the backend init endpoint once per session.

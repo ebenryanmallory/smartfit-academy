@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useUser, useAuth, SignInButton } from '@clerk/clerk-react';
+import { useUser, useAuth, SignInButton } from '@clerk/react';
 import { toast } from 'sonner';
 import { generateUserLessonId } from '@/utils/lessonIdUtils';
 import { getTestPrepLessonPlans } from '@/data/test-prep/lessonPlans';

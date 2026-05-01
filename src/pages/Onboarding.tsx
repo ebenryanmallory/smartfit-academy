@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Card } from "../components/ui/card";
 import { Button } from "../components/ui/button";
-import { useUser } from "@clerk/clerk-react";
+import { useUser } from "@clerk/react";
 import EducationLevelSelector from "../components/EducationLevelSelector";
 
 const steps = [
