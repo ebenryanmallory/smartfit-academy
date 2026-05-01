@@ -1,4 +1,4 @@
-name = "smartfit-academy"
+name = "better-feed"
 compatibility_date = "2026-03-23"
 main = "worker/index.ts"
 minify = true
@@ -11,7 +11,7 @@ assets = { directory = "dist", binding = "ASSETS" }
 
 # Custom domain configuration
 routes = [
-	{ pattern = "smartfit.academy", custom_domain = true }
+	{ pattern = "better-feed.com", custom_domain = true }
 ]
 
 [[d1_databases]]

@@ -1,15 +1,15 @@
 {
-  "name": "smartfit-academy",
+  "name": "good-feed",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
     "clean": "find . -name '._*' -type f -delete",
-    "build": "tsc",
-    "build:assets": "vite build",
+    "build": "npm run clean && tsc",
+    "build:assets": "npm run clean && vite build",
     "build:worker": "npm run build",
     "sitemap": "node scripts/generate-sitemap.js",
-    "build:all": "npm run sitemap && npm run build:assets && npm run build:worker && npm run clean",
+    "build:all": "npm run sitemap && npm run build:assets && npm run build:worker",
     "build:dev": "cp src/components/auth/clerk.dev.tsx src/components/auth/clerk.tsx && npm run build:all",
     "build:prod": "cp src/components/auth/clerk.prod.tsx src/components/auth/clerk.tsx && npm run build:all",
     "vite": "npx vite",
@@ -75,6 +75,6 @@
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.32.0",
     "vite": "^6.3.5",
-    "wrangler": "^4.76.0"
+    "wrangler": "^4.87.0"
   }
 }
