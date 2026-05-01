@@ -167,8 +167,8 @@ const sections = [
         </ul>
         <p className="text-sm text-muted-foreground">
           To exercise any of these rights, email us at{" "}
-          <a href="mailto:support@good-feed.com" className="text-primary hover:text-primary/80 transition-colors">
-            support@good-feed.com
+          <a href="mailto:support@better-feed.com" className="text-primary hover:text-primary/80 transition-colors">
+            support@better-feed.com
           </a>
           . We will respond within 30 days.
         </p>
@@ -200,7 +200,7 @@ const sections = [
     title: "Children's Privacy",
     content: (
       <div className="space-y-3 text-sm text-muted-foreground">
-        <p>Good Feed is intended for users aged 13 and older. We do not knowingly collect personal information from children under 13. If you believe a child under 13 has created an account, please contact us at <a href="mailto:support@good-feed.com" className="text-primary hover:text-primary/80 transition-colors">support@good-feed.com</a> and we will promptly delete the account and associated data.</p>
+        <p>Good Feed is intended for users aged 13 and older. We do not knowingly collect personal information from children under 13. If you believe a child under 13 has created an account, please contact us at <a href="mailto:support@better-feed.com" className="text-primary hover:text-primary/80 transition-colors">support@better-feed.com</a> and we will promptly delete the account and associated data.</p>
         <p>If you are a parent or educational institution using Good Feed with students aged 13–17, please be aware that account creation requires a valid email address. We recommend parental or institutional oversight for users in this age range.</p>
       </div>
     )
@@ -255,15 +255,15 @@ const sections = [
           <p className="font-semibold text-foreground">Good Feed</p>
           <p className="text-muted-foreground">Austin, Texas, USA</p>
           <p>
-            <a href="mailto:support@good-feed.com" className="text-primary hover:text-primary/80 transition-colors inline-flex items-center gap-1">
+            <a href="mailto:support@better-feed.com" className="text-primary hover:text-primary/80 transition-colors inline-flex items-center gap-1">
               <Mail className="h-3.5 w-3.5" />
-              support@good-feed.com
+              support@better-feed.com
             </a>
           </p>
           <p>
-            <a href="https://good-feed.com/" target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80 transition-colors inline-flex items-center gap-1">
+            <a href="https://better-feed.com/" target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80 transition-colors inline-flex items-center gap-1">
               <ExternalLink className="h-3.5 w-3.5" />
-              good-feed.com
+              better-feed.com
             </a>
           </p>
         </div>
@@ -314,8 +314,8 @@ export default function Privacy() {
           >
             <p className="text-muted-foreground leading-relaxed">
               Good Feed ("we," "our," or "us") operates the platform at{" "}
-              <a href="https://good-feed.com/" target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80 transition-colors">
-                good-feed.com
+              <a href="https://better-feed.com/" target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80 transition-colors">
+                better-feed.com
               </a>
               . This Privacy Policy explains what personal information we collect, how we use it, and what rights you have over it.
             </p>

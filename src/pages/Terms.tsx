@@ -14,8 +14,8 @@ const sections = [
     body: (
       <p>
         Good Feed ("we," "our," or "us") operates the educational content platform at{' '}
-        <a href="https://good-feed.com" className="text-primary underline underline-offset-2 hover:opacity-80">
-          good-feed.com
+        <a href="https://better-feed.com" className="text-primary underline underline-offset-2 hover:opacity-80">
+          better-feed.com
         </a>
         . We are based in Austin, Texas, USA.
       </p>
@@ -59,8 +59,8 @@ const sections = [
           <li>All activity that occurs under your account, whether or not authorised by you</li>
           <li>
             Notifying us promptly at{' '}
-            <a href="mailto:support@good-feed.com" className="text-primary underline underline-offset-2 hover:opacity-80">
-              support@good-feed.com
+            <a href="mailto:support@better-feed.com" className="text-primary underline underline-offset-2 hover:opacity-80">
+              support@better-feed.com
             </a>{' '}
             if you believe your account has been compromised
           </li>
@@ -120,8 +120,8 @@ const sections = [
           <li>
             <strong>Enterprise</strong> — custom pricing for institutional or organisational use; contact
             us at{' '}
-            <a href="mailto:support@good-feed.com" className="text-primary underline underline-offset-2 hover:opacity-80">
-              support@good-feed.com
+            <a href="mailto:support@better-feed.com" className="text-primary underline underline-offset-2 hover:opacity-80">
+              support@better-feed.com
             </a>
           </li>
         </ul>
@@ -324,8 +324,8 @@ const sections = [
         </p>
         <p className="mt-4">
           Before initiating any formal legal proceeding, we encourage you to contact us at{' '}
-          <a href="mailto:support@good-feed.com" className="text-primary underline underline-offset-2 hover:opacity-80">
-            support@good-feed.com
+          <a href="mailto:support@better-feed.com" className="text-primary underline underline-offset-2 hover:opacity-80">
+            support@better-feed.com
           </a>{' '}
           to attempt an informal resolution. Many issues can be resolved quickly and without litigation.
         </p>
@@ -366,8 +366,8 @@ const sections = [
         <p className="mt-4">
           You may terminate your account at any time by cancelling your subscription and deleting your
           account through account settings, or by contacting{' '}
-          <a href="mailto:support@good-feed.com" className="text-primary underline underline-offset-2 hover:opacity-80">
-            support@good-feed.com
+          <a href="mailto:support@better-feed.com" className="text-primary underline underline-offset-2 hover:opacity-80">
+            support@better-feed.com
           </a>
           .
         </p>
@@ -407,14 +407,14 @@ const sections = [
           <p>Austin, Texas, USA</p>
           <p>
             Email:{' '}
-            <a href="mailto:support@good-feed.com" className="text-primary underline underline-offset-2 hover:opacity-80">
-              support@good-feed.com
+            <a href="mailto:support@better-feed.com" className="text-primary underline underline-offset-2 hover:opacity-80">
+              support@better-feed.com
             </a>
           </p>
           <p>
             Website:{' '}
-            <a href="https://good-feed.com" className="text-primary underline underline-offset-2 hover:opacity-80">
-              https://good-feed.com
+            <a href="https://better-feed.com" className="text-primary underline underline-offset-2 hover:opacity-80">
+              https://better-feed.com
             </a>
           </p>
         </address>
@@ -451,8 +451,8 @@ export default function Terms() {
         >
           <p>
             Welcome to Good Feed. By accessing or using our platform at{' '}
-            <a href="https://good-feed.com" className="text-primary underline underline-offset-2 hover:opacity-80">
-              good-feed.com
+            <a href="https://better-feed.com" className="text-primary underline underline-offset-2 hover:opacity-80">
+              better-feed.com
             </a>
             , you agree to be bound by these Terms of Service ("Terms"). Please read them carefully
             before using the platform.
