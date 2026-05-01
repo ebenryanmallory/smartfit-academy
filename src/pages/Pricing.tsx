@@ -96,7 +96,7 @@ export default function Pricing() {
 
   const handleContactSales = () => {
     // This would typically open a contact form or redirect to a contact page
-    window.location.href = "mailto:sales@smartfitacademy.com?subject=Enterprise Inquiry";
+    window.location.href = "mailto:sales@good-feed.com?subject=Enterprise Inquiry";
   };
 
   return (

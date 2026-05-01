@@ -1,4 +1,4 @@
-# SmartFit Academy
+# Good Feed
 
 A next-generation learning platform that leverages AI to deliver adaptive, personalized education from elementary through graduate levels. Built with modern web technologies and Cloudflare's edge infrastructure for a scalable, fast, and secure experience.
 
@@ -152,4 +152,4 @@ The Relevance Engine page (`/relevance-engine`) now supports a preview mode for 
 
 ---
 
-Built with ❤️ by SmartFit Academy
+Built with ❤️ by Good Feed

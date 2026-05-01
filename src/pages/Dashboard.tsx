@@ -232,7 +232,7 @@ function Dashboard() {
       {/* Value Proposition & How It Works */}
       <section className="container-section bg-secondary">
         <div className="content-container">
-          <h2 className="text-3xl font-bold text-center mb-12 text-foreground">Why SmartFit?</h2>
+          <h2 className="text-3xl font-bold text-center mb-12 text-foreground">Why Good Feed?</h2>
           <div className="two-column-grid">
             <Card className="info-card">
               <CardHeader className="px-0 pt-0">

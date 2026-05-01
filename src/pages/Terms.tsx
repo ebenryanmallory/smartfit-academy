@@ -13,9 +13,9 @@ const sections = [
     heading: '1. Who We Are',
     body: (
       <p>
-        SmartFit Academy ("we," "our," or "us") operates the educational content platform at{' '}
-        <a href="https://smartfit.academy" className="text-primary underline underline-offset-2 hover:opacity-80">
-          smartfit.academy
+        Good Feed ("we," "our," or "us") operates the educational content platform at{' '}
+        <a href="https://good-feed.com" className="text-primary underline underline-offset-2 hover:opacity-80">
+          good-feed.com
         </a>
         . We are based in Austin, Texas, USA.
       </p>
@@ -23,11 +23,11 @@ const sections = [
   },
   {
     id: '2',
-    heading: '2. Who Can Use SmartFit Academy',
+    heading: '2. Who Can Use Good Feed',
     body: (
       <>
         <p>
-          You must be at least 13 years old to use SmartFit Academy. By using the platform, you confirm
+          You must be at least 13 years old to use Good Feed. By using the platform, you confirm
           that you are 13 or older.
         </p>
         <p className="mt-4">
@@ -59,8 +59,8 @@ const sections = [
           <li>All activity that occurs under your account, whether or not authorised by you</li>
           <li>
             Notifying us promptly at{' '}
-            <a href="mailto:support@smartfit.academy" className="text-primary underline underline-offset-2 hover:opacity-80">
-              support@smartfit.academy
+            <a href="mailto:support@good-feed.com" className="text-primary underline underline-offset-2 hover:opacity-80">
+              support@good-feed.com
             </a>{' '}
             if you believe your account has been compromised
           </li>
@@ -78,7 +78,7 @@ const sections = [
     body: (
       <>
         <p>
-          SmartFit Academy provides an educational content platform that connects users with lessons,
+          Good Feed provides an educational content platform that connects users with lessons,
           tools, and AI-generated content designed to deepen knowledge and curiosity — including features
           that link current cultural topics to classical texts and historical ideas.
         </p>
@@ -103,7 +103,7 @@ const sections = [
     body: (
       <>
         <p className="font-semibold text-foreground">Plans</p>
-        <p className="mt-2">SmartFit Academy offers the following plans:</p>
+        <p className="mt-2">Good Feed offers the following plans:</p>
         <ul className="mt-3 space-y-2 list-disc list-inside text-foreground/80">
           <li>
             <strong>Free Forever</strong> — available to all registered users at no cost; access to a
@@ -120,8 +120,8 @@ const sections = [
           <li>
             <strong>Enterprise</strong> — custom pricing for institutional or organisational use; contact
             us at{' '}
-            <a href="mailto:support@smartfit.academy" className="text-primary underline underline-offset-2 hover:opacity-80">
-              support@smartfit.academy
+            <a href="mailto:support@good-feed.com" className="text-primary underline underline-offset-2 hover:opacity-80">
+              support@good-feed.com
             </a>
           </li>
         </ul>
@@ -129,7 +129,7 @@ const sections = [
         <p className="mt-6 font-semibold text-foreground">Billing</p>
         <p className="mt-2">
           Subscriptions are billed through Stripe, managed via Clerk's pricing table. By subscribing, you
-          authorise SmartFit Academy to charge your payment method on a recurring monthly (or annual, if
+          authorise Good Feed to charge your payment method on a recurring monthly (or annual, if
           selected) basis until you cancel. All prices are in US Dollars. We do not store your payment
           card details — these are handled exclusively by Stripe.
         </p>
@@ -166,7 +166,7 @@ const sections = [
     body: (
       <>
         <p>
-          You agree to use SmartFit Academy only for lawful purposes and in accordance with these Terms.
+          You agree to use Good Feed only for lawful purposes and in accordance with these Terms.
           You agree not to:
         </p>
         <ul className="mt-3 space-y-2 list-disc list-inside text-foreground/80">
@@ -208,9 +208,9 @@ const sections = [
     body: (
       <>
         <p>
-          <strong>Our content.</strong> All content on SmartFit Academy — including lesson text, generated
-          educational content, tool outputs, design, graphics, software, and the SmartFit Academy name and
-          logo — is owned by SmartFit Academy or licensed to us. Your subscription grants you a personal,
+          <strong>Our content.</strong> All content on Good Feed — including lesson text, generated
+          educational content, tool outputs, design, graphics, software, and the Good Feed name and
+          logo — is owned by Good Feed or licensed to us. Your subscription grants you a personal,
           non-exclusive, non-transferable licence to access and use this content for your own private
           educational purposes only.
         </p>
@@ -220,7 +220,7 @@ const sections = [
           our prior written permission.
         </p>
         <p className="mt-4">
-          <strong>Third-party works.</strong> SmartFit Academy references and discusses third-party works
+          <strong>Third-party works.</strong> Good Feed references and discusses third-party works
           — including books, films, and other cultural works — for educational and commentary purposes.
           All third-party trademarks, titles, and characters remain the property of their respective
           owners. Our use of such references does not imply any affiliation with or endorsement by those
@@ -252,7 +252,7 @@ const sections = [
     body: (
       <>
         <p>
-          SmartFit Academy is provided "as is" and "as available" without warranties of any kind, express
+          Good Feed is provided "as is" and "as available" without warranties of any kind, express
           or implied. To the fullest extent permitted by law, we disclaim all warranties including implied
           warranties of merchantability, fitness for a particular purpose, and non-infringement.
         </p>
@@ -279,7 +279,7 @@ const sections = [
     body: (
       <>
         <p>
-          To the maximum extent permitted by applicable law, SmartFit Academy and its team members shall
+          To the maximum extent permitted by applicable law, Good Feed and its team members shall
           not be liable for any indirect, incidental, consequential, special, or punitive damages arising
           out of or related to your use of (or inability to use) the platform — including loss of data,
           loss of revenue, or loss of goodwill — even if we have been advised of the possibility of such
@@ -302,7 +302,7 @@ const sections = [
     heading: '11. Indemnification',
     body: (
       <p>
-        You agree to defend, indemnify, and hold harmless SmartFit Academy and its team members from any
+        You agree to defend, indemnify, and hold harmless Good Feed and its team members from any
         claims, damages, losses, and costs (including reasonable legal fees) arising from your use of the
         platform, your violation of these Terms, or your violation of any third party's rights.
       </p>
@@ -324,8 +324,8 @@ const sections = [
         </p>
         <p className="mt-4">
           Before initiating any formal legal proceeding, we encourage you to contact us at{' '}
-          <a href="mailto:support@smartfit.academy" className="text-primary underline underline-offset-2 hover:opacity-80">
-            support@smartfit.academy
+          <a href="mailto:support@good-feed.com" className="text-primary underline underline-offset-2 hover:opacity-80">
+            support@good-feed.com
           </a>{' '}
           to attempt an informal resolution. Many issues can be resolved quickly and without litigation.
         </p>
@@ -342,7 +342,7 @@ const sections = [
           email or by posting a notice on the platform at least 14 days before the changes take effect.
         </p>
         <p className="mt-4">
-          Your continued use of SmartFit Academy after updated Terms take effect constitutes your
+          Your continued use of Good Feed after updated Terms take effect constitutes your
           acceptance of the new Terms. If you do not agree to the updated Terms, you must stop using the
           platform and may cancel your subscription.
         </p>
@@ -366,8 +366,8 @@ const sections = [
         <p className="mt-4">
           You may terminate your account at any time by cancelling your subscription and deleting your
           account through account settings, or by contacting{' '}
-          <a href="mailto:support@smartfit.academy" className="text-primary underline underline-offset-2 hover:opacity-80">
-            support@smartfit.academy
+          <a href="mailto:support@good-feed.com" className="text-primary underline underline-offset-2 hover:opacity-80">
+            support@good-feed.com
           </a>
           .
         </p>
@@ -381,7 +381,7 @@ const sections = [
       <>
         <p>
           These Terms, together with our Privacy Policy, constitute the entire agreement between you and
-          SmartFit Academy regarding your use of the platform. They supersede any prior agreements or
+          Good Feed regarding your use of the platform. They supersede any prior agreements or
           understandings, whether written or oral.
         </p>
         <p className="mt-4">
@@ -403,18 +403,18 @@ const sections = [
       <>
         <p>For questions about these Terms or to resolve a concern, contact us at:</p>
         <address className="mt-4 not-italic space-y-1 text-foreground/80">
-          <p className="font-semibold text-foreground">SmartFit Academy</p>
+          <p className="font-semibold text-foreground">Good Feed</p>
           <p>Austin, Texas, USA</p>
           <p>
             Email:{' '}
-            <a href="mailto:support@smartfit.academy" className="text-primary underline underline-offset-2 hover:opacity-80">
-              support@smartfit.academy
+            <a href="mailto:support@good-feed.com" className="text-primary underline underline-offset-2 hover:opacity-80">
+              support@good-feed.com
             </a>
           </p>
           <p>
             Website:{' '}
-            <a href="https://smartfit.academy" className="text-primary underline underline-offset-2 hover:opacity-80">
-              https://smartfit.academy
+            <a href="https://good-feed.com" className="text-primary underline underline-offset-2 hover:opacity-80">
+              https://good-feed.com
             </a>
           </p>
         </address>
@@ -450,9 +450,9 @@ export default function Terms() {
           className="prose prose-neutral max-w-none text-foreground/80 leading-relaxed space-y-4"
         >
           <p>
-            Welcome to SmartFit Academy. By accessing or using our platform at{' '}
-            <a href="https://smartfit.academy" className="text-primary underline underline-offset-2 hover:opacity-80">
-              smartfit.academy
+            Welcome to Good Feed. By accessing or using our platform at{' '}
+            <a href="https://good-feed.com" className="text-primary underline underline-offset-2 hover:opacity-80">
+              good-feed.com
             </a>
             , you agree to be bound by these Terms of Service ("Terms"). Please read them carefully
             before using the platform.

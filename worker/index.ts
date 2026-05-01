@@ -1,11 +1,12 @@
 import { Hono } from 'hono'
 import { clerkMiddleware } from '@hono/clerk-auth'
-import { 
+import {
   authRoutes,
   userRoutes,
   lessonRoutes,
   llmRoutes,
   claudeRoutes,
+  analyticsRoutes,
   type AppContext
 } from './routes'
 
@@ -57,6 +58,7 @@ app.route('/api/d1', userRoutes)
 app.route('/api/d1/user', lessonRoutes)
 app.route('/llm', llmRoutes)
 app.route('/claude', claudeRoutes)
+app.route('/track', analyticsRoutes)
 
 // Serve index.html for all GET requests — React Router handles client-side routing
 app.get('*', async (c) => {

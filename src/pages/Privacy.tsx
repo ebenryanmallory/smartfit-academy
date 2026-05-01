@@ -167,8 +167,8 @@ const sections = [
         </ul>
         <p className="text-sm text-muted-foreground">
           To exercise any of these rights, email us at{" "}
-          <a href="mailto:support@smartfit.academy" className="text-primary hover:text-primary/80 transition-colors">
-            support@smartfit.academy
+          <a href="mailto:support@good-feed.com" className="text-primary hover:text-primary/80 transition-colors">
+            support@good-feed.com
           </a>
           . We will respond within 30 days.
         </p>
@@ -200,8 +200,8 @@ const sections = [
     title: "Children's Privacy",
     content: (
       <div className="space-y-3 text-sm text-muted-foreground">
-        <p>SmartFit Academy is intended for users aged 13 and older. We do not knowingly collect personal information from children under 13. If you believe a child under 13 has created an account, please contact us at <a href="mailto:support@smartfit.academy" className="text-primary hover:text-primary/80 transition-colors">support@smartfit.academy</a> and we will promptly delete the account and associated data.</p>
-        <p>If you are a parent or educational institution using SmartFit Academy with students aged 13–17, please be aware that account creation requires a valid email address. We recommend parental or institutional oversight for users in this age range.</p>
+        <p>Good Feed is intended for users aged 13 and older. We do not knowingly collect personal information from children under 13. If you believe a child under 13 has created an account, please contact us at <a href="mailto:support@good-feed.com" className="text-primary hover:text-primary/80 transition-colors">support@good-feed.com</a> and we will promptly delete the account and associated data.</p>
+        <p>If you are a parent or educational institution using Good Feed with students aged 13–17, please be aware that account creation requires a valid email address. We recommend parental or institutional oversight for users in this age range.</p>
       </div>
     )
   },
@@ -240,7 +240,7 @@ const sections = [
     title: "Changes to This Policy",
     content: (
       <div className="space-y-3 text-sm text-muted-foreground">
-        <p>We may update this Privacy Policy from time to time. If we make material changes, we will notify you by email or by posting a notice on the platform before the changes take effect. Your continued use of SmartFit Academy after that point constitutes your acceptance of the updated policy.</p>
+        <p>We may update this Privacy Policy from time to time. If we make material changes, we will notify you by email or by posting a notice on the platform before the changes take effect. Your continued use of Good Feed after that point constitutes your acceptance of the updated policy.</p>
         <p>The date at the top of this page indicates when the policy was last updated.</p>
       </div>
     )
@@ -252,18 +252,18 @@ const sections = [
       <>
         <p className="text-sm text-muted-foreground mb-4">If you have questions or concerns about this Privacy Policy or how we handle your data, contact us at:</p>
         <div className="rounded-lg bg-muted/40 border border-border/40 p-4 space-y-1 text-sm">
-          <p className="font-semibold text-foreground">SmartFit Academy</p>
+          <p className="font-semibold text-foreground">Good Feed</p>
           <p className="text-muted-foreground">Austin, Texas, USA</p>
           <p>
-            <a href="mailto:support@smartfit.academy" className="text-primary hover:text-primary/80 transition-colors inline-flex items-center gap-1">
+            <a href="mailto:support@good-feed.com" className="text-primary hover:text-primary/80 transition-colors inline-flex items-center gap-1">
               <Mail className="h-3.5 w-3.5" />
-              support@smartfit.academy
+              support@good-feed.com
             </a>
           </p>
           <p>
-            <a href="https://smartfit.academy/" target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80 transition-colors inline-flex items-center gap-1">
+            <a href="https://good-feed.com/" target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80 transition-colors inline-flex items-center gap-1">
               <ExternalLink className="h-3.5 w-3.5" />
-              smartfit.academy
+              good-feed.com
             </a>
           </p>
         </div>
@@ -313,14 +313,14 @@ export default function Privacy() {
             transition={{ duration: 0.6, delay: 0.2 }}
           >
             <p className="text-muted-foreground leading-relaxed">
-              SmartFit Academy ("we," "our," or "us") operates the platform at{" "}
-              <a href="https://smartfit.academy/" target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80 transition-colors">
-                smartfit.academy
+              Good Feed ("we," "our," or "us") operates the platform at{" "}
+              <a href="https://good-feed.com/" target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80 transition-colors">
+                good-feed.com
               </a>
               . This Privacy Policy explains what personal information we collect, how we use it, and what rights you have over it.
             </p>
             <p className="text-muted-foreground leading-relaxed">
-              By using SmartFit Academy, you agree to the practices described in this policy. If you do not agree, please do not use the platform.
+              By using Good Feed, you agree to the practices described in this policy. If you do not agree, please do not use the platform.
             </p>
           </motion.div>
         </div>

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Generates public/sitemap.xml for smartfit.academy.
+ * Generates public/sitemap.xml for good-feed.com.
  * Run automatically as part of the build process (see package.json).
  *
  * Static public routes are listed here. Dynamic routes (e.g. /lessons/:id)
@@ -15,7 +15,7 @@ import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-const BASE_URL = 'https://smartfit.academy';
+const BASE_URL = 'https://good-feed.com';
 const TODAY = new Date().toISOString().split('T')[0];
 
 const routes = [

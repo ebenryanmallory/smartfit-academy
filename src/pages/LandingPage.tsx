@@ -90,8 +90,8 @@ export default function LandingPage() {
                 transition={{ duration: 0.6, delay: 0.2 }}
               >
                 <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-foreground leading-tight">
-                  Learn Without <span className="relative text-primary font-light italic">
-                    Limits
+                  The platform that nudges you toward <span className="relative text-primary font-light italic">
+                    educational depth
                     <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-accent rounded-full opacity-60 transform translate-y-2"></div>
                   </span>
                 </h1>
@@ -111,8 +111,7 @@ export default function LandingPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.4 }}
               >
-                Whether you're just starting out or pushing boundaries, Smartfit Academy meets you exactly where you are. 
-                <span className="block mt-3 text-foreground font-medium">AI-powered learning that actually gets you.</span>
+                Good Feed drives your educational journey
               </motion.p>
               
               <motion.div 

@@ -7,7 +7,7 @@ import EducationLevelSelector from "../components/EducationLevelSelector";
 
 const steps = [
   {
-    title: "Welcome to SmartFit Academy!",
+    title: "Welcome to Good Feed!",
     content: "Let's get you started with the basics."
   },
   {

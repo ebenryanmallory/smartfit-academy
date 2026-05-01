@@ -1,4 +1,5 @@
 import React, { Suspense, lazy, useEffect } from 'react';
+import { usePageTracking } from './hooks/usePageTracking';
 import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { Toaster } from "sonner";
 import { ClerkProviderWrapper } from './components/auth/clerk.tsx';
@@ -22,11 +23,16 @@ const Onboarding = lazy(() => import('./pages/Onboarding'));
 
 function ScrollToTopHandler() {
   const { pathname } = useLocation();
-  
+
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [pathname]);
-  
+
+  return null;
+}
+
+function PageTracker() {
+  usePageTracking();
   return null;
 }
 
@@ -36,6 +42,7 @@ function App() {
       <EnsureUserInD1 />
       <BrowserRouter>
         <ScrollToTopHandler />
+        <PageTracker />
         <div className="min-h-screen flex flex-col">
           <Toaster />
           <header className="border-b">
@@ -43,7 +50,7 @@ function App() {
               <Link to="/" className="flex items-center">
                 <img 
                   src="/smartfit-full.svg" 
-                  alt="SmartFit Academy" 
+                  alt="Good Feed"
                   className="h-12 w-auto"
                 />
               </Link>
