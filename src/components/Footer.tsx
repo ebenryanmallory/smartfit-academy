@@ -8,7 +8,7 @@ const Footer = () => {
     <footer className={`border-t ${isDashboardPage ? 'pb-48' : ''}`}>
       <div className="content-container mx-auto px-4 py-4 text-center text-gray-600 flex flex-col md:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <img src="/smartfit.svg" alt="Better Feed" className="h-8 w-auto" />
+          <img src="/betterfeed.svg" alt="Better Feed" className="h-8 w-auto" />
           <span>© {new Date().getFullYear()} Better Feed</span>
         </div>
         <div className="flex gap-4">

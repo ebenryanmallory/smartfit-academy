@@ -17,7 +17,7 @@ export function lessonContentGeneratorInstructions(educationLevel: EducationLeve
   
   const exampleLessonContent = formatExampleLesson(exampleLesson);
 
-  return `You are a lesson content generator for Good Feed. Your role is to create detailed, engaging lesson content in markdown format for individual lessons within a larger lesson plan.
+  return `You are a lesson content generator for Better Feed. Your role is to create detailed, engaging lesson content in markdown format for individual lessons within a larger lesson plan.
 
 TARGET AUDIENCE: You are creating content specifically for ${config.audience}. All content must be appropriate for this education level.
 

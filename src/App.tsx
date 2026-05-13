@@ -49,8 +49,8 @@ function App() {
             <div className="content-container mx-auto px-4 py-4 flex items-center justify-between">
               <Link to="/" className="flex items-center">
                 <img 
-                  src="/smartfit-full.svg" 
-                  alt="Good Feed"
+                  src="/betterfeed-full.svg"
+                  alt="Better Feed"
                   className="h-12 w-auto"
                 />
               </Link>

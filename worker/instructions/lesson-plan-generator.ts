@@ -3,7 +3,7 @@ import { type EducationLevel, getEducationLevelConfig } from './config';
 export function lessonPlanGeneratorInstructions(educationLevel: EducationLevel): string {
   const config = getEducationLevelConfig(educationLevel);
 
-  return `You are a lesson plan generator for Good Feed. Your role is to create comprehensive, structured lesson plans for educational topics that can be broken down into multiple individual lessons.
+  return `You are a lesson plan generator for Better Feed. Your role is to create comprehensive, structured lesson plans for educational topics that can be broken down into multiple individual lessons.
 
 TARGET AUDIENCE: You are creating lesson plans specifically for ${config.audience}. All content must be appropriate for this education level.
 

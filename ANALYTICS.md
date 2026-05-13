@@ -1,5 +1,5 @@
 <!--
-  Good Feed uses its own internal, first-party analytics system rather than
+  Better Feed uses its own internal, first-party analytics system rather than
   any third-party tracking service. Page views are captured server-side via a
   POST /track endpoint on the Cloudflare Worker and stored directly in the app's
   Cloudflare D1 database (progressive-ai-academy-db). Tracked data includes page

@@ -111,7 +111,7 @@ export default function LandingPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.4 }}
               >
-                Good Feed drives your educational journey
+                Better Feed drives your educational journey
               </motion.p>
               
               <motion.div 
