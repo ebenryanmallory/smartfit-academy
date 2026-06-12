@@ -33,11 +33,15 @@ append at the bottom via the scroll sentinel.
 
 ### 1. Cache module — `src/utils/feedCache.ts` (new)
 
-Single owner of the storage shape. sessionStorage key: `bf:feed:v1`.
+Single owner of the storage shape. sessionStorage key: `bf:feed:v1:<userId>`
+(Clerk user id) — sessionStorage survives sign-out/sign-in within a tab, so an
+unscoped key would hydrate one user's feed for another. All three functions
+take `userId` as their first argument.
 
 ```ts
 interface FeedPostState {
   liked: boolean;
+  likeRecorded: boolean; // analytics dedup survives like → unlike → restore
   quizSelected: number | null;
   viewed: boolean;
 }
@@ -49,13 +53,17 @@ interface FeedCache {
 }
 ```
 
-- `loadFeedCache(): FeedCache | null` — returns null on missing key, JSON
-  parse failure, or shape mismatch (treat any failure as a cache miss).
-- `saveFeedCache(cache: FeedCache): void` — caps `posts` to the most recent
-  60 before writing (drops `postStates` entries for evicted posts); catches
-  and ignores quota/serialization errors — the feed still works, just
-  uncached.
-- `clearFeedCache(): void`.
+- `loadFeedCache(userId: string): FeedCache | null` — returns null on missing
+  key, JSON parse failure, or shape mismatch (treat any failure as a cache
+  miss).
+- `saveFeedCache(userId: string, cache: FeedCache): void` — caps `posts` to
+  the **first** 60 (`slice(0, 60)`) before writing: the array is not
+  chronological once prepend exists (newest refreshed posts sit at the top),
+  and keeping the top of the feed preserves what the user lands on when they
+  return, evicting the deepest-scrolled bottom posts. Drops `postStates`
+  entries for evicted posts. Catches and ignores quota/serialization errors —
+  the feed still works, just uncached.
+- `clearFeedCache(userId: string): void`.
 
 Versioning is via the key suffix (`v1`); a future shape change bumps the key
 and old entries simply miss.
@@ -63,8 +71,24 @@ and old entries simply miss.
 ### 2. `Feed.tsx` changes
 
 - **Hydrate:** initialize `posts`, per-post state map, and `seenTagsRef` from
-  `loadFeedCache()`. If cached posts exist, skip the initial `fetchBatch` and
-  render immediately (no skeletons).
+  `loadFeedCache(userId)` via lazy `useState` initializers (the Clerk user id
+  is available in `FeedContent` via `useUser`). If cached posts exist, skip
+  the initial `fetchBatch` and render immediately — `isLoading` must also
+  initialize to `false` on a cache hit (it defaults to `true` and is only
+  cleared inside `fetchBatch`, so skipping the fetch would otherwise leave
+  the skeletons up forever).
+- **Sentinel guard after hydration:** with a short cached feed, the bottom
+  sentinel (600px rootMargin) can intersect on first paint and trigger an
+  append — defeating "no generation call on return." Guard with **state, not
+  a ref**: `autoAppendEnabled`, lazily initialized to `false` on a cache hit
+  and `true` otherwise. A one-time listener for scroll intent (`wheel`,
+  `touchmove`, `keydown` — not `scroll`, which never fires if the cached feed
+  is too short to scroll) sets it `true` and removes itself. The sentinel
+  observer effect adds `autoAppendEnabled` to its deps and skips fetching
+  while `false`; because flipping the state recreates the observer, an
+  already-intersecting sentinel fires its initial entry immediately on
+  enable — a plain ref flip would never re-fire and would block appends
+  forever. Fresh mounts are unaffected.
 - **Write-through:** a `useEffect` over `[posts, postStates]` calls
   `saveFeedCache` (also persisting current `seenTags`).
 - **Per-post state lifts up:** `Feed.tsx` owns
@@ -75,13 +99,19 @@ and old entries simply miss.
   top in arrival order: track `insertedCount` local to the batch and insert
   each arriving post at index `insertedCount`, then increment — so the batch
   reads top-to-bottom in generation order, above all existing posts.
+- **Prepend loading state:** prepend gets its own `isPrepending` state — it
+  must NOT reuse `isFetchingMore`, which renders the bottom "Generating more
+  posts…" skeleton. One `PostSkeleton` renders above the post list while
+  `isPrepending` is true; set before the fetch, cleared in `finally`. The
+  `received === 1` flip in `handleLine` (`setIsLoading(false);
+  setIsFetchingMore(true)`) applies only to initial/append placements, not
+  prepend.
 - **Refresh button:** `RefreshCw` icon button in the header next to the
   preferences button. On click: scroll to top, `fetchBatch('prepend')`.
-  Disabled while any fetch is in flight (`inFlightRef`). A 429 sets the
-  existing `rateLimited` state; existing posts stay visible.
-- **Loading indicator for prepend:** one `PostSkeleton` above the post list
-  while the prepend batch's first post is pending.
-- **`handlePrefsSaved`:** additionally calls `clearFeedCache()` and resets
+  Disabled via state — `isLoading || isFetchingMore || isPrepending` — not
+  `inFlightRef` (a ref doesn't drive re-renders). A 429 sets the existing
+  `rateLimited` state; existing posts stay visible.
+- **`handlePrefsSaved`:** additionally calls `clearFeedCache(userId)` and resets
   `postStates` (it already clears posts/seenTags and regenerates).
 
 ### 3. `FeedPostCard.tsx` changes
@@ -94,8 +124,9 @@ and old entries simply miss.
   viewed, it neither re-records the `viewed` interaction nor re-observes.
   First-time views report `viewed: true` through `onStateChange` in addition
   to the existing `onInteraction` call.
-- `likeRecordedRef` initializes true when restoring `liked: true`, so
-  re-liking after restore doesn't double-count the analytics event.
+- `likeRecordedRef` initializes from `cachedState?.likeRecorded` (a dedicated
+  flag, not derived from `liked` — like → unlike → restore would otherwise
+  reset the dedup and double-count a re-like).
 - A restored quiz `selected` renders the answered state exactly as if just
   answered (existing render path; no new UI).
 
@@ -113,8 +144,11 @@ prefs saved  → clearFeedCache + reset → fetchBatch('initial')
 
 - Cache read failure → silent fresh generation (current behavior).
 - Cache write failure (quota) → caught in `saveFeedCache`, feed unaffected.
-- Prepend fetch failure with existing posts → existing toast path ("Could not
-  generate more posts"); cached posts remain.
+- Prepend fetch failure → toast only ("Could not generate more posts"); it
+  does **not** set `error` — `error` gates the sentinel observer and renders
+  the bottom Retry button, which calls the append path; neither is a sensible
+  consequence of a failed top refresh. The refresh button (re-enabled once
+  `isPrepending` clears) is the retry affordance. Cached posts remain.
 - 429 on prepend → `rateLimited` banner; existing posts remain.
 
 ### 6. Testing
@@ -128,3 +162,6 @@ Manual verification (no test runner is configured for the frontend):
 3. Reload the tab → feed restored. Open a new tab → fresh feed.
 4. Save preferences → cache cleared, feed regenerates.
 5. Scroll to bottom → append still works and is persisted.
+6. With a short cached feed (1–2 posts), return to `/feed` → no append fires
+   until the user signals scroll intent (wheel/touch/key); after that, the
+   already-visible sentinel triggers an append.
