@@ -20,7 +20,6 @@ export default defineConfig({
     }
   },
   css: {
-    postcss: './postcss.config.js',
     devSourcemap: true
   },
   plugins: [
