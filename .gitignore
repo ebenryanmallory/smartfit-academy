@@ -13,6 +13,7 @@ dist-ssr/
 .wrangler/
 worker/*.js
 .env
+.dev.vars
 *.local
 
 # Editor directories and files
@@ -25,3 +26,7 @@ worker/*.js
 *.njsproj
 *.sln
 *.sw?
+
+# macOS AppleDouble metadata (exFAT/network drives)
+._*
+.DS_Store

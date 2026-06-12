@@ -9,7 +9,7 @@
     "build:assets": "npm run clean && vite build",
     "build:worker": "npm run build",
     "sitemap": "node scripts/generate-sitemap.js",
-    "build:all": "npm run sitemap && npm run build:assets && npm run build:worker",
+    "build:all": "npm run sitemap && npm run build:assets && npm run build:worker && npm run clean",
     "build:dev": "cp src/components/auth/clerk.dev.tsx src/components/auth/clerk.tsx && npm run build:all",
     "build:prod": "cp src/components/auth/clerk.prod.tsx src/components/auth/clerk.tsx && npm run build:all",
     "vite": "npx vite",
@@ -22,11 +22,11 @@
   },
   "dependencies": {
     "@clerk/backend": "^3.4.3",
+    "@clerk/hono": "^0.1.36",
     "@clerk/react": "^6.4.7",
     "@cloudflare/kv-asset-handler": "^0.5.0",
     "@fontsource-variable/geist": "^5.2.8",
     "@fontsource/inter": "^5.2.8",
-    "@hono/clerk-auth": "^3.1.1",
     "@hookform/resolvers": "^5.2.2",
     "@monaco-editor/react": "^4.7.0",
     "@radix-ui/react-dialog": "^1.1.15",
@@ -75,6 +75,6 @@
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.59.1",
     "vite": "^8.0.10",
-    "wrangler": "^4.87.0"
+    "wrangler": "^4.100.0"
   }
 }
