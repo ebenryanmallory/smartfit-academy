@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useUser, SignInButton, SignedOut } from '@clerk/react';
+import { useUser, SignInButton } from '@clerk/react';
 import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
 import { Input } from '../components/ui/input';
@@ -117,11 +117,11 @@ const RelevanceEngine: React.FC = () => {
               <p className="text-sm text-muted-foreground text-left">
                 Examples: "NFT art bubble", "TikTok dance trends", "Crypto Twitter drama", "Meme stock trading"
               </p>
-              <SignedOut>
+              {!isSignedIn && (
                 <p className="text-xs text-primary font-medium text-left bg-primary/5 p-2 rounded">
                   ✨ Try it now for free! No sign-up required to preview lessons
                 </p>
-              </SignedOut>
+              )}
             </div>
           </Card>
 
@@ -287,17 +287,17 @@ const RelevanceEngine: React.FC = () => {
             >
               Start Exploring Now
             </Button>
-            <SignedOut>
+            {!isSignedIn && (
               <SignInButton mode="modal">
-                <Button 
-                  size="lg" 
+                <Button
+                  size="lg"
                   variant="outline"
                   className="bg-transparent text-white border-white hover:bg-white/10"
                 >
                   Sign Up for Free
                 </Button>
               </SignInButton>
-            </SignedOut>
+            )}
           </div>
         </div>
       </section>

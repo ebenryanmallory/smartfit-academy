@@ -20,6 +20,7 @@ import NotificationBanner from './components/NotificationBanner';
 
 
 const Onboarding = lazy(() => import('./pages/Onboarding'));
+const Feed = lazy(() => import('./pages/Feed'));
 
 function ScrollToTopHandler() {
   const { pathname } = useLocation();
@@ -76,7 +77,8 @@ function App() {
                 <Route path="/modern-relevance" element={<RelevanceEngine />} />
                 <Route path="/netflix-and-nietzsche" element={<NetflixAndNietzsche />} />
                 
-                {/* Protected routes (will add auth check later) */}
+                {/* Protected routes (Feed gates via Clerk SignedIn/SignedOut) */}
+                <Route path="/feed" element={<Feed />} />
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/dashboard/lessons" element={<Lessons />} />
                 <Route path="/dashboard/lessons/:id" element={<Lessons />} />

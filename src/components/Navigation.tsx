@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/react';
+import { useUser, SignInButton, UserButton } from '@clerk/react';
 import {
   NavigationMenu,
   NavigationMenuList,
@@ -7,30 +7,42 @@ import {
   NavigationMenuLink,
 } from './ui/navigation-menu';
 import { Button } from './ui/button';
-import { LayoutDashboard, BookOpen, LogIn } from 'lucide-react';
+import { LayoutDashboard, BookOpen, LogIn, Newspaper } from 'lucide-react';
 
 function Navigation() {
   const location = useLocation();
+  const { isSignedIn } = useUser();
 
   return (
     <div className="flex items-center gap-4">
-      <SignedOut>
-        <Link 
-          to="/pricing" 
+      {!isSignedIn && (
+        <Link
+          to="/pricing"
           className={`flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors hover:bg-accent hover:text-accent-foreground ${
             location.pathname === '/pricing' ? 'bg-accent text-accent-foreground' : ''
           }`}
         >
           Pricing
         </Link>
-      </SignedOut>
-      
-      <SignedIn>
+      )}
+
+      {isSignedIn && (
         <NavigationMenu>
           <NavigationMenuList>
             <NavigationMenuItem>
-              <Link 
-                to="/dashboard" 
+              <Link
+                to="/feed"
+                className={`flex items-center gap-2 block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground ${
+                  location.pathname === '/feed' ? 'bg-accent text-accent-foreground' : ''
+                }`}
+              >
+                <Newspaper className="h-4 w-4" />
+                <div className="text-sm font-medium leading-none">Feed</div>
+              </Link>
+            </NavigationMenuItem>
+            <NavigationMenuItem>
+              <Link
+                to="/dashboard"
                 className={`flex items-center gap-2 block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground ${
                   location.pathname === '/dashboard' ? 'bg-accent text-accent-foreground' : ''
                 }`}
@@ -40,8 +52,8 @@ function Navigation() {
               </Link>
             </NavigationMenuItem>
             <NavigationMenuItem>
-              <Link 
-                to="/dashboard/lessons" 
+              <Link
+                to="/dashboard/lessons"
                 className={`flex items-center gap-2 block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground ${
                   location.pathname.startsWith('/dashboard/lessons') ? 'bg-accent text-accent-foreground' : ''
                 }`}
@@ -52,11 +64,11 @@ function Navigation() {
             </NavigationMenuItem>
           </NavigationMenuList>
         </NavigationMenu>
-      </SignedIn>
+      )}
 
       <div className="ml-auto">
-        <SignedIn>
-          <UserButton 
+        {isSignedIn ? (
+          <UserButton
             afterSignOutUrl="/"
             appearance={{
               elements: {
@@ -64,15 +76,14 @@ function Navigation() {
               }
             }}
           />
-        </SignedIn>
-        <SignedOut>
+        ) : (
           <SignInButton mode="modal">
             <Button variant="default" className="flex items-center gap-2">
               <LogIn className="h-4 w-4" />
               Sign In
             </Button>
           </SignInButton>
-        </SignedOut>
+        )}
       </div>
     </div>
   );

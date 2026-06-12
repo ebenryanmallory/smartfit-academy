@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { SignedOut } from '@clerk/react';
+import { useUser } from '@clerk/react';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
 import { ArrowRight, Tv, ScrollText, ChevronLeft, ChevronRight, Clock, BookOpen, Play, ExternalLink } from 'lucide-react';
@@ -18,6 +18,7 @@ const ShowPairingCarousel: React.FC<ShowPairingCarouselProps> = ({
   onVideoClick,
   showSignedOutPrompt = true,
 }) => {
+  const { isSignedIn } = useUser();
   const [featuredIndex, setFeaturedIndex] = useState(0);
 
   const currentPairing = pairings[featuredIndex];
@@ -157,12 +158,10 @@ const ShowPairingCarousel: React.FC<ShowPairingCarouselProps> = ({
           ))}
         </div>
 
-        {showSignedOutPrompt && (
-          <SignedOut>
-            <p className="text-xs text-primary font-medium text-center bg-primary/5 p-3 rounded">
-              ✨ Preview lessons for free! Sign up to save your progress and unlock all pairings
-            </p>
-          </SignedOut>
+        {showSignedOutPrompt && !isSignedIn && (
+          <p className="text-xs text-primary font-medium text-center bg-primary/5 p-3 rounded">
+            ✨ Preview lessons for free! Sign up to save your progress and unlock all pairings
+          </p>
         )}
       </div>
     </Card>

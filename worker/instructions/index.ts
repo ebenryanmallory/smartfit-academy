@@ -2,6 +2,7 @@ import { educationalAssistantInstructions } from './educational-assistant';
 import { lessonPlanGeneratorInstructions } from './lesson-plan-generator';
 import { lessonContentGeneratorInstructions } from './lesson-content-generator';
 import { historicalConnectionGeneratorInstructions } from './historical-connection-generator';
+import { feedPostGeneratorInstructions, FEED_TOPICS } from './feed-post-generator';
 
 // Export all instruction sets
 export const instructions = {
@@ -20,9 +21,11 @@ export function getInstructions(type: 'educationalAssistant'): string {
 }
 
 // Export individual instructions for direct import
-export { 
+export {
   educationalAssistantInstructions,
   lessonPlanGeneratorInstructions,
   lessonContentGeneratorInstructions,
-  historicalConnectionGeneratorInstructions
-}; 
+  historicalConnectionGeneratorInstructions,
+  feedPostGeneratorInstructions,
+  FEED_TOPICS
+};

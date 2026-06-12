@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useUser, SignInButton, SignedOut } from '@clerk/react';
+import { useUser, SignInButton } from '@clerk/react';
 import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
 import GenerateTopicLessonModal from '../components/GenerateTopicLessonModal';
@@ -252,7 +252,7 @@ const NetflixAndNietzsche: React.FC = () => {
             >
               Explore
             </Button>
-            <SignedOut>
+            {!isSignedIn && (
               <SignInButton mode="modal">
                 <Button
                   size="lg"
@@ -262,7 +262,7 @@ const NetflixAndNietzsche: React.FC = () => {
                   Sign Up for Free
                 </Button>
               </SignInButton>
-            </SignedOut>
+            )}
           </div>
         </div>
       </section>
