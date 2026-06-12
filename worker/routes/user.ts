@@ -1,5 +1,5 @@
 import { Hono } from 'hono'
-import { getAuth } from '@hono/clerk-auth'
+import { getAuth } from '@clerk/hono'
 import type { AppContext } from './types'
 
 const userRoutes = new Hono<AppContext>()
@@ -278,4 +278,56 @@ userRoutes.delete('/user/topics/:topic', async (c) => {
   }
 });
 
-export default userRoutes 
+// ---------------- Feed Interaction Routes ----------------
+
+// Protected: Record feed interaction events (batched). Feed posts themselves are
+// ephemeral and never stored; only this metadata persists to personalize future batches.
+userRoutes.post('/user/feed/interactions', async (c) => {
+  const auth = getAuth(c);
+  if (!auth?.userId) {
+    return c.json({ error: 'Unauthorized' }, 401);
+  }
+
+  // Parse body
+  let body;
+  try {
+    body = await c.req.json();
+  } catch (e) {
+    return c.json({ error: 'Invalid JSON body' }, 400);
+  }
+
+  const VALID_ACTIONS = ['viewed', 'liked', 'more_like_this', 'quiz_correct', 'quiz_incorrect'];
+  const events = Array.isArray(body.events) ? body.events.slice(0, 20) : [];
+  const valid = events.filter((e: any) =>
+    e &&
+    typeof e.postType === 'string' &&
+    typeof e.topic === 'string' &&
+    VALID_ACTIONS.includes(e.action)
+  );
+  if (valid.length === 0) {
+    return c.json({ error: 'No valid events' }, 400);
+  }
+
+  const db = c.env.DB;
+  const userId = auth.userId;
+
+  try {
+    const stmt = db.prepare(
+      'INSERT INTO feed_interactions (user_id, post_type, topic, tags, action, difficulty) VALUES (?, ?, ?, ?, ?, ?)'
+    );
+    await db.batch(valid.map((e: any) => stmt.bind(
+      userId,
+      e.postType,
+      e.topic,
+      Array.isArray(e.tags) ? JSON.stringify(e.tags.slice(0, 6).map(String)) : null,
+      e.action,
+      typeof e.difficulty === 'string' ? e.difficulty : null
+    )));
+    return c.json({ success: true, recorded: valid.length });
+  } catch (error) {
+    console.error('Error recording feed interactions:', error);
+    return c.json({ error: 'Failed to record feed interactions' }, 500);
+  }
+});
+
+export default userRoutes

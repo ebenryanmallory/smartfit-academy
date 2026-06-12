@@ -1,5 +1,5 @@
 import { Hono } from 'hono'
-import { getAuth } from '@hono/clerk-auth'
+import { getAuth } from '@clerk/hono'
 import type { AppContext } from './types'
 
 const lessonRoutes = new Hono<AppContext>()

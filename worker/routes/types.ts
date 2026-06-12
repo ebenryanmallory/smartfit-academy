@@ -20,6 +20,8 @@ export type Bindings = {
   WORKERS_AI_TOKEN: string;
   WORKERS_AI_ACCOUNT_ID: string;
   CLAUDE_API_KEY: string;
+  CLERK_SECRET_KEY: string;
+  VITE_CLERK_PUBLISHABLE_KEY: string;
 }
 
 // Combined context type for Hono

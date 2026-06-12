@@ -16,7 +16,12 @@ export function EnsureUserInD1() {
         hasInitialized.current = true;
         
         try {
-          const token = await getToken();
+          let token = await getToken();
+          if (!token) {
+            await new Promise(r => setTimeout(r, 500));
+            token = await getToken();
+          }
+          if (!token) return;
           const response = await fetch("/api/d1/user/init", {
             method: "POST",
             headers: {

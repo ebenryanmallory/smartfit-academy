@@ -1,5 +1,5 @@
 import { Hono } from 'hono'
-import { clerkMiddleware } from '@hono/clerk-auth'
+import { clerkMiddleware } from '@clerk/hono'
 import {
   authRoutes,
   userRoutes,
@@ -22,13 +22,14 @@ app.use('*', async (c, next) => {
 app.use('/api/*', async (c, next) => {
   try {
     console.log(`[CLERK] Processing ${c.req.method} ${c.req.path}`)
-    await clerkMiddleware()(c, next)
+    const publishableKey = c.env.VITE_CLERK_PUBLISHABLE_KEY ?? ''
+    await clerkMiddleware({ publishableKey, secretKey: c.env.CLERK_SECRET_KEY, authorizedParties: ['http://localhost:8788', 'https://better-feed.com'] })(c, next)
   } catch (error) {
     console.error('[CLERK] Authentication middleware failed:', error)
     console.error('[CLERK] Error details:', JSON.stringify(error, null, 2))
     console.error('[CLERK] Request headers:', JSON.stringify(c.req.header(), null, 2))
-    return c.json({ 
-      error: 'Authentication failed', 
+    return c.json({
+      error: 'Authentication failed',
       details: 'Clerk middleware error - check server logs',
       timestamp: new Date().toISOString()
     }, 500)
@@ -39,13 +40,14 @@ app.use('/api/*', async (c, next) => {
 app.use('/claude/*', async (c, next) => {
   try {
     console.log(`[CLERK] Processing Claude ${c.req.method} ${c.req.path}`)
-    await clerkMiddleware()(c, next)
+    const publishableKey = c.env.VITE_CLERK_PUBLISHABLE_KEY ?? ''
+    await clerkMiddleware({ publishableKey, secretKey: c.env.CLERK_SECRET_KEY, authorizedParties: ['http://localhost:8788', 'https://better-feed.com'] })(c, next)
   } catch (error) {
     console.error('[CLERK] Claude authentication middleware failed:', error)
     console.error('[CLERK] Error details:', JSON.stringify(error, null, 2))
     console.error('[CLERK] Request headers:', JSON.stringify(c.req.header(), null, 2))
-    return c.json({ 
-      error: 'Authentication failed', 
+    return c.json({
+      error: 'Authentication failed',
       details: 'Clerk middleware error - check server logs',
       timestamp: new Date().toISOString()
     }, 500)

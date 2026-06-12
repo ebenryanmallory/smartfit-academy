@@ -4,7 +4,7 @@ import { ReactNode } from 'react';
 export const ClerkProviderWrapper = ({ children }: { children: ReactNode }) => {
   return (
     <ClerkProvider 
-      publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY_TEST}
+      publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY}
       appearance={{
         elements: {
           // Make the modal more friendly and less intimidating

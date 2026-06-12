@@ -1,5 +1,5 @@
 import { Hono } from 'hono'
-import { clerkMiddleware, getAuth } from '@hono/clerk-auth'
+import { getAuth } from '@clerk/hono'
 import type { AppContext } from './types'
 
 const authRoutes = new Hono<AppContext>()
@@ -16,12 +16,13 @@ authRoutes.get('/protected/user', (c) => {
   })
 })
 
-// Admin routes (protected + role check)
-authRoutes.use('/admin/*', clerkMiddleware())
-
 // Example admin route
 authRoutes.get('/admin/stats', (c) => {
-  return c.json({ 
+  const auth = getAuth(c)
+  if (!auth?.userId) {
+    return c.json({ error: 'Unauthorized' }, 401)
+  }
+  return c.json({
     message: 'Admin route accessed successfully',
     stats: {
       totalUsers: 100,
