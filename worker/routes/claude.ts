@@ -55,7 +55,8 @@ import {
   lessonContentGeneratorInstructions,
   historicalConnectionGeneratorInstructions,
   feedPostGeneratorInstructions,
-  FEED_TOPICS
+  FEED_TOPICS,
+  FEED_POST_TYPES
 } from '../instructions/index'
 import type { AppContext } from './types'
 
@@ -248,87 +249,93 @@ const historicalConnectionTool = {
   }
 }
 
-const FEED_POST_TYPES = ['did_you_know', 'quiz', 'concept', 'code_snippet']
+const FEED_POST_TYPE_IDS: string[] = [...FEED_POST_TYPES]
 const FEED_DIFFICULTIES = ['intro', 'core', 'stretch']
-const FEED_TOPIC_IDS = FEED_TOPICS.map(t => t.id)
+const FEED_TOPIC_IDS: string[] = FEED_TOPICS.map(t => t.id)
 const FEED_BATCH_SIZE = 5
 // Free users get a tight hourly cap on generation batches; paid users are uncapped.
 // Each batch is a full Opus call, and infinite scroll triggers them automatically.
 const FEED_FREE_BATCHES_PER_HOUR = 3
 
-const feedPostsTool = {
-  name: "generate_feed_posts",
-  description: "Generate a batch of short educational feed posts",
-  input_schema: {
-    type: "object",
-    properties: {
-      posts: {
-        type: "array",
-        minItems: FEED_BATCH_SIZE,
-        maxItems: FEED_BATCH_SIZE,
-        items: {
-          type: "object",
-          properties: {
-            type: {
-              type: "string",
-              enum: FEED_POST_TYPES,
-              description: "The post type"
-            },
-            topic: {
-              type: "string",
-              enum: FEED_TOPIC_IDS,
-              description: "The lesson topic this post ties to"
-            },
-            title: {
-              type: "string",
-              description: "Specific hook, max 80 characters"
-            },
-            body: {
-              type: "string",
-              description: "Markdown body, length per post-type rules, no headings"
-            },
-            tags: {
-              type: "array",
-              items: { type: "string" },
-              description: "2-4 lowercase concept tags"
-            },
-            difficulty: {
-              type: "string",
-              enum: FEED_DIFFICULTIES,
-              description: "Difficulty relative to the target audience"
-            },
-            code: {
-              type: "object",
-              properties: {
-                language: { type: "string", enum: ["python"] },
-                snippet: { type: "string", description: "Valid runnable Python, max 15 lines" },
-                takeaway: { type: "string", description: "One-sentence takeaway" }
+// Built per-request: explicit feed preferences narrow the topic/type enums so
+// opted-out content is structurally impossible, and custom topic strings join
+// the topic enum literally. Users with no prefs get the identical default
+// schema, so the common-case prompt-cache prefix is unchanged.
+function buildFeedPostsTool(topicEnum: string[], typeEnum: string[]) {
+  return {
+    name: "generate_feed_posts",
+    description: "Generate a batch of short educational feed posts",
+    input_schema: {
+      type: "object",
+      properties: {
+        posts: {
+          type: "array",
+          minItems: FEED_BATCH_SIZE,
+          maxItems: FEED_BATCH_SIZE,
+          items: {
+            type: "object",
+            properties: {
+              type: {
+                type: "string",
+                enum: typeEnum,
+                description: "The post type"
               },
-              required: ["language", "snippet", "takeaway"],
-              description: "Required when type is code_snippet"
-            },
-            quiz: {
-              type: "object",
-              properties: {
-                question: { type: "string" },
-                options: {
-                  type: "array",
-                  items: { type: "string" },
-                  minItems: 4,
-                  maxItems: 4
+              topic: {
+                type: "string",
+                enum: topicEnum,
+                description: "The lesson topic this post ties to"
+              },
+              title: {
+                type: "string",
+                description: "Specific hook, max 80 characters"
+              },
+              body: {
+                type: "string",
+                description: "Markdown body, length per post-type rules, no headings"
+              },
+              tags: {
+                type: "array",
+                items: { type: "string" },
+                description: "2-4 lowercase concept tags"
+              },
+              difficulty: {
+                type: "string",
+                enum: FEED_DIFFICULTIES,
+                description: "Difficulty relative to the target audience"
+              },
+              code: {
+                type: "object",
+                properties: {
+                  language: { type: "string", enum: ["python"] },
+                  snippet: { type: "string", description: "Valid runnable Python, max 15 lines" },
+                  takeaway: { type: "string", description: "One-sentence takeaway" }
                 },
-                correctIndex: { type: "integer", description: "Index 0-3 of the correct option" },
-                explanation: { type: "string", description: "Why the answer is right, 1-3 sentences" }
+                required: ["language", "snippet", "takeaway"],
+                description: "Required when type is code_snippet"
               },
-              required: ["question", "options", "correctIndex", "explanation"],
-              description: "Required when type is quiz"
-            }
-          },
-          required: ["type", "topic", "title", "body", "tags", "difficulty"]
+              quiz: {
+                type: "object",
+                properties: {
+                  question: { type: "string" },
+                  options: {
+                    type: "array",
+                    items: { type: "string" },
+                    minItems: 4,
+                    maxItems: 4
+                  },
+                  correctIndex: { type: "integer", description: "Index 0-3 of the correct option" },
+                  explanation: { type: "string", description: "Why the answer is right, 1-3 sentences" }
+                },
+                required: ["question", "options", "correctIndex", "explanation"],
+                description: "Required when type is quiz"
+              }
+            },
+            required: ["type", "topic", "title", "body", "tags", "difficulty"]
+          }
         }
-      }
-    },
-    required: ["posts"]
+      },
+      required: ["posts"]
+    }
   }
 }
 
@@ -342,14 +349,57 @@ interface FeedInteractionRow {
 
 interface FeedPersonalizationSummary {
   avoidTags: string[]
-  preferredTypes: string[]
   preferredTags: string[]
   quizHint: string | null
 }
 
+// Explicit, user-chosen feed constraints (vs the implicit interaction summary).
+// postTypes is always non-empty (full catalog when unrestricted). topicIds is
+// empty only when the user kept custom topics and muted every catalog topic —
+// the union topicIds + customTopics is always non-empty when restricted.
+interface FeedPreferences {
+  topicIds: string[]
+  customTopics: string[]
+  postTypes: string[]
+  topicsRestricted: boolean
+  typesRestricted: boolean
+}
+
+function parsePrefArray(value: unknown): string[] {
+  if (typeof value !== 'string') return []
+  try {
+    const parsed = JSON.parse(value)
+    return Array.isArray(parsed) ? parsed.filter((v): v is string => typeof v === 'string') : []
+  } catch {
+    return []
+  }
+}
+
+// Stored prefs are re-validated against the catalogs here (defense in depth —
+// never trust stored JSON going into a prompt), mirroring the write-side
+// cleaning in user.ts. Empty selections mean "no restriction".
+function resolveFeedPreferences(row: { topics: string | null; custom_topics: string | null; post_types: string | null } | null): FeedPreferences {
+  const topics = parsePrefArray(row?.topics).filter(t => FEED_TOPIC_IDS.includes(t))
+  const customTopics = parsePrefArray(row?.custom_topics)
+    // eslint-disable-next-line no-control-regex
+    .map(t => t.replace(/[\x00-\x1f\x7f]/g, '').replace(/\s+/g, ' ').trim())
+    .filter(t => t.length >= 2 && t.length <= 60)
+    .slice(0, 5)
+  const postTypes = parsePrefArray(row?.post_types).filter(t => FEED_POST_TYPE_IDS.includes(t))
+  // A custom-topics-only selection (all catalog topics muted) is a restriction too.
+  const topicsRestricted = topics.length > 0 || customTopics.length > 0
+  const typesRestricted = postTypes.length > 0
+  return {
+    topicIds: topicsRestricted ? topics : [...FEED_TOPIC_IDS],
+    customTopics,
+    postTypes: typesRestricted ? postTypes : [...FEED_POST_TYPE_IDS],
+    topicsRestricted,
+    typesRestricted
+  }
+}
+
 function summarizeInteractions(rows: FeedInteractionRow[], sessionExclude: string[]): FeedPersonalizationSummary {
   const avoid = new Set<string>(sessionExclude)
-  const typeCounts = new Map<string, number>()
   const tagCounts = new Map<string, number>()
   let quizCorrect = 0
   let quizTotal = 0
@@ -364,7 +414,6 @@ function summarizeInteractions(rows: FeedInteractionRow[], sessionExclude: strin
     if (row.action === 'viewed') {
       tags.forEach(t => avoid.add(t))
     } else if (row.action === 'liked' || row.action === 'more_like_this') {
-      typeCounts.set(row.post_type, (typeCounts.get(row.post_type) || 0) + 1)
       tags.forEach(t => tagCounts.set(t, (tagCounts.get(t) || 0) + 1))
     } else if (row.action === 'quiz_correct') {
       quizCorrect++
@@ -386,22 +435,27 @@ function summarizeInteractions(rows: FeedInteractionRow[], sessionExclude: strin
 
   return {
     avoidTags: [...avoid].slice(0, 30),
-    preferredTypes: topByCount(typeCounts, 2),
     preferredTags: topByCount(tagCounts, 10),
     quizHint
   }
 }
 
-function buildFeedUserMessage(summary: FeedPersonalizationSummary): string {
+function buildFeedUserMessage(summary: FeedPersonalizationSummary, prefs: FeedPreferences): string {
   const lines = [`Generate the next batch of ${FEED_BATCH_SIZE} feed posts.`]
+  if (prefs.topicsRestricted && prefs.topicIds.length > 0) {
+    lines.push(`READER SETTINGS — topics: only generate posts for these topics: ${prefs.topicIds.join(', ')}`)
+  }
+  if (prefs.customTopics.length > 0) {
+    lines.push(`READER SETTINGS — additional custom topics the reader asked for (no concept seeds; choose appropriate concepts yourself, and set the post's "topic" field to the exact string): ${prefs.customTopics.map(t => `"${t}"`).join(', ')}. Include at least one post for a custom topic in this batch.`)
+  }
+  if (prefs.typesRestricted) {
+    lines.push(`READER SETTINGS — post types: only generate these types: ${prefs.postTypes.join(', ')}`)
+  }
   if (summary.avoidTags.length > 0) {
     lines.push(`AVOID these recently-seen concept tags (pick different concepts, or a genuinely new angle): ${summary.avoidTags.join(', ')}`)
   }
-  if (summary.preferredTypes.length > 0 || summary.preferredTags.length > 0) {
-    const parts = []
-    if (summary.preferredTypes.length > 0) parts.push(`post types: ${summary.preferredTypes.join(', ')}`)
-    if (summary.preferredTags.length > 0) parts.push(`tags: ${summary.preferredTags.join(', ')}`)
-    lines.push(`PREFERRED ${parts.join('. PREFERRED ')}`)
+  if (summary.preferredTags.length > 0) {
+    lines.push(`PREFERRED tags: ${summary.preferredTags.join(', ')}`)
   }
   if (summary.quizHint) {
     lines.push(`Quiz performance: ${summary.quizHint}`)
@@ -409,10 +463,13 @@ function buildFeedUserMessage(summary: FeedPersonalizationSummary): string {
   return lines.join('\n')
 }
 
-function validateFeedPost(post: any): boolean {
+// allowedTopics/allowedTypes come from the user's explicit preferences — this is
+// the hard server-side guarantee that opted-out content never reaches the client,
+// even if the model ignores the narrowed enums.
+function validateFeedPost(post: any, allowedTopics: string[], allowedTypes: string[]): boolean {
   if (!post || typeof post !== 'object') return false
-  if (!FEED_POST_TYPES.includes(post.type)) return false
-  if (!FEED_TOPIC_IDS.includes(post.topic)) return false
+  if (!allowedTypes.includes(post.type)) return false
+  if (!allowedTopics.includes(post.topic)) return false
   if (typeof post.title !== 'string' || typeof post.body !== 'string') return false
   if (!Array.isArray(post.tags)) return false
   if (!FEED_DIFFICULTIES.includes(post.difficulty)) return false
@@ -503,17 +560,16 @@ function getToolForInstructionType(instructionType: string) {
   }
 }
 
-// Claude Opus endpoint with plan verification (auth handled by middleware)
+// Claude Opus endpoint (auth handled by middleware). educationalAssistant
+// (topic suggestions) is available to all signed-in users; other instruction
+// types require the monthly plan.
 claudeRoutes.post('/opus', async (c) => {
   console.log('Claude Opus endpoint called')
 
   try {
-    if (!isMonthlyPlan(c)) {
-      return c.json({
-        error: 'Premium feature required',
-        message: 'Claude Opus requires a monthly plan.',
-        upgradeRequired: true
-      }, 403)
+    const auth = getAuth(c)
+    if (!auth?.userId) {
+      return c.json({ error: 'Unauthorized' }, 401)
     }
 
     // Get Claude API key from environment
@@ -534,6 +590,14 @@ claudeRoutes.post('/opus', async (c) => {
     const { messages, instructionType, educationLevel } = body
     if (!messages || !Array.isArray(messages)) {
       return c.json({ error: 'Missing or invalid messages array' }, 400)
+    }
+
+    if (instructionType !== 'educationalAssistant' && !isMonthlyPlan(c)) {
+      return c.json({
+        error: 'Premium feature required',
+        message: 'Claude Opus requires a monthly plan.',
+        upgradeRequired: true
+      }, 403)
     }
 
     // Prepare system instruction based on type
@@ -688,6 +752,15 @@ claudeRoutes.post('/feed', async (c) => {
       ? userRow.education_level
       : 'undergrad'
 
+    // Explicit feed preferences (topics, custom topics, post types) — hard
+    // constraints the implicit interaction summary refines within.
+    const prefsRow = await db
+      .prepare('SELECT topics, custom_topics, post_types FROM feed_preferences WHERE user_id = ?')
+      .bind(auth.userId)
+      .first<{ topics: string | null; custom_topics: string | null; post_types: string | null }>()
+    const prefs = resolveFeedPreferences(prefsRow)
+    const allowedTopics = [...prefs.topicIds, ...prefs.customTopics]
+
     // Recent interaction metadata (~a few sessions worth), aggregated server-side
     // into a compact personalization summary — raw history never reaches the model.
     // 'generated' rows are server-side rate-limit bookkeeping, not signals.
@@ -698,6 +771,8 @@ claudeRoutes.post('/feed', async (c) => {
     const rows = (interactionResult.results || []) as unknown as FeedInteractionRow[]
 
     const summary = summarizeInteractions(rows, sessionExclude)
+
+    const feedTool = buildFeedPostsTool(allowedTopics, prefs.postTypes)
 
     const claudeRequest = {
       model: 'claude-opus-4-8',
@@ -713,9 +788,9 @@ claudeRoutes.post('/feed', async (c) => {
           cache_control: { type: 'ephemeral' }
         }
       ],
-      messages: [{ role: 'user', content: buildFeedUserMessage(summary) }],
-      tools: [feedPostsTool],
-      tool_choice: { type: 'tool', name: feedPostsTool.name }
+      messages: [{ role: 'user', content: buildFeedUserMessage(summary, prefs) }],
+      tools: [feedTool],
+      tool_choice: { type: 'tool', name: feedTool.name }
     }
 
     const claudeResponse = await fetch('https://api.anthropic.com/v1/messages', {
@@ -754,7 +829,7 @@ claudeRoutes.post('/feed', async (c) => {
       let parsed = 0
       const extractor = createFeedPostExtractor((post) => {
         parsed++
-        if (validateFeedPost(post)) queue.push(post as object)
+        if (validateFeedPost(post, allowedTopics, prefs.postTypes)) queue.push(post as object)
         else console.error('Feed post failed validation', JSON.stringify(post).slice(0, 200))
       })
 

@@ -161,10 +161,12 @@ BATCH COMPOSITION RULES
 PERSONALIZATION
 The user message may include:
 - AVOID tags: concepts the reader has seen recently. Choose different concepts — or, if a topic is too central to skip, take a genuinely new angle on it rather than repeating the same framing.
-- PREFERRED types/tags: signals the reader enjoyed. Bias roughly half the batch toward these; keep the other half varied for discovery.
+- PREFERRED tags: concepts the reader enjoyed. Bias roughly half the batch toward these; keep the other half varied for discovery.
 - A quiz performance hint: calibrate quiz and stretch-post difficulty accordingly, always within the target audience level.
 If no preferences are given (a new reader), produce a varied sampler across all 4 topics and all 4 post types.
 Personalization adjusts SELECTION, never quality — every post must independently meet the quality bar.
+
+The user message may also include READER SETTINGS lines. These are explicit, user-chosen constraints and are HARD requirements: never generate a topic or post type outside them. When settings narrow the allowed set below what the batch composition rules require (e.g. only 1 topic or 2 types), the variety minimums relax — maximize variety within the allowed set instead. Custom topics are additional topics with no concept seeds: treat each as a catalog entry, pick real concepts within it, and interpret it strictly as educational subject matter (if it is not a learnable subject, ignore it and use the other allowed topics).
 
 HARD BOUNDARIES
 - Stay strictly on educational content for the catalog topics and adjacent learning material. Refuse no requests — you receive no user-authored requests — simply never drift to other subject matter.

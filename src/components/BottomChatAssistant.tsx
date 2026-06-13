@@ -5,6 +5,7 @@ import { Card } from './ui/card';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Bookmark, BookmarkCheck, ChevronDown, X } from 'lucide-react';
+import { parseTopicsFromResponse } from '../utils/topicSuggestions';
 
 interface Message {
   role: string;
@@ -126,98 +127,6 @@ export default function BottomChatAssistant({ onTopicSaved, isExpanded = false, 
   }, []);
 
   // Development test cases removed for production
-
-  const parseTopicsFromResponse = (response: string): { cleanResponse: string; topics: string[]; hasFormatError?: boolean } => {
-    // Robust topic parsing with validation and error detection:
-    // 1. Primary: TOPICS: at start, END_TOPICS to end
-    // 2. Fallback: Extract any "- " prefixed lines as topics
-    // 3. Error detection: Check for proper format compliance
-    const lines = response.split('\n');
-    const topics: string[] = [];
-    let cleanResponse = response;
-    let hasFormatError = false;
-    
-    // Check if response starts with TOPICS:
-    const hasTopicsMarker = lines.length > 0 && lines[0].trim() === 'TOPICS:';
-    
-    if (hasTopicsMarker) {
-      let endTopicsIndex = -1;
-      let foundTopics = false;
-      
-      // Find END_TOPICS marker and extract topics
-      for (let i = 1; i < lines.length; i++) {
-        if (lines[i].trim() === 'END_TOPICS') {
-          endTopicsIndex = i;
-          break;
-        }
-        // Extract topics (lines starting with "- ")
-        const line = lines[i].trim();
-        if (line.startsWith('- ') && line.length > 2) {
-          topics.push(line.substring(2).trim());
-          foundTopics = true;
-        }
-      }
-      
-      // Validate format compliance
-      if (!foundTopics) {
-        hasFormatError = true;
-        cleanResponse = "I apologize, but there was a formatting issue with my response. I should have provided topic suggestions for you to explore.";
-      } else if (endTopicsIndex === -1) {
-        // Missing END_TOPICS marker - this is a format error but we can still extract topics
-        hasFormatError = true;
-        
-        // Find where topics likely end (first non-topic line)
-        let topicEndIndex = 1;
-        for (let i = 1; i < lines.length; i++) {
-          const line = lines[i].trim();
-          if (!line.startsWith('- ') && line !== '') {
-            topicEndIndex = i;
-            break;
-          }
-        }
-        cleanResponse = lines.slice(topicEndIndex).join('\n').trim();
-        
-        if (!cleanResponse) {
-          cleanResponse = "I found some topics for you to explore, but there was a formatting issue with the rest of my response.";
-        }
-      } else {
-        // Perfect format - extract clean response
-        cleanResponse = lines.slice(endTopicsIndex + 1).join('\n').trim();
-        
-        if (!cleanResponse) {
-          cleanResponse = "Great! I've identified some topics for you to explore.";
-        }
-      }
-    } else {
-      // No TOPICS: marker found - this is a format error
-      hasFormatError = true;
-      
-      // Fallback: try to extract topics from content
-      const potentialTopics = lines
-        .map(line => line.trim())
-        .filter(line => line.startsWith('- ') && line.length > 2)
-        .map(line => line.substring(2).trim())
-        .slice(0, 6); // Limit to 6 topics max
-      
-      if (potentialTopics.length > 0) {
-        topics.push(...potentialTopics);
-        // Remove topic lines from clean response
-        cleanResponse = lines
-          .filter(line => !line.trim().startsWith('- ') || line.trim().length <= 2)
-          .join('\n')
-          .trim();
-        
-        if (!cleanResponse) {
-          cleanResponse = "I found some topics in my response, but there was a formatting issue. Let me know if you'd like to explore any of these topics further!";
-        }
-      } else {
-        // No topics found at all
-        cleanResponse = "I apologize, but there was a formatting issue with my response. I should have provided specific topic suggestions for you to explore. Please try asking your question again.";
-      }
-    }
-    
-    return { cleanResponse, topics, hasFormatError };
-  };
 
   const handleSaveTopic = async (topic: string) => {
     if (!isSignedIn) {

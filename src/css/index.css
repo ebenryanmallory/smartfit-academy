@@ -521,14 +521,18 @@ h1 {
   line-height: 1.1;
 }
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-weight: 500;
-  cursor: pointer;
-  transition: border-color 0.25s;
-  color: inherit;
+/* In base layer so Tailwind utility classes (which live in the `utilities`
+   layer) can override these defaults; unlayered rules would always win. */
+@layer base {
+  button {
+    border-radius: 8px;
+    border: 1px solid transparent;
+    padding: 0.6em 1.2em;
+    font-weight: 500;
+    cursor: pointer;
+    transition: border-color 0.25s;
+    color: inherit;
+  }
 }
 
 @media (prefers-color-scheme: light) {
@@ -537,10 +541,11 @@ button {
     background-color: #ffffff;
   }
 
-  button {
-    background-color: #f9f9f9;
+  @layer base {
+    button {
+      background-color: #f9f9f9;
+    }
   }
-
 }
 
 @theme inline {

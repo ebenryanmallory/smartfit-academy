@@ -10,7 +10,8 @@ import {
   Lightbulb, Brain, BookOpen, Code2,
   CheckCircle, XCircle, Heart, Sparkles, ArrowRight
 } from 'lucide-react';
-import type { FeedPost, FeedAction, FeedPostType } from '@/types/feed';
+import { FEED_TOPIC_OPTIONS, type FeedPost, type FeedAction, type FeedPostType } from '@/types/feed';
+import type { FeedPostState } from '@/utils/feedCache';
 
 const TYPE_CONFIG: Record<FeedPostType, { label: string; icon: React.ElementType; color: string }> = {
   did_you_know: { label: 'Did you know', icon: Lightbulb, color: '#c7522a' },
@@ -19,12 +20,9 @@ const TYPE_CONFIG: Record<FeedPostType, { label: string; icon: React.ElementType
   code_snippet: { label: 'Code', icon: Code2, color: '#c7522a' },
 };
 
-const TOPIC_LABELS: Record<string, string> = {
-  'c-python-fundamentals': 'Python',
-  'c-intro-ai': 'Intro to AI',
-  'c-machine-learning-fundamentals': 'Machine Learning',
-  'c-data-science-fundamentals': 'Data Science',
-};
+const TOPIC_LABELS: Record<string, string> = Object.fromEntries(
+  FEED_TOPIC_OPTIONS.map(t => [t.id, t.label])
+);
 
 const DIFFICULTY_LABELS: Record<string, string> = {
   intro: 'Intro',
@@ -35,13 +33,15 @@ const DIFFICULTY_LABELS: Record<string, string> = {
 interface FeedPostCardProps {
   post: FeedPost;
   onInteraction: (post: FeedPost, action: FeedAction) => void;
+  cachedState?: FeedPostState;
+  onStateChange: (postId: string, change: Partial<FeedPostState>) => void;
 }
 
-export function FeedPostCard({ post, onInteraction }: FeedPostCardProps) {
-  const [liked, setLiked] = React.useState(false);
-  const [selected, setSelected] = React.useState<number | null>(null);
-  const likeRecordedRef = React.useRef(false);
-  const viewRecordedRef = React.useRef(false);
+export function FeedPostCard({ post, onInteraction, cachedState, onStateChange }: FeedPostCardProps) {
+  const [liked, setLiked] = React.useState(cachedState?.liked ?? false);
+  const [selected, setSelected] = React.useState<number | null>(cachedState?.quizSelected ?? null);
+  const likeRecordedRef = React.useRef(cachedState?.likeRecorded ?? false);
+  const viewRecordedRef = React.useRef(cachedState?.viewed ?? false);
   const cardRef = React.useRef<HTMLDivElement>(null);
 
   const config = TYPE_CONFIG[post.type];
@@ -51,6 +51,7 @@ export function FeedPostCard({ post, onInteraction }: FeedPostCardProps) {
   // Record 'viewed' once, when the card is actually half on screen — not at
   // generation time — so the avoid-repeats signal only covers posts the user saw.
   React.useEffect(() => {
+    if (viewRecordedRef.current) return; // restored from cache as viewed — don't re-record or re-observe
     const el = cardRef.current;
     if (!el) return;
     const observer = new IntersectionObserver(
@@ -58,6 +59,7 @@ export function FeedPostCard({ post, onInteraction }: FeedPostCardProps) {
         if (entries[0].isIntersecting && !viewRecordedRef.current) {
           viewRecordedRef.current = true;
           onInteraction(post, 'viewed');
+          onStateChange(post.id, { viewed: true });
           observer.disconnect();
         }
       },
@@ -72,14 +74,17 @@ export function FeedPostCard({ post, onInteraction }: FeedPostCardProps) {
     if (answered || !post.quiz) return;
     setSelected(index);
     onInteraction(post, index === post.quiz.correctIndex ? 'quiz_correct' : 'quiz_incorrect');
+    onStateChange(post.id, { quizSelected: index });
   };
 
   const handleLike = () => {
-    if (!liked && !likeRecordedRef.current) {
+    const nextLiked = !liked;
+    if (nextLiked && !likeRecordedRef.current) {
       likeRecordedRef.current = true;
       onInteraction(post, 'liked');
     }
-    setLiked(!liked);
+    setLiked(nextLiked);
+    onStateChange(post.id, { liked: nextLiked, likeRecorded: likeRecordedRef.current });
   };
 
   const handleMoreLikeThis = () => {

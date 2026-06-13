@@ -1,6 +1,7 @@
 import { Hono } from 'hono'
 import { getAuth } from '@clerk/hono'
 import type { AppContext } from './types'
+import { FEED_TOPICS, FEED_POST_TYPES } from '../instructions/index'
 
 const userRoutes = new Hono<AppContext>()
 
@@ -327,6 +328,114 @@ userRoutes.post('/user/feed/interactions', async (c) => {
   } catch (error) {
     console.error('Error recording feed interactions:', error);
     return c.json({ error: 'Failed to record feed interactions' }, 500);
+  }
+});
+
+// ---------------- Feed Preferences Routes ----------------
+
+const FEED_PREF_TOPIC_IDS: string[] = FEED_TOPICS.map(t => t.id)
+const MAX_CUSTOM_TOPICS = 5
+
+function parseJsonArray(value: unknown): string[] {
+  if (typeof value !== 'string') return []
+  try {
+    const parsed = JSON.parse(value)
+    return Array.isArray(parsed) ? parsed.filter((v): v is string => typeof v === 'string') : []
+  } catch {
+    return []
+  }
+}
+
+// Free-text custom topics go into an LLM prompt: collapse whitespace, strip
+// control characters, enforce 2-60 chars. Entries that fail are dropped, not rejected.
+function cleanCustomTopics(input: unknown): string[] {
+  if (!Array.isArray(input)) return []
+  const seen = new Set<string>()
+  const out: string[] = []
+  for (const entry of input) {
+    if (typeof entry !== 'string') continue
+    // eslint-disable-next-line no-control-regex
+    const cleaned = entry.replace(/[\x00-\x1f\x7f]/g, '').replace(/\s+/g, ' ').trim()
+    if (cleaned.length < 2 || cleaned.length > 60) continue
+    const key = cleaned.toLowerCase()
+    if (seen.has(key) || FEED_PREF_TOPIC_IDS.includes(key)) continue
+    seen.add(key)
+    out.push(cleaned)
+    if (out.length >= MAX_CUSTOM_TOPICS) break
+  }
+  return out
+}
+
+// Protected: Get explicit feed preferences. Empty arrays mean "no restriction".
+userRoutes.get('/user/feed/preferences', async (c) => {
+  const auth = getAuth(c);
+  if (!auth?.userId) {
+    return c.json({ error: 'Unauthorized' }, 401);
+  }
+  const db = c.env.DB;
+
+  try {
+    const row = await db.prepare(
+      'SELECT topics, custom_topics, post_types FROM feed_preferences WHERE user_id = ?'
+    ).bind(auth.userId).first();
+    return c.json({
+      preferences: {
+        topics: parseJsonArray(row?.topics).filter(t => FEED_PREF_TOPIC_IDS.includes(t)),
+        customTopics: cleanCustomTopics(parseJsonArray(row?.custom_topics)),
+        postTypes: parseJsonArray(row?.post_types).filter(t => (FEED_POST_TYPES as readonly string[]).includes(t))
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching feed preferences:', error);
+    return c.json({ error: 'Failed to fetch feed preferences' }, 500);
+  }
+});
+
+// Protected: Save explicit feed preferences (full replace).
+userRoutes.post('/user/feed/preferences', async (c) => {
+  const auth = getAuth(c);
+  if (!auth?.userId) {
+    return c.json({ error: 'Unauthorized' }, 401);
+  }
+
+  // Parse body
+  let body;
+  try {
+    body = await c.req.json();
+  } catch {
+    return c.json({ error: 'Invalid JSON body' }, 400);
+  }
+
+  if ((body.topics !== undefined && !Array.isArray(body.topics)) ||
+      (body.customTopics !== undefined && !Array.isArray(body.customTopics)) ||
+      (body.postTypes !== undefined && !Array.isArray(body.postTypes))) {
+    return c.json({ error: 'topics, customTopics and postTypes must be arrays' }, 400);
+  }
+
+  const topics = (Array.isArray(body.topics) ? body.topics : [])
+    .filter((t: unknown): t is string => typeof t === 'string' && FEED_PREF_TOPIC_IDS.includes(t));
+  const customTopics = cleanCustomTopics(body.customTopics);
+  // Empty post_types means "all" — never persist a state that can generate nothing.
+  const postTypes = (Array.isArray(body.postTypes) ? body.postTypes : [])
+    .filter((t: unknown): t is string => typeof t === 'string' && (FEED_POST_TYPES as readonly string[]).includes(t));
+
+  const db = c.env.DB;
+  const userId = auth.userId;
+  const email = auth.sessionClaims?.email || `${userId}@unknown.com`;
+
+  try {
+    // Ensure user exists in database (auto-initialize if needed)
+    await db.prepare('INSERT OR IGNORE INTO users (id, email) VALUES (?, ?)').bind(userId, email).run();
+
+    await db.prepare(
+      `INSERT INTO feed_preferences (user_id, topics, custom_topics, post_types) VALUES (?, ?, ?, ?)
+       ON CONFLICT(user_id) DO UPDATE SET topics = excluded.topics, custom_topics = excluded.custom_topics, post_types = excluded.post_types, updated_at = CURRENT_TIMESTAMP`
+    ).bind(userId, JSON.stringify(topics), JSON.stringify(customTopics), JSON.stringify(postTypes)).run();
+
+    return c.json({ preferences: { topics, customTopics, postTypes } });
+  } catch (error) {
+    console.error('Error saving feed preferences:', error);
+    return c.json({ error: 'Failed to save feed preferences' }, 500);
   }
 });
 
